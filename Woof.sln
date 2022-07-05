@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32602.215
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WoofAPI", "WoofAPI\WoofAPI.csproj", "{6BFF8B11-F138-49D3-BB4D-20D324A127BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WoofDatabase", "WoofDatabase\WoofDatabase.csproj", "{3A554852-5194-4436-936B-3A937009524D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WoofTests", "WoofTests\WoofTests.csproj", "{DD5C2A44-2F81-4270-B786-7C7215C8ACCF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{ECA6495F-70A4-4C7E-A1EE-8633B54E77B9}"
+	ProjectSection(SolutionItems) = preProject
+		BaseCsproj.props = BaseCsproj.props
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6BFF8B11-F138-49D3-BB4D-20D324A127BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BFF8B11-F138-49D3-BB4D-20D324A127BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BFF8B11-F138-49D3-BB4D-20D324A127BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BFF8B11-F138-49D3-BB4D-20D324A127BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A554852-5194-4436-936B-3A937009524D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A554852-5194-4436-936B-3A937009524D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A554852-5194-4436-936B-3A937009524D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A554852-5194-4436-936B-3A937009524D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD5C2A44-2F81-4270-B786-7C7215C8ACCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD5C2A44-2F81-4270-B786-7C7215C8ACCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD5C2A44-2F81-4270-B786-7C7215C8ACCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD5C2A44-2F81-4270-B786-7C7215C8ACCF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F4AA563D-0CD4-4075-AF9C-D783D4BB47EF}
+	EndGlobalSection
+EndGlobal
