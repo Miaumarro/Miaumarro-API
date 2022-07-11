@@ -9,10 +9,10 @@
     <WarningsAsErrors>Nullable</WarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
-    <Authors>Kotz</Authors>
-    <Copyright>Copyright © Kotz 2022</Copyright>
-    <PackageProjectUrl>https://github.com/Woof-Store/Woof-API</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Woof-Store/Woof-API</RepositoryUrl>
+    <Authors>Matheus,Maíra,Amanda,Salomão</Authors>
+    <Copyright>Copyright © Matheus, Maíra, Amanda, Salomão 2022</Copyright>
+    <PackageProjectUrl>https://github.com/Miaumarro-Petshop/Miaumarro-API</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Miaumarro-Petshop/Miaumarro-API</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 </Project>
