@@ -7,7 +7,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WoofDatabase\WoofDatabase.csproj" />
+    <ProjectReference Include="..\MiauDatabase\MiauDatabase.csproj" />
   </ItemGroup>
 
 </Project>

@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "WoofAPI": {
+    "MiauAPI": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
