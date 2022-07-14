@@ -14,27 +14,27 @@ public sealed record UserEntity : MiauDbEntity
     /// <summary>
     /// The addresses associated with this user.
     /// </summary>
-    public List<AddressEntity> AddressesRel { get; init; } = new();
+    public List<AddressEntity> Addresses { get; init; } = new();
 
     /// <summary>
     /// The pets associated with this user.
     /// </summary>
-    public List<PetEntity> PetsRel { get; init; } = new();
+    public List<PetEntity> Pets { get; init; } = new();
 
     /// <summary>
     /// The purchases associated with this user.
     /// </summary>
-    public List<PurchaseEntity> PurchasesRel { get; init; } = new();
+    public List<PurchaseEntity> Purchases { get; init; } = new();
 
     /// <summary>
     /// The product reviews associated with this user.
     /// </summary>
-    public List<ProductReviewEntity> ProductReviewsRel { get; init; } = new();
+    public List<ProductReviewEntity> ProductReviews { get; init; } = new();
 
     /// <summary>
     /// The wishlist items associated with this user.
     /// </summary>
-    public List<WishlistEntity> WishlistRel { get; init; } = new();
+    public List<WishlistEntity> Wishlist { get; init; } = new();
 
     /// <summary>
     /// This user's CPF.

@@ -58,7 +58,7 @@ namespace MiauDatabase.Migrations
                 {
                     id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    fk_product_id = table.Column<int>(type: "INTEGER", nullable: false),
+                    product_id = table.Column<int>(type: "INTEGER", nullable: false),
                     file_url = table.Column<string>(type: "TEXT", nullable: false),
                     date_added = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
@@ -66,8 +66,8 @@ namespace MiauDatabase.Migrations
                 {
                     table.PrimaryKey("pk_product_images", x => x.id);
                     table.ForeignKey(
-                        name: "fk_product_images_products_fk_product_id",
-                        column: x => x.fk_product_id,
+                        name: "fk_product_images_products_product_id",
+                        column: x => x.product_id,
                         principalTable: "products",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -80,7 +80,7 @@ namespace MiauDatabase.Migrations
                 {
                     id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    fk_user_id = table.Column<int>(type: "INTEGER", nullable: false),
+                    user_id = table.Column<int>(type: "INTEGER", nullable: false),
                     address = table.Column<string>(type: "TEXT", maxLength: 60, nullable: false),
                     number = table.Column<int>(type: "INTEGER", nullable: false),
                     reference = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
@@ -96,8 +96,8 @@ namespace MiauDatabase.Migrations
                 {
                     table.PrimaryKey("pk_addresses", x => x.id);
                     table.ForeignKey(
-                        name: "fk_addresses_users_fk_user_id",
-                        column: x => x.fk_user_id,
+                        name: "fk_addresses_users_user_id",
+                        column: x => x.user_id,
                         principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -110,7 +110,7 @@ namespace MiauDatabase.Migrations
                 {
                     id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    fk_user_id = table.Column<int>(type: "INTEGER", nullable: false),
+                    user_id = table.Column<int>(type: "INTEGER", nullable: false),
                     name = table.Column<string>(type: "TEXT", maxLength: 30, nullable: false),
                     type = table.Column<int>(type: "INTEGER", nullable: false),
                     gender = table.Column<int>(type: "INTEGER", nullable: false),
@@ -123,8 +123,8 @@ namespace MiauDatabase.Migrations
                 {
                     table.PrimaryKey("pk_pets", x => x.id);
                     table.ForeignKey(
-                        name: "fk_pets_users_fk_user_id",
-                        column: x => x.fk_user_id,
+                        name: "fk_pets_users_user_id",
+                        column: x => x.user_id,
                         principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -137,8 +137,8 @@ namespace MiauDatabase.Migrations
                 {
                     id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    fk_user_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    fk_product_id = table.Column<int>(type: "INTEGER", nullable: false),
+                    user_id = table.Column<int>(type: "INTEGER", nullable: true),
+                    product_id = table.Column<int>(type: "INTEGER", nullable: false),
                     description = table.Column<string>(type: "TEXT", nullable: false),
                     score = table.Column<int>(type: "INTEGER", nullable: false),
                     date_added = table.Column<DateTime>(type: "TEXT", nullable: false)
@@ -147,14 +147,14 @@ namespace MiauDatabase.Migrations
                 {
                     table.PrimaryKey("pk_product_reviews", x => x.id);
                     table.ForeignKey(
-                        name: "fk_product_reviews_products_fk_product_id",
-                        column: x => x.fk_product_id,
+                        name: "fk_product_reviews_products_product_id",
+                        column: x => x.product_id,
                         principalTable: "products",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_product_reviews_users_fk_user_id",
-                        column: x => x.fk_user_id,
+                        name: "fk_product_reviews_users_user_id",
+                        column: x => x.user_id,
                         principalTable: "users",
                         principalColumn: "id");
                 },
@@ -166,7 +166,7 @@ namespace MiauDatabase.Migrations
                 {
                     id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    fk_user_id = table.Column<int>(type: "INTEGER", nullable: false),
+                    user_id = table.Column<int>(type: "INTEGER", nullable: false),
                     coupon = table.Column<string>(type: "TEXT", nullable: true),
                     status = table.Column<int>(type: "INTEGER", nullable: false),
                     date_added = table.Column<DateTime>(type: "TEXT", nullable: false)
@@ -175,8 +175,8 @@ namespace MiauDatabase.Migrations
                 {
                     table.PrimaryKey("pk_purchases", x => x.id);
                     table.ForeignKey(
-                        name: "fk_purchases_users_fk_user_id",
-                        column: x => x.fk_user_id,
+                        name: "fk_purchases_users_user_id",
+                        column: x => x.user_id,
                         principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -189,22 +189,22 @@ namespace MiauDatabase.Migrations
                 {
                     id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    fk_user_id = table.Column<int>(type: "INTEGER", nullable: false),
-                    fk_product_id = table.Column<int>(type: "INTEGER", nullable: false),
+                    user_id = table.Column<int>(type: "INTEGER", nullable: false),
+                    product_id = table.Column<int>(type: "INTEGER", nullable: false),
                     date_added = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_wishlist", x => x.id);
                     table.ForeignKey(
-                        name: "fk_wishlist_products_fk_product_id",
-                        column: x => x.fk_product_id,
+                        name: "fk_wishlist_products_product_id",
+                        column: x => x.product_id,
                         principalTable: "products",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_wishlist_users_fk_user_id",
-                        column: x => x.fk_user_id,
+                        name: "fk_wishlist_users_user_id",
+                        column: x => x.user_id,
                         principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -217,7 +217,7 @@ namespace MiauDatabase.Migrations
                 {
                     id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    fk_pet_id = table.Column<int>(type: "INTEGER", nullable: false),
+                    pet_id = table.Column<int>(type: "INTEGER", nullable: false),
                     price = table.Column<decimal>(type: "TEXT", nullable: false),
                     type = table.Column<int>(type: "INTEGER", nullable: false),
                     scheduled_time = table.Column<DateTime>(type: "TEXT", nullable: false),
@@ -227,8 +227,8 @@ namespace MiauDatabase.Migrations
                 {
                     table.PrimaryKey("pk_appointments", x => x.id);
                     table.ForeignKey(
-                        name: "fk_appointments_pets_fk_pet_id",
-                        column: x => x.fk_pet_id,
+                        name: "fk_appointments_pets_pet_id",
+                        column: x => x.pet_id,
                         principalTable: "pets",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -241,8 +241,8 @@ namespace MiauDatabase.Migrations
                 {
                     id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    fk_product_id = table.Column<int>(type: "INTEGER", nullable: false),
-                    fk_purchase_id = table.Column<int>(type: "INTEGER", nullable: false),
+                    product_id = table.Column<int>(type: "INTEGER", nullable: false),
+                    purchase_id = table.Column<int>(type: "INTEGER", nullable: false),
                     sale_price = table.Column<decimal>(type: "TEXT", nullable: false),
                     date_added = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
@@ -250,14 +250,14 @@ namespace MiauDatabase.Migrations
                 {
                     table.PrimaryKey("pk_purchased_products", x => x.id);
                     table.ForeignKey(
-                        name: "fk_purchased_products_products_fk_product_id",
-                        column: x => x.fk_product_id,
+                        name: "fk_purchased_products_products_product_id",
+                        column: x => x.product_id,
                         principalTable: "products",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_purchased_products_purchases_fk_purchase_id",
-                        column: x => x.fk_purchase_id,
+                        name: "fk_purchased_products_purchases_purchase_id",
+                        column: x => x.purchase_id,
                         principalTable: "purchases",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -265,59 +265,59 @@ namespace MiauDatabase.Migrations
                 comment: "Represents a purchased product.");
 
             migrationBuilder.CreateIndex(
-                name: "ix_addresses_fk_user_id",
+                name: "ix_addresses_user_id",
                 table: "addresses",
-                column: "fk_user_id");
+                column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_appointments_fk_pet_id",
+                name: "ix_appointments_pet_id",
                 table: "appointments",
-                column: "fk_pet_id");
+                column: "pet_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_pets_fk_user_id",
+                name: "ix_pets_user_id",
                 table: "pets",
-                column: "fk_user_id");
+                column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_product_images_fk_product_id",
+                name: "ix_product_images_product_id",
                 table: "product_images",
-                column: "fk_product_id");
+                column: "product_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_product_reviews_fk_product_id",
+                name: "ix_product_reviews_product_id",
                 table: "product_reviews",
-                column: "fk_product_id");
+                column: "product_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_product_reviews_fk_user_id",
+                name: "ix_product_reviews_user_id",
                 table: "product_reviews",
-                column: "fk_user_id");
+                column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_purchased_products_fk_product_id",
+                name: "ix_purchased_products_product_id",
                 table: "purchased_products",
-                column: "fk_product_id");
+                column: "product_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_purchased_products_fk_purchase_id",
+                name: "ix_purchased_products_purchase_id",
                 table: "purchased_products",
-                column: "fk_purchase_id");
+                column: "purchase_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_purchases_fk_user_id",
+                name: "ix_purchases_user_id",
                 table: "purchases",
-                column: "fk_user_id");
+                column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_wishlist_fk_product_id",
+                name: "ix_wishlist_product_id",
                 table: "wishlist",
-                column: "fk_product_id");
+                column: "product_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_wishlist_fk_user_id",
+                name: "ix_wishlist_user_id",
                 table: "wishlist",
-                column: "fk_user_id");
+                column: "user_id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

@@ -17,22 +17,22 @@ public sealed record ProductEntity : MiauDbEntity
     /// <summary>
     /// The product images associated with this product.
     /// </summary>
-    public List<ProductImageEntity> ProductImagesRel { get; init; } = new();
+    public List<ProductImageEntity> ProductImages { get; init; } = new();
 
     /// <summary>
     /// The product reviews associated with this product.
     /// </summary>
-    public List<ProductReviewEntity> ProductReviewsRel { get; init; } = new();
+    public List<ProductReviewEntity> ProductReviews { get; init; } = new();
 
     /// <summary>
     /// The purchased products associated with this product.
     /// </summary>
-    public List<PurchasedProductEntity> PurchasedProductsRel { get; init; } = new();
+    public List<PurchasedProductEntity> PurchasedProducts { get; init; } = new();
 
     /// <summary>
     /// The wishlist items associated with this product.
     /// </summary>
-    public List<WishlistEntity> WishlistRel { get; init; } = new();
+    public List<WishlistEntity> Wishlist { get; init; } = new();
 
     /// <summary>
     /// This product's description.

@@ -12,10 +12,10 @@ public sealed record WishlistEntity : MiauDbEntity
     /// <summary>
     /// The user this wishlist item is associated with.
     /// </summary>
-    public UserEntity FkUser { get; init; } = null!;
+    public UserEntity User { get; init; } = null!;
 
     /// <summary>
     /// The product this wishlist item is associated with.
     /// </summary>
-    public ProductEntity FkProduct { get; init; } = null!;
+    public ProductEntity Product { get; init; } = null!;
 }

@@ -14,12 +14,12 @@ public sealed record PurchaseEntity : MiauDbEntity
     /// <summary>
     /// The user this purchase is associated with.
     /// </summary>
-    public UserEntity FkUser { get; init; } = null!;
+    public UserEntity User { get; init; } = null!;
 
     /// <summary>
     /// The purchased products this purchase is associated with.
     /// </summary>
-    public List<PurchasedProductEntity> PurchasedProductRel { get; init; } = new();
+    public List<PurchasedProductEntity> PurchasedProduct { get; init; } = new();
 
     /// <summary>
     /// The discount coupon used for this purchase.

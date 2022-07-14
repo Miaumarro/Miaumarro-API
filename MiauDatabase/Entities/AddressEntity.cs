@@ -15,7 +15,7 @@ public sealed record AddressEntity : MiauDbEntity
     /// <summary>
     /// The user this address is associated with.
     /// </summary>
-    public UserEntity FkUser { get; init; } = null!;
+    public UserEntity User { get; init; } = null!;
 
     /// <summary>
     /// The body of this address (street name).

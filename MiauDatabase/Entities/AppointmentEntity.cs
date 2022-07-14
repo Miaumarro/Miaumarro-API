@@ -14,7 +14,7 @@ public sealed record AppointmentEntity : MiauDbEntity
     /// <summary>
     /// The pet this appointment is associated with.
     /// </summary>
-    public PetEntity FkPet { get; init; } = null!;
+    public PetEntity Pet { get; init; } = null!;
 
     /// <summary>
     /// How much the user is going to be charged for the service.

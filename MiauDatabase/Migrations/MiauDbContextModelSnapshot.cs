@@ -56,10 +56,6 @@ namespace MiauDatabase.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("destinatary");
 
-                    b.Property<int>("FkUserId")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("fk_user_id");
-
                     b.Property<string>("Neighborhood")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -81,11 +77,15 @@ namespace MiauDatabase.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("state");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("user_id");
+
                     b.HasKey("Id")
                         .HasName("pk_addresses");
 
-                    b.HasIndex("FkUserId")
-                        .HasDatabaseName("ix_addresses_fk_user_id");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_addresses_user_id");
 
                     b.ToTable("addresses", (string)null);
 
@@ -103,9 +103,9 @@ namespace MiauDatabase.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("date_added");
 
-                    b.Property<int>("FkPetId")
+                    b.Property<int>("PetId")
                         .HasColumnType("INTEGER")
-                        .HasColumnName("fk_pet_id");
+                        .HasColumnName("pet_id");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("TEXT")
@@ -122,8 +122,8 @@ namespace MiauDatabase.Migrations
                     b.HasKey("Id")
                         .HasName("pk_appointments");
 
-                    b.HasIndex("FkPetId")
-                        .HasDatabaseName("ix_appointments_fk_pet_id");
+                    b.HasIndex("PetId")
+                        .HasDatabaseName("ix_appointments_pet_id");
 
                     b.ToTable("appointments", (string)null);
 
@@ -150,10 +150,6 @@ namespace MiauDatabase.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("date_of_birth");
 
-                    b.Property<int>("FkUserId")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("fk_user_id");
-
                     b.Property<int>("Gender")
                         .HasColumnType("INTEGER")
                         .HasColumnName("gender");
@@ -173,11 +169,15 @@ namespace MiauDatabase.Migrations
                         .HasColumnType("INTEGER")
                         .HasColumnName("type");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("user_id");
+
                     b.HasKey("Id")
                         .HasName("pk_pets");
 
-                    b.HasIndex("FkUserId")
-                        .HasDatabaseName("ix_pets_fk_user_id");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_pets_user_id");
 
                     b.ToTable("pets", (string)null);
 
@@ -250,15 +250,15 @@ namespace MiauDatabase.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("file_url");
 
-                    b.Property<int>("FkProductId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("INTEGER")
-                        .HasColumnName("fk_product_id");
+                        .HasColumnName("product_id");
 
                     b.HasKey("Id")
                         .HasName("pk_product_images");
 
-                    b.HasIndex("FkProductId")
-                        .HasDatabaseName("ix_product_images_fk_product_id");
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_product_images_product_id");
 
                     b.ToTable("product_images", (string)null);
 
@@ -281,26 +281,26 @@ namespace MiauDatabase.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("description");
 
-                    b.Property<int>("FkProductId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("INTEGER")
-                        .HasColumnName("fk_product_id");
-
-                    b.Property<int?>("FkUserId")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("fk_user_id");
+                        .HasColumnName("product_id");
 
                     b.Property<int>("Score")
                         .HasColumnType("INTEGER")
                         .HasColumnName("score");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("user_id");
+
                     b.HasKey("Id")
                         .HasName("pk_product_reviews");
 
-                    b.HasIndex("FkProductId")
-                        .HasDatabaseName("ix_product_reviews_fk_product_id");
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_product_reviews_product_id");
 
-                    b.HasIndex("FkUserId")
-                        .HasDatabaseName("ix_product_reviews_fk_user_id");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_product_reviews_user_id");
 
                     b.ToTable("product_reviews", (string)null);
 
@@ -318,13 +318,13 @@ namespace MiauDatabase.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("date_added");
 
-                    b.Property<int>("FkProductId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("INTEGER")
-                        .HasColumnName("fk_product_id");
+                        .HasColumnName("product_id");
 
-                    b.Property<int>("FkPurchaseId")
+                    b.Property<int>("PurchaseId")
                         .HasColumnType("INTEGER")
-                        .HasColumnName("fk_purchase_id");
+                        .HasColumnName("purchase_id");
 
                     b.Property<decimal>("SalePrice")
                         .HasColumnType("TEXT")
@@ -333,11 +333,11 @@ namespace MiauDatabase.Migrations
                     b.HasKey("Id")
                         .HasName("pk_purchased_products");
 
-                    b.HasIndex("FkProductId")
-                        .HasDatabaseName("ix_purchased_products_fk_product_id");
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_purchased_products_product_id");
 
-                    b.HasIndex("FkPurchaseId")
-                        .HasDatabaseName("ix_purchased_products_fk_purchase_id");
+                    b.HasIndex("PurchaseId")
+                        .HasDatabaseName("ix_purchased_products_purchase_id");
 
                     b.ToTable("purchased_products", (string)null);
 
@@ -359,19 +359,19 @@ namespace MiauDatabase.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("date_added");
 
-                    b.Property<int>("FkUserId")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("fk_user_id");
-
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER")
                         .HasColumnName("status");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("user_id");
+
                     b.HasKey("Id")
                         .HasName("pk_purchases");
 
-                    b.HasIndex("FkUserId")
-                        .HasDatabaseName("ix_purchases_fk_user_id");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_purchases_user_id");
 
                     b.ToTable("purchases", (string)null);
 
@@ -453,22 +453,22 @@ namespace MiauDatabase.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("date_added");
 
-                    b.Property<int>("FkProductId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("INTEGER")
-                        .HasColumnName("fk_product_id");
+                        .HasColumnName("product_id");
 
-                    b.Property<int>("FkUserId")
+                    b.Property<int>("UserId")
                         .HasColumnType("INTEGER")
-                        .HasColumnName("fk_user_id");
+                        .HasColumnName("user_id");
 
                     b.HasKey("Id")
                         .HasName("pk_wishlist");
 
-                    b.HasIndex("FkProductId")
-                        .HasDatabaseName("ix_wishlist_fk_product_id");
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_wishlist_product_id");
 
-                    b.HasIndex("FkUserId")
-                        .HasDatabaseName("ix_wishlist_fk_user_id");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_wishlist_user_id");
 
                     b.ToTable("wishlist", (string)null);
 
@@ -477,157 +477,157 @@ namespace MiauDatabase.Migrations
 
             modelBuilder.Entity("MiauDatabase.Entities.AddressEntity", b =>
                 {
-                    b.HasOne("MiauDatabase.Entities.UserEntity", "FkUser")
-                        .WithMany("AddressesRel")
-                        .HasForeignKey("FkUserId")
+                    b.HasOne("MiauDatabase.Entities.UserEntity", "User")
+                        .WithMany("Addresses")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_addresses_users_fk_user_id");
+                        .HasConstraintName("fk_addresses_users_user_id");
 
-                    b.Navigation("FkUser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MiauDatabase.Entities.AppointmentEntity", b =>
                 {
-                    b.HasOne("MiauDatabase.Entities.PetEntity", "FkPet")
-                        .WithMany("AppointmentsRel")
-                        .HasForeignKey("FkPetId")
+                    b.HasOne("MiauDatabase.Entities.PetEntity", "Pet")
+                        .WithMany("Appointments")
+                        .HasForeignKey("PetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_appointments_pets_fk_pet_id");
+                        .HasConstraintName("fk_appointments_pets_pet_id");
 
-                    b.Navigation("FkPet");
+                    b.Navigation("Pet");
                 });
 
             modelBuilder.Entity("MiauDatabase.Entities.PetEntity", b =>
                 {
-                    b.HasOne("MiauDatabase.Entities.UserEntity", "FkUser")
-                        .WithMany("PetsRel")
-                        .HasForeignKey("FkUserId")
+                    b.HasOne("MiauDatabase.Entities.UserEntity", "User")
+                        .WithMany("Pets")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_pets_users_fk_user_id");
+                        .HasConstraintName("fk_pets_users_user_id");
 
-                    b.Navigation("FkUser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MiauDatabase.Entities.ProductImageEntity", b =>
                 {
-                    b.HasOne("MiauDatabase.Entities.ProductEntity", "FkProduct")
-                        .WithMany("ProductImagesRel")
-                        .HasForeignKey("FkProductId")
+                    b.HasOne("MiauDatabase.Entities.ProductEntity", "Product")
+                        .WithMany("ProductImages")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_product_images_products_fk_product_id");
+                        .HasConstraintName("fk_product_images_products_product_id");
 
-                    b.Navigation("FkProduct");
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("MiauDatabase.Entities.ProductReviewEntity", b =>
                 {
-                    b.HasOne("MiauDatabase.Entities.ProductEntity", "FkProduct")
-                        .WithMany("ProductReviewsRel")
-                        .HasForeignKey("FkProductId")
+                    b.HasOne("MiauDatabase.Entities.ProductEntity", "Product")
+                        .WithMany("ProductReviews")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_product_reviews_products_fk_product_id");
+                        .HasConstraintName("fk_product_reviews_products_product_id");
 
-                    b.HasOne("MiauDatabase.Entities.UserEntity", "FkUser")
-                        .WithMany("ProductReviewsRel")
-                        .HasForeignKey("FkUserId")
-                        .HasConstraintName("fk_product_reviews_users_fk_user_id");
+                    b.HasOne("MiauDatabase.Entities.UserEntity", "User")
+                        .WithMany("ProductReviews")
+                        .HasForeignKey("UserId")
+                        .HasConstraintName("fk_product_reviews_users_user_id");
 
-                    b.Navigation("FkProduct");
+                    b.Navigation("Product");
 
-                    b.Navigation("FkUser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MiauDatabase.Entities.PurchasedProductEntity", b =>
                 {
-                    b.HasOne("MiauDatabase.Entities.ProductEntity", "FkProduct")
-                        .WithMany("PurchasedProductsRel")
-                        .HasForeignKey("FkProductId")
+                    b.HasOne("MiauDatabase.Entities.ProductEntity", "Product")
+                        .WithMany("PurchasedProducts")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_purchased_products_products_fk_product_id");
+                        .HasConstraintName("fk_purchased_products_products_product_id");
 
-                    b.HasOne("MiauDatabase.Entities.PurchaseEntity", "FkPurchase")
-                        .WithMany("PurchasedProductRel")
-                        .HasForeignKey("FkPurchaseId")
+                    b.HasOne("MiauDatabase.Entities.PurchaseEntity", "Purchase")
+                        .WithMany("PurchasedProduct")
+                        .HasForeignKey("PurchaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_purchased_products_purchases_fk_purchase_id");
+                        .HasConstraintName("fk_purchased_products_purchases_purchase_id");
 
-                    b.Navigation("FkProduct");
+                    b.Navigation("Product");
 
-                    b.Navigation("FkPurchase");
+                    b.Navigation("Purchase");
                 });
 
             modelBuilder.Entity("MiauDatabase.Entities.PurchaseEntity", b =>
                 {
-                    b.HasOne("MiauDatabase.Entities.UserEntity", "FkUser")
-                        .WithMany("PurchasesRel")
-                        .HasForeignKey("FkUserId")
+                    b.HasOne("MiauDatabase.Entities.UserEntity", "User")
+                        .WithMany("Purchases")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_purchases_users_fk_user_id");
+                        .HasConstraintName("fk_purchases_users_user_id");
 
-                    b.Navigation("FkUser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MiauDatabase.Entities.WishlistEntity", b =>
                 {
-                    b.HasOne("MiauDatabase.Entities.ProductEntity", "FkProduct")
-                        .WithMany("WishlistRel")
-                        .HasForeignKey("FkProductId")
+                    b.HasOne("MiauDatabase.Entities.ProductEntity", "Product")
+                        .WithMany("Wishlist")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_wishlist_products_fk_product_id");
+                        .HasConstraintName("fk_wishlist_products_product_id");
 
-                    b.HasOne("MiauDatabase.Entities.UserEntity", "FkUser")
-                        .WithMany("WishlistRel")
-                        .HasForeignKey("FkUserId")
+                    b.HasOne("MiauDatabase.Entities.UserEntity", "User")
+                        .WithMany("Wishlist")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_wishlist_users_fk_user_id");
+                        .HasConstraintName("fk_wishlist_users_user_id");
 
-                    b.Navigation("FkProduct");
+                    b.Navigation("Product");
 
-                    b.Navigation("FkUser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MiauDatabase.Entities.PetEntity", b =>
                 {
-                    b.Navigation("AppointmentsRel");
+                    b.Navigation("Appointments");
                 });
 
             modelBuilder.Entity("MiauDatabase.Entities.ProductEntity", b =>
                 {
-                    b.Navigation("ProductImagesRel");
+                    b.Navigation("ProductImages");
 
-                    b.Navigation("ProductReviewsRel");
+                    b.Navigation("ProductReviews");
 
-                    b.Navigation("PurchasedProductsRel");
+                    b.Navigation("PurchasedProducts");
 
-                    b.Navigation("WishlistRel");
+                    b.Navigation("Wishlist");
                 });
 
             modelBuilder.Entity("MiauDatabase.Entities.PurchaseEntity", b =>
                 {
-                    b.Navigation("PurchasedProductRel");
+                    b.Navigation("PurchasedProduct");
                 });
 
             modelBuilder.Entity("MiauDatabase.Entities.UserEntity", b =>
                 {
-                    b.Navigation("AddressesRel");
+                    b.Navigation("Addresses");
 
-                    b.Navigation("PetsRel");
+                    b.Navigation("Pets");
 
-                    b.Navigation("ProductReviewsRel");
+                    b.Navigation("ProductReviews");
 
-                    b.Navigation("PurchasesRel");
+                    b.Navigation("Purchases");
 
-                    b.Navigation("WishlistRel");
+                    b.Navigation("Wishlist");
                 });
 #pragma warning restore 612, 618
         }

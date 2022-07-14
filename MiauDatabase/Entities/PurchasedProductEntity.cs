@@ -13,12 +13,12 @@ public sealed record PurchasedProductEntity : MiauDbEntity
     /// <summary>
     /// The product this purchased product is associated with.
     /// </summary>
-    public ProductEntity FkProduct { get; init; } = null!;
+    public ProductEntity Product { get; init; } = null!;
 
     /// <summary>
     /// The purchase this purchased product is associated with.
     /// </summary>
-    public PurchaseEntity FkPurchase { get; init; } = null!;
+    public PurchaseEntity Purchase { get; init; } = null!;
 
     /// <summary>
     /// How much the purchased product was sold for.

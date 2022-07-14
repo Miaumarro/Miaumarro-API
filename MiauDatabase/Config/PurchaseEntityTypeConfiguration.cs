@@ -12,9 +12,9 @@ internal sealed class PurchaseEntityTypeConfiguration : IEntityTypeConfiguration
     public void Configure(EntityTypeBuilder<PurchaseEntity> builder)
     {
         // Purchases -> Purchased Products
-        builder.HasMany(x => x.PurchasedProductRel)
-            .WithOne(x => x.FkPurchase)
-            .HasForeignKey(x => x.FkPurchase.Id)
+        builder.HasMany(x => x.PurchasedProduct)
+            .WithOne(x => x.Purchase)
+            .HasForeignKey(x => x.Purchase.Id)
             .HasPrincipalKey(x => x.Id)
             .OnDelete(DeleteBehavior.Cascade);
     }
