@@ -13,12 +13,7 @@ public sealed record ProductImageEntity : MiauDbEntity
     /// <summary>
     /// The product this product image is associated with.
     /// </summary>
-    public ProductEntity ProductRel { get; init; } = null!;
-
-    /// <summary>
-    /// The ID of the product associated with this product image.
-    /// </summary>
-    public int ProductIdFK { get; init; }
+    public ProductEntity FkProduct { get; init; } = null!;
 
     /// <summary>
     /// The location of the image in the file system.

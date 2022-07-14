@@ -15,22 +15,12 @@ public sealed record ProductReviewEntity : MiauDbEntity
     /// <summary>
     /// The user this product review is associated with.
     /// </summary>
-    public UserEntity? UserRel { get; init; }
+    public UserEntity? FkUser { get; init; }
 
     /// <summary>
     /// The product this product review is associated with.
     /// </summary>
-    public ProductEntity ProductRel { get; init; } = null!;
-
-    /// <summary>
-    /// The ID of the user associated with this product review.
-    /// </summary>
-    public int? UserIdFK { get; init; }
-
-    /// <summary>
-    /// The ID of the product associated with this product review.
-    /// </summary>
-    public int ProductIdFK { get; init; }
+    public ProductEntity FkProduct { get; init; } = null!;
 
     /// <summary>
     /// The review of the product.

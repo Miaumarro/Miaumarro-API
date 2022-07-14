@@ -13,8 +13,8 @@ internal sealed class PetEntityTypeConfiguration : IEntityTypeConfiguration<PetE
     {
         // Pets -> Appointments
         builder.HasMany(x => x.AppointmentsRel)
-            .WithOne(x => x.PetRel)
-            .HasForeignKey(x => x.PetIdFK)
+            .WithOne(x => x.FkPet)
+            .HasForeignKey(x => x.FkPet.Id)
             .HasPrincipalKey(x => x.Id)
             .OnDelete(DeleteBehavior.Cascade);
     }

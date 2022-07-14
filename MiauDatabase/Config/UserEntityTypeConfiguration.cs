@@ -13,36 +13,36 @@ internal sealed class UserEntityTypeConfiguration : IEntityTypeConfiguration<Use
     {
         // Users -> Addresses
         builder.HasMany(x => x.AddressesRel)
-            .WithOne(x => x.UserRel)
-            .HasForeignKey(x => x.UserIdFK)
+            .WithOne(x => x.FkUser)
+            .HasForeignKey(x => x.FkUser.Id)
             .HasPrincipalKey(x => x.Id)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Users -> Pets
         builder.HasMany(x => x.PetsRel)
-            .WithOne(x => x.UserRel)
-            .HasForeignKey(x => x.UserIdFK)
+            .WithOne(x => x.FkUser)
+            .HasForeignKey(x => x.FkUser.Id)
             .HasPrincipalKey(x => x.Id)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Users -> Purchases
         builder.HasMany(x => x.PurchasesRel)
-            .WithOne(x => x.UserRel)
-            .HasForeignKey(x => x.UserIdFK)
+            .WithOne(x => x.FkUser)
+            .HasForeignKey(x => x.FkUser.Id)
             .HasPrincipalKey(x => x.Id)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Users -> Reviews
         builder.HasMany(x => x.ProductReviewsRel)
-            .WithOne(x => x.UserRel)
-            .HasForeignKey(x => x.UserIdFK)
+            .WithOne(x => x.FkUser)
+            .HasForeignKey(x => x.FkUser!.Id)
             .HasPrincipalKey(x => x.Id)
             .OnDelete(DeleteBehavior.SetNull);
 
         // Users -> Wishlist
         builder.HasMany(x => x.WishlistRel)
-            .WithOne(x => x.UserRel)
-            .HasForeignKey(x => x.UserIdFK)
+            .WithOne(x => x.FkUser)
+            .HasForeignKey(x => x.FkUser.Id)
             .HasPrincipalKey(x => x.Id)
             .OnDelete(DeleteBehavior.Cascade);
     }

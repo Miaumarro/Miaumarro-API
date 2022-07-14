@@ -14,17 +14,12 @@ public sealed record PetEntity : MiauDbEntity
     /// <summary>
     /// The user this pet is associated with.
     /// </summary>
-    public UserEntity UserRel { get; init; } = null!;
+    public UserEntity FkUser { get; init; } = null!;
 
     /// <summary>
     /// The appointments associated with this pet.
     /// </summary>
     public List<AppointmentEntity> AppointmentsRel { get; init; } = new();
-
-    /// <summary>
-    /// The ID of the user associated with this pet.
-    /// </summary>
-    public int UserIdFK { get; init; }
 
     /// <summary>
     /// This pet's name.
