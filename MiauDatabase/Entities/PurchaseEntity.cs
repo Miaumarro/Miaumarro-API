@@ -7,7 +7,6 @@ namespace MiauDatabase.Entities;
 /// <summary>
 /// Represents a database purchase.
 /// </summary>
-/// <value></value>
 [Comment("Represents a purchase.")]
 public sealed record PurchaseEntity : MiauDbEntity
 {
@@ -17,14 +16,14 @@ public sealed record PurchaseEntity : MiauDbEntity
     public UserEntity User { get; init; } = null!;
 
     /// <summary>
+    /// The discount coupon used for this purchase.
+    /// </summary>
+    public CouponEntity? Coupon { get; init; }
+
+    /// <summary>
     /// The purchased products this purchase is associated with.
     /// </summary>
     public List<PurchasedProductEntity> PurchasedProduct { get; init; } = new();
-
-    /// <summary>
-    /// The discount coupon used for this purchase.
-    /// </summary>
-    public string? Coupon { get; init; }
 
     /// <summary>
     /// The status of this purchase.

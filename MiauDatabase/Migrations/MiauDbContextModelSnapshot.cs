@@ -127,6 +127,39 @@ namespace MiauDatabase.Migrations
                     b.HasComment("Represents an appointment.");
                 });
 
+            modelBuilder.Entity("MiauDatabase.Entities.CouponEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Coupon")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("coupon");
+
+                    b.Property<DateTime>("DateAdded")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("date_added");
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("discount");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("is_active");
+
+                    b.HasKey("Id")
+                        .HasName("pk_coupons");
+
+                    b.ToTable("coupons", (string)null);
+
+                    b.HasComment("Represents a discount coupon.");
+                });
+
             modelBuilder.Entity("MiauDatabase.Entities.PetEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -348,9 +381,9 @@ namespace MiauDatabase.Migrations
                         .HasColumnType("INTEGER")
                         .HasColumnName("id");
 
-                    b.Property<string>("Coupon")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("coupon");
+                    b.Property<int?>("CouponId")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("coupon_id");
 
                     b.Property<DateTime>("DateAdded")
                         .HasColumnType("TEXT")
@@ -366,6 +399,9 @@ namespace MiauDatabase.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_purchases");
+
+                    b.HasIndex("CouponId")
+                        .HasDatabaseName("ix_purchases_coupon_id");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_purchases_user_id");
@@ -562,12 +598,19 @@ namespace MiauDatabase.Migrations
 
             modelBuilder.Entity("MiauDatabase.Entities.PurchaseEntity", b =>
                 {
+                    b.HasOne("MiauDatabase.Entities.CouponEntity", "Coupon")
+                        .WithMany("Purchases")
+                        .HasForeignKey("CouponId")
+                        .HasConstraintName("fk_purchases_coupons_coupon_id");
+
                     b.HasOne("MiauDatabase.Entities.UserEntity", "User")
                         .WithMany("Purchases")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_purchases_users_user_id");
+
+                    b.Navigation("Coupon");
 
                     b.Navigation("User");
                 });
@@ -591,6 +634,11 @@ namespace MiauDatabase.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MiauDatabase.Entities.CouponEntity", b =>
+                {
+                    b.Navigation("Purchases");
                 });
 
             modelBuilder.Entity("MiauDatabase.Entities.PetEntity", b =>

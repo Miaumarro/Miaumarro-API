@@ -74,6 +74,7 @@ public sealed record ProductEntity : MiauDbEntity
     /// <summary>
     /// This product's discount.
     /// </summary>
+    /// <remarks>Must be a value between 0 and 1.</remarks>
     public decimal Discount
     {
         get => _discount;

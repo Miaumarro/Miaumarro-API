@@ -11,6 +11,7 @@ public sealed class MiauDbContext : DbContext
 {
     public DbSet<AddressEntity> Addresses { get; init; } = null!;
     public DbSet<AppointmentEntity> Appointments { get; init; } = null!;
+    public DbSet<CouponEntity> Coupons { get; init; } = null!;
     public DbSet<PetEntity> Pets { get; init; } = null!;
     public DbSet<ProductEntity> Products { get; init; } = null!;
     public DbSet<ProductImageEntity> ProductImages { get; init; } = null!;

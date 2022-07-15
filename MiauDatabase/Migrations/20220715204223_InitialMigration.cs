@@ -4,10 +4,27 @@
 
 namespace MiauDatabase.Migrations;
 
-public partial class Initial_Migration : Migration
+public partial class InitialMigration : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.CreateTable(
+            name: "coupons",
+            columns: table => new
+            {
+                id = table.Column<int>(type: "INTEGER", nullable: false)
+                    .Annotation("Sqlite:Autoincrement", true),
+                coupon = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                is_active = table.Column<bool>(type: "INTEGER", nullable: false),
+                discount = table.Column<decimal>(type: "TEXT", nullable: false),
+                date_added = table.Column<DateTime>(type: "TEXT", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("pk_coupons", x => x.id);
+            },
+            comment: "Represents a discount coupon.");
+
         migrationBuilder.CreateTable(
             name: "products",
             columns: table => new
@@ -166,13 +183,18 @@ public partial class Initial_Migration : Migration
                 id = table.Column<int>(type: "INTEGER", nullable: false)
                     .Annotation("Sqlite:Autoincrement", true),
                 user_id = table.Column<int>(type: "INTEGER", nullable: false),
-                coupon = table.Column<string>(type: "TEXT", nullable: true),
+                coupon_id = table.Column<int>(type: "INTEGER", nullable: true),
                 status = table.Column<int>(type: "INTEGER", nullable: false),
                 date_added = table.Column<DateTime>(type: "TEXT", nullable: false)
             },
             constraints: table =>
             {
                 table.PrimaryKey("pk_purchases", x => x.id);
+                table.ForeignKey(
+                    name: "fk_purchases_coupons_coupon_id",
+                    column: x => x.coupon_id,
+                    principalTable: "coupons",
+                    principalColumn: "id");
                 table.ForeignKey(
                     name: "fk_purchases_users_user_id",
                     column: x => x.user_id,
@@ -304,6 +326,11 @@ public partial class Initial_Migration : Migration
             column: "purchase_id");
 
         migrationBuilder.CreateIndex(
+            name: "ix_purchases_coupon_id",
+            table: "purchases",
+            column: "coupon_id");
+
+        migrationBuilder.CreateIndex(
             name: "ix_purchases_user_id",
             table: "purchases",
             column: "user_id");
@@ -347,6 +374,9 @@ public partial class Initial_Migration : Migration
 
         migrationBuilder.DropTable(
             name: "products");
+
+        migrationBuilder.DropTable(
+            name: "coupons");
 
         migrationBuilder.DropTable(
             name: "users");
