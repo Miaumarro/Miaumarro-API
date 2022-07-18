@@ -1,4 +1,6 @@
-namespace WoofAPI;
+using MiauDatabase.Extensions;
+
+namespace MiauAPI;
 
 public class Program
 {
@@ -7,11 +9,13 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-
         builder.Services.AddControllers();
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+
+        // Add IoC services
+        builder.Services    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            .AddEndpointsApiExplorer()
+            .AddSwaggerGen()
+            .AddMiauDb();   // Add Miau database context
 
         var app = builder.Build();
 
@@ -23,12 +27,8 @@ public class Program
         }
 
         app.UseHttpsRedirection();
-
         app.UseAuthorization();
-
-
         app.MapControllers();
-
         app.Run();
     }
 }

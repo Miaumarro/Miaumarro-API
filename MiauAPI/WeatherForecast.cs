@@ -1,4 +1,4 @@
-namespace WoofAPI;
+namespace MiauAPI;
 
 public class WeatherForecast
 {
