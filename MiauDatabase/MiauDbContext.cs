@@ -24,6 +24,7 @@ public sealed class MiauDbContext : DbContext
     /// <summary>
     /// Initializes a default <see cref="MiauDbContext"/> with a SQLite connection.
     /// </summary>
+    /// <remarks>This is needed for EF Core's migration.</remarks>
     public MiauDbContext() : this(MiauDbStatics.MiauDbOptionsBuilder.Options)
     {
     }
