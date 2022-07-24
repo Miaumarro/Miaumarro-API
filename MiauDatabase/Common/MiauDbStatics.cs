@@ -28,10 +28,10 @@ internal static class MiauDbStatics
     /// </summary>
     /// <param name="options">The database options to have the default settings applied to.</param>
     /// <returns>A database options with the default settings applied.</returns>
-    internal static DbContextOptionsBuilder GetDefaultDbOptions(DbContextOptionsBuilder options)
+    internal static DbContextOptionsBuilder GetDefaultDbOptions(DbContextOptionsBuilder options, string? connectionString = default)
     {
-        return options.UseSnakeCaseNamingConvention()   // Set column names to snake_case format
-            .UseSqlite(_miauDbConnectionString)          // Database connection string
+        return options.UseSnakeCaseNamingConvention()                       // Set column names to snake_case format
+            .UseSqlite(connectionString ?? _miauDbConnectionString)         // Database connection string
             .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);    // Disable EF Core entity tracking - see https://docs.microsoft.com/en-us/ef/core/change-tracking/
     }
 }

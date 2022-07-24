@@ -13,9 +13,10 @@ public static class IServiceCollectionExt
     /// Adds <see cref="MiauDbContext"/> as a scoped service to this IoC.
     /// </summary>
     /// <param name="serviceCollection">This service collection.</param>
+    /// <param name="connectionString">The connection string to the database.</param>
     /// <param name="migrate"><see langword="true"/> if a migration should be performed, <see langword="false"/> otherwise.</param>
     /// <returns>This service collection.</returns>
-    public static IServiceCollection AddMiauDb(this IServiceCollection serviceCollection, bool migrate = true)
+    public static IServiceCollection AddMiauDb(this IServiceCollection serviceCollection, string? connectionString = default, bool migrate = true)
     {
         // Perform the migration
         // If the database doesn't exist, create it
@@ -26,7 +27,7 @@ public static class IServiceCollectionExt
         }
 
         // Add the database context to the IoC
-        serviceCollection.AddDbContext<MiauDbContext>(options => MiauDbStatics.GetDefaultDbOptions(options));
+        serviceCollection.AddDbContext<MiauDbContext>(options => MiauDbStatics.GetDefaultDbOptions(options, connectionString));
 
         return serviceCollection;
     }

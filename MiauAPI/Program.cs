@@ -1,3 +1,4 @@
+using MiauAPI.Services;
 using MiauDatabase.Extensions;
 
 namespace MiauAPI;
@@ -15,6 +16,7 @@ public class Program
         builder.Services    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             .AddEndpointsApiExplorer()
             .AddSwaggerGen()
+            .AddScoped<UserService>()
             .AddMiauDb();   // Add Miau database context
 
         var app = builder.Build();

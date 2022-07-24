@@ -3,6 +3,8 @@
   <Import Project="..\BaseCsproj.props" />
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next.StrongName" Version="4.0.3" />
+    <PackageReference Include="FluentResults" Version="3.8.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
 
