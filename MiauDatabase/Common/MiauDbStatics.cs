@@ -15,10 +15,23 @@ internal static class MiauDbStatics
     private static readonly string _miauDbConnectionString = "Data Source=" + Path.Combine(Directory.GetParent(Assembly.GetExecutingAssembly().Location)?.FullName ?? string.Empty, "Miau.db");
 
     /// <summary>
-    /// Default options builder for a <see cref="MiauDbContext"/>
+    /// Default options for a <see cref="MiauDbContext"/>
     /// </summary>
-    internal static DbContextOptionsBuilder<MiauDbContext> MiauDbOptionsBuilder { get; } = new DbContextOptionsBuilder<MiauDbContext>()
+    internal static DbContextOptions<MiauDbContext> MiauDbDefaultOptions { get; } = new DbContextOptionsBuilder<MiauDbContext>()
         .UseSnakeCaseNamingConvention()     // Set column names to snake_case format
-        .UseSqlite(_miauDbConnectionString) // Database connection string
-        .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);    // Disable EF Core entity tracking - see https://docs.microsoft.com/en-us/ef/core/change-tracking/
+        .UseSqlite(_miauDbConnectionString)  // Database connection string
+        .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) // Disable EF Core entity tracking - see https://docs.microsoft.com/en-us/ef/core/change-tracking/
+        .Options;
+
+    /// <summary>
+    /// Gets a database options builder, adds the default settings, and returns it.
+    /// </summary>
+    /// <param name="options">The database options to have the default settings applied to.</param>
+    /// <returns>A database options with the default settings applied.</returns>
+    internal static DbContextOptionsBuilder GetDefaultDbOptions(DbContextOptionsBuilder options)
+    {
+        return options.UseSnakeCaseNamingConvention()   // Set column names to snake_case format
+            .UseSqlite(_miauDbConnectionString)          // Database connection string
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);    // Disable EF Core entity tracking - see https://docs.microsoft.com/en-us/ef/core/change-tracking/
+    }
 }

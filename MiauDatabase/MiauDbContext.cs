@@ -1,4 +1,3 @@
-using MiauDatabase.Common;
 using MiauDatabase.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,14 +19,6 @@ public sealed class MiauDbContext : DbContext
     public DbSet<PurchaseEntity> Purchases { get; init; } = null!;
     public DbSet<UserEntity> Users { get; init; } = null!;
     public DbSet<WishlistEntity> Wishlist { get; init; } = null!;
-
-    /// <summary>
-    /// Initializes a default <see cref="MiauDbContext"/> with a SQLite connection.
-    /// </summary>
-    /// <remarks>This is needed for EF Core's migration.</remarks>
-    public MiauDbContext() : this(MiauDbStatics.MiauDbOptionsBuilder.Options)
-    {
-    }
 
     /// <summary>
     /// Initializes a <see cref="MiauDbContext"/>.
