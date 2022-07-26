@@ -1,13 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
-namespace MiauAPI.Common;
+namespace MiauAPI.Validators;
 
 /// <summary>
 /// Helper class to validate request parameters and generate standardized error
 /// messages on validation failures.
 /// </summary>
-public static class Validator
+public static class Validate
 {
     /// <summary>
     /// Regex to match a valid e-mail address.

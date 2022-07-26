@@ -1,4 +1,4 @@
-namespace MiauAPI.Services.Abstractions;
+namespace MiauAPI.Validators.Abstractions;
 
 /// <summary>
 /// Represents an object that's able to validate a controller request.
