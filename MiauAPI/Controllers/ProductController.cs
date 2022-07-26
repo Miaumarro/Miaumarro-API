@@ -174,7 +174,7 @@ public class ProductController : ControllerBase
     }
 
     // GET: api/products/FilterByTags?{tags}
-    [HttpGet("FilterByTags?{tags}")]
+    [HttpGet("FilterByTags{tags}")]
     public ActionResult GetFilterTags(string tags)
     {
         try
