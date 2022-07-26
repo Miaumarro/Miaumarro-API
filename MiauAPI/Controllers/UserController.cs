@@ -1,9 +1,9 @@
 using MiauAPI.Common;
-using MiauAPI.Extensions;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using OneOf;
 
 namespace MiauAPI.Controllers;
 
@@ -17,12 +17,8 @@ public sealed class UserController : ControllerBase
         => _service = service;
 
     [HttpPost("create")]
-    [ProducesResponseType(typeof(CreateUserResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreatedUserResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> RegisterAsync([FromBody] CreateUserRequest user)
-    {
-        var response = await _service.CreateUserAsync(user, base.Request.Path.Value!);
-        return response.ToActionResult();
-    }
+    public async Task<ActionResult<OneOf<CreatedUserResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedUserRequest user)
+        => await _service.CreateUserAsync(user, base.Request.Path.Value!);
 }

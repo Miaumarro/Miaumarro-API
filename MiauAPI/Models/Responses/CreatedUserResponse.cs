@@ -5,4 +5,4 @@ namespace MiauAPI.Models.Responses;
 /// </summary>
 /// <param name="Id">The database ID of the user.</param>
 /// <param name="SessionToken">The session token of the user.</param>
-public sealed record CreateUserResponse(int Id, string SessionToken);
+public sealed record CreatedUserResponse(int Id, string SessionToken);

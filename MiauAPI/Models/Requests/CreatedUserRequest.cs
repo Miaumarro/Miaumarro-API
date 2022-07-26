@@ -9,4 +9,4 @@ namespace MiauAPI.Models.Requests;
 /// <param name="Email">The e-mail of the user.</param>
 /// <param name="Phone">The phone number of the user.</param>
 /// <param name="Password">The password entered by the user.</param>
-public sealed record CreateUserRequest(string Cpf, string Name, string Surname, string Email, string? Phone, string Password);
+public sealed record CreatedUserRequest(string Cpf, string Name, string Surname, string Email, string? Phone, string Password);

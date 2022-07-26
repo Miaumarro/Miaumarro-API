@@ -1,11 +1,12 @@
-using FluentResults;
 using MiauAPI.Common;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Services.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OneOf;
 using Encrypt = BCrypt.Net.BCrypt;
 
 namespace MiauAPI.Services;
@@ -13,7 +14,7 @@ namespace MiauAPI.Services;
 /// <summary>
 /// Handles requests pertaining to users.
 /// </summary>
-public sealed class UserService : IRequestValidator<CreateUserRequest>
+public sealed class UserService : IRequestValidator<CreatedUserRequest>
 {
     private readonly MiauDbContext _db;
 
@@ -28,18 +29,15 @@ public sealed class UserService : IRequestValidator<CreateUserRequest>
     /// <remarks>If the request contains invalid data or the CPF/e-mail are already registered, the operation fails.</remarks>
     /// <returns>The result of the operation.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
-    public async Task<Result<CreateUserResponse>> CreateUserAsync(CreateUserRequest request, string location)
+    public async Task<ActionResult<OneOf<CreatedUserResponse, ErrorResponse>>> CreateUserAsync(CreatedUserRequest request, string location)
     {
-        if (string.IsNullOrWhiteSpace(location))
-            throw new ArgumentException("Location cannot be null.", nameof(location));
-
         // Check if request contains valid data
         if (!IsRequestValid(request, out var errorMessages))
-            return Respond.Fail(errorMessages);
+            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
         // Check if CPF or e-mail have been registered by another user already
         if (await _db.Users.AnyAsync(x => x.Cpf == request.Cpf || x.Email == request.Email))
-            return Respond.Fail("CPF or e-mail have already been registered.", StatusCodes.Status401Unauthorized);
+            return new BadRequestObjectResult(new ErrorResponse("CPF or e-mail have already been registered."));
 
         // Create the database user
         var dbUser = new UserEntity()
@@ -56,10 +54,10 @@ public sealed class UserService : IRequestValidator<CreateUserRequest>
         await _db.SaveChangesAsync();
 
         // TODO: handle authentication properly
-        return Respond.Ok(new CreateUserResponse(dbUser.Id, "placeholder_token"), StatusCodes.Status201Created, location);
+        return new CreatedResult(location, new CreatedUserResponse(dbUser.Id, "placeholder_token"));
     }
 
-    public bool IsRequestValid(CreateUserRequest request, out IEnumerable<string> errorMessages)
+    public bool IsRequestValid(CreatedUserRequest request, out IEnumerable<string> errorMessages)
     {
         errorMessages = Enumerable.Empty<string>();
 
