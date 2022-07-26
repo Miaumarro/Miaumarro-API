@@ -71,7 +71,7 @@ public sealed record UserEntity : MiauDbEntity
     public string? Phone { get; set; }
 
     /// <summary>
-    /// This user's salted password.
+    /// This user's hashed password.
     /// </summary>
     [Required]
     [StringLength(60)]

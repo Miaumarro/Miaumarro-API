@@ -4,9 +4,4 @@ namespace MiauAPI.Models.Responses;
 /// Represents a generic error response.
 /// </summary>
 /// <param name="Errors">The errors to be sent in the response.</param>
-public sealed record ErrorResponse(string[] Errors)
-{
-    public ErrorResponse(string message) : this(new string[] { message })
-    {
-    }
-}
+public sealed record ErrorResponse(params string[] Errors);

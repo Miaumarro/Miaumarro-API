@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MiauDatabase.Migrations
 {
     [DbContext(typeof(MiauDbContext))]
-    [Migration("20220723172233_RemoveSalt")]
+    [Migration("20220725183658_RemoveSalt")]
     partial class RemoveSalt
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -465,6 +465,14 @@ namespace MiauDatabase.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_users");
+
+                    b.HasIndex("Cpf")
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_cpf");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_email");
 
                     b.ToTable("users", (string)null);
 

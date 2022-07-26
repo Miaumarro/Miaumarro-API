@@ -27,6 +27,7 @@ internal static class MiauDbStatics
     /// Gets a database options builder, adds the default settings, and returns it.
     /// </summary>
     /// <param name="options">The database options to have the default settings applied to.</param>
+    /// <param name="connectionString">The connection string of the database.</param>
     /// <returns>A database options with the default settings applied.</returns>
     internal static DbContextOptionsBuilder GetDefaultDbOptions(DbContextOptionsBuilder options, string? connectionString = default)
     {

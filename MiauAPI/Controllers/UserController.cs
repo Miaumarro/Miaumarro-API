@@ -17,12 +17,12 @@ public sealed class UserController : ControllerBase
         => _service = service;
 
     [HttpPost("create")]
-    [ProducesResponseType(typeof(CreateUserRequest), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreateUserResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> RegisterAsync([FromBody] CreateUserRequest user)
     {
-        var response = await _service.CreateUserAsync(user);
+        var response = await _service.CreateUserAsync(user, base.Request.Path.Value!);
         return response.ToActionResult();
     }
 }

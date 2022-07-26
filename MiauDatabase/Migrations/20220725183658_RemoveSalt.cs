@@ -23,10 +23,30 @@ public partial class RemoveSalt : Migration
             maxLength: 60,
             nullable: false,
             defaultValue: "");
+
+        migrationBuilder.CreateIndex(
+            name: "ix_users_cpf",
+            table: "users",
+            column: "cpf",
+            unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "ix_users_email",
+            table: "users",
+            column: "email",
+            unique: true);
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.DropIndex(
+            name: "ix_users_cpf",
+            table: "users");
+
+        migrationBuilder.DropIndex(
+            name: "ix_users_email",
+            table: "users");
+
         migrationBuilder.DropColumn(
             name: "hashed_password",
             table: "users");
