@@ -11,6 +11,14 @@ internal sealed class UserEntityTypeConfiguration : IEntityTypeConfiguration<Use
 {
     public void Configure(EntityTypeBuilder<UserEntity> builder)
     {
+        // Cpf must be unique
+        builder.HasIndex(x => x.Cpf)
+            .IsUnique();
+
+        // E-mail must be unique
+        builder.HasIndex(x => x.Email)
+            .IsUnique();
+
         // Users -> Addresses
         builder.HasMany(x => x.Addresses)
             .WithOne(x => x.User)

@@ -12,7 +12,7 @@ public sealed class InjectionTest
     public InjectionTest()
     {
         _ioc = new ServiceCollection()
-            .AddMiauDb(false)
+            .AddMiauDb("Data Source=:memory:;New=True;", false)
             .BuildServiceProvider();
 
         _scopeFactory = _ioc.GetRequiredService<IServiceScopeFactory>();

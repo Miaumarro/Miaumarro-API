@@ -40,7 +40,7 @@ public sealed record UserEntity : MiauDbEntity
     /// This user's CPF.
     /// </summary>
     [Required]
-    [StringLength(14)]
+    [StringLength(11)]
     public string Cpf { get; init; } = null!;
 
     /// <summary>
@@ -71,18 +71,11 @@ public sealed record UserEntity : MiauDbEntity
     public string? Phone { get; set; }
 
     /// <summary>
-    /// This user's password salt.
+    /// This user's hashed password.
     /// </summary>
     [Required]
-    [MaxLength(50)]
-    public string Salt { get; set; } = null!;
-
-    /// <summary>
-    /// This user's salted password.
-    /// </summary>
-    [Required]
-    [MaxLength(100)]
-    public string SaltedPassword { get; set; } = null!;
+    [StringLength(60)]
+    public string HashedPassword { get; set; } = null!;
 
     /// <summary>
     /// This user's permissions in the store.

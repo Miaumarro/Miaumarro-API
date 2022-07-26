@@ -1,3 +1,7 @@
+using MiauAPI.Models.Requests;
+using MiauAPI.Services;
+using MiauAPI.Validators;
+using MiauAPI.Validators.Abstractions;
 using MiauDatabase.Extensions;
 
 namespace MiauAPI;
@@ -15,6 +19,8 @@ public class Program
         builder.Services    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             .AddEndpointsApiExplorer()
             .AddSwaggerGen()
+            .AddScoped<UserService>()
+            .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
             .AddMiauDb();   // Add Miau database context
 
         var app = builder.Build();
