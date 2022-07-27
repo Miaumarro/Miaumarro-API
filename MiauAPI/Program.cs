@@ -20,7 +20,9 @@ public class Program
             .AddEndpointsApiExplorer()
             .AddSwaggerGen()
             .AddScoped<UserService>()
+            .AddScoped<ProductService>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
             .AddMiauDb();   // Add Miau database context
 
         var app = builder.Build();

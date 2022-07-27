@@ -1,3 +1,4 @@
+using MiauDatabase.Enums;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
@@ -92,6 +93,28 @@ public static class Validate
         return value is null;
     }
 
+
+    /// <summary>
+    /// Checks if <paramref name="value"/> is <see langword="null"/> or composed only by white spaces.
+    /// </summary>
+    /// <param name="value">The object to be checked.</param>
+    /// <param name="paramName">The name of the object parameter.</param>
+    /// <param name="errorMessage">The resulting error message if the method returns <see langword="true"/>, <see langword="null"/> otherwise.</param>
+    /// <typeparam name="T">The type of the object.</typeparam>
+    /// <returns><see langword="true"/> if <paramref name="value"/> is <see langword="null"/>, <see langword="false"/> otherwise.</returns>
+    public static bool IsNullOrWhiteSpace(string value, string paramName, [MaybeNullWhen(true)] out string errorMessage)
+    {
+
+        if(!string.IsNullOrWhiteSpace(value))
+        {
+            errorMessage = null;
+            return true;
+        }
+        errorMessage = $"{paramName} cannot be null or composed only by white spaces.";
+        return false;
+    }
+
+
     /// <summary>
     /// Checks if <paramref name="text"/> only contains digits.
     /// </summary>
@@ -110,4 +133,58 @@ public static class Validate
 
         return errorMessage is null;
     }
+
+    /// <summary>
+    /// Checks if <paramref name="value"/> is a positive number.
+    /// </summary>
+    /// <param name="value">The number to be checked.</param>
+    /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
+    /// <returns><see langword="true"/> if <paramref name="value"/> is a positive number, <see langword="false"/> otherwise.</returns>
+    public static bool IsPositive(Decimal value, string paramName, [MaybeNullWhen(true)] out string errorMessage)
+    {
+        if (value >= 0)
+        {
+
+            errorMessage = null;
+            return true;
+        }
+        errorMessage = $"'{paramName}' must be a positive number.";
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if <paramref name="text"/> is a valid product tag (a tag defined in the ProductTag Enum).
+    /// </summary>
+    /// <param name="text">The string to be checked.</param>
+    /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
+    /// <returns><see langword="true"/> if <paramref name="text"/> is a valid product tag, <see langword="false"/> otherwise.</returns>
+    public static bool IsValidProductTag(string text, [MaybeNullWhen(true)] out string errorMessage)
+    {
+        errorMessage = null;
+        return true;
+
+        /*
+        errorMessage = $"'{text}' is not a valid product tag (a tag defined in the ProductTag Enum).";
+        return false;
+
+        */
+
+    }
+
+    /// <summary>
+    /// Checks if <paramref name="text"/> is a valid discount (between 0 and 1).
+    /// </summary>
+    /// <param name="value">The value to be checked.</param>
+    /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
+    /// <returns><see langword="true"/> if <paramref name="text"/> is a valid discount, <see langword="false"/> otherwise.</returns>
+    public static bool IsValidDiscount(decimal value, [MaybeNullWhen(true)] out string errorMessage)
+    {
+
+        errorMessage = (value < 0 || value > 1)
+            ? $"Discount must be between 0 and 1. Value: {value}"
+            : null;
+
+        return errorMessage is null;
+    }
+
 }
