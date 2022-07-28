@@ -2,6 +2,8 @@ using LinqToDB.EntityFrameworkCore;
 using MiauAPI.Extensions;
 using MiauDatabase.Extensions;
 using MiauTests.Abstractions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Logging;
 
 namespace MiauTests.Fixtures;
 
@@ -29,9 +31,11 @@ public sealed class ServicesFixture : IDisposable
         // Enable LinqToDb extensions
         LinqToDBForEFTools.Initialize();
 
-        _serviceProvider = new ServiceCollection()
-            .AddMiauServices()
-            .AddMiauDb("Data Source=file::memory:?cache=shared;", true)
+        _serviceProvider = WebApplication.CreateBuilder()               // Add the default services some Miau services may depend on
+            .Services
+            .AddLogging(x => x.ClearProviders())                        // Supress service logging, if any is being used
+            .AddMiauServices()                                          // Add Miau services
+            .AddMiauDb("Data Source=file::memory:?cache=shared;", true) // Initialize an in-memory SQLite database
             .BuildServiceProvider();
 
         ServiceProvider = _serviceProvider;
