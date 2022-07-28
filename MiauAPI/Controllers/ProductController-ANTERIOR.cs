@@ -15,23 +15,6 @@ public class ProductControllerAnterior : ControllerBase
         _db = db;
     }
 
-    // GET: api/products
-    [HttpGet]
-    public ActionResult Get()
-    {
-        try
-        {
-            var products = _db.Products
-                    .OrderByDescending(p => p.IsActive)
-                    .ToList();
-            return Ok(products);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-
-    }
 
     // GET api/<ValuesController>/5
     [HttpGet("{id}")]
@@ -93,108 +76,6 @@ public class ProductControllerAnterior : ControllerBase
 
     }
 
-    // GET: api/products/FilterByTerm%{term}%
-    [HttpGet("FilterByTerm%{term}%")]
-    public ActionResult GetString(string term)
-    {
-        try
-        {
-            var products = _db.Products
-                            .Where(p => p.Description.ToLower().Contains(term.ToLower()))
-                            .OrderByDescending(p => p.IsActive)
-                            .ToList();
-
-            return Ok(products);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-
-    }
-
-    // GET: api/products/FilterByBrand?{brandName}
-    [HttpGet("FilterByBrand%{brandName}%")]
-    public ActionResult GetFilterBrand(string brandName)
-    {
-        try
-        {
-            var products = _db.Products
-                            .Where(p => p.Brand == brandName.ToLower())
-                            .OrderByDescending(p => p.IsActive)
-                            .ToList();
-            return Ok(products);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-
-    }
-
-    // GET: api/products/FilterByDiscount
-    [HttpGet("FilterByDiscount")]
-    public ActionResult GetFilterDiscount()
-    {
-        try
-        {
-
-            var products = _db.Products
-                            .Where(p => p.Discount > 0)
-                            .OrderByDescending(p => p.IsActive)
-                            .ToList();
-
-            return Ok(products);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-
-    }
-
-    // GET: api/products/"FilterByPrice/%min{minValue}%,%max{maxValue}%"
-    [HttpGet("FilterByPrice/min{minValue},max{maxValue}")]
-    public ActionResult GetFilterByPrice(decimal minValue, decimal maxValue)
-    {
-        try
-        {
-            var products = _db.Products
-                            .Where(p => ((p.Price * (1 - p.Discount)) >= minValue)
-                                     && ((p.Price * (1 - p.Discount)) <= maxValue))
-                            .OrderByDescending(p => p.IsActive)
-                            .ToList();
-            return Ok(products);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-
-    }
-
-    // GET: api/products/FilterByTags?{tags}
-    [HttpGet("FilterByTags{tags}")]
-    public ActionResult GetFilterTags(string tags)
-    {
-        try
-        {
-
-            var productTags = (ProductTag)Enum.Parse(typeof(ProductTag), tags);
-
-            var products = _db.Products
-                            .Where(p => p.Tags.HasFlag(productTags))
-                            .OrderByDescending(p => p.IsActive)
-                            .ToList();
-
-            return Ok(products);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-
-    }
 
     // POST api/<ValuesController>
     [HttpPost("register")]

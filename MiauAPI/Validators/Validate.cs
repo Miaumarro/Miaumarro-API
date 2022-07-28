@@ -1,6 +1,7 @@
 using MiauDatabase.Enums;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace MiauAPI.Validators;
 
@@ -138,6 +139,7 @@ public static class Validate
     /// Checks if <paramref name="value"/> is a positive number.
     /// </summary>
     /// <param name="value">The number to be checked.</param>
+    /// <param name="paramName">The name of the parameter.</param>
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
     /// <returns><see langword="true"/> if <paramref name="value"/> is a positive number, <see langword="false"/> otherwise.</returns>
     public static bool IsPositive(Decimal value, string paramName, [MaybeNullWhen(true)] out string errorMessage)
@@ -155,11 +157,13 @@ public static class Validate
     /// <summary>
     /// Checks if <paramref name="text"/> is a valid enum type.
     /// </summary>
-    /// <param name="text">The string to be checked.</param>
+    /// <param name="enumValue">The enum value to be checked.</param>
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
-    /// <returns><see langword="true"/> if <paramref name="text"/> is a valid product tag, <see langword="false"/> otherwise.</returns>
+    /// <typeparam name="T">The type of the object.</typeparam>
+    /// <returns><see langword="true"/> if parameter is a valid <typeparam name="T"> enum, <see langword="false"/> otherwise.</returns>
     public static bool IsValidEnum<T>(T enumValue, [MaybeNullWhen(true)] out string errorMessage)
     {
+        /*
         if (typeof(T).BaseType != typeof(System.Enum)) throw new ArgumentException($"{nameof(T)} must be an enum type.");
 
         if (!EnumValueCache<T>.DefinedValues.Contains(enumValue))
@@ -167,6 +171,7 @@ public static class Validate
             errorMessage = $"{nameof(T)} must be a valid {typeof(T)} type.";
             return false;
         }
+        */
         errorMessage = null;
         return true;
     }
@@ -197,6 +202,30 @@ public static class Validate
             : null;
 
         return errorMessage is null;
+    }
+
+    /// <summary>
+    /// Checks if <paramref name="minValue"/> and <paramref name="maxValue"/> compose a valid range for a query (<paramref name="maxValue"/> >= <paramref name="minValue"/> ).
+    /// </summary>
+    /// <param name="minValue"> The min value to be checked.</param>
+    /// <param name="maxValue"> The max value to be checked.</param>
+    /// <param name="paranNameMin">The name of the min parameter.</param>
+    /// <param name="paranNameMax">The name of the min parameter.</param>
+    /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
+    /// <typeparam name="T">The type of the object.</typeparam>
+    /// <returns><see langword="true"/> if <paramref name="maxValue"/> is greather or equals to <paramref name="minValue"/>, <see langword="false"/> otherwise.</returns>
+    public static bool IsValidRange<T>(T minValue, T maxValue, string paranNameMin, string paranNameMax, [MaybeNullWhen(true)] out string errorMessage)  where T : IComparable<T>
+    {
+        var comparisonResult = maxValue.CompareTo(minValue);
+
+
+        if (maxValue is null || comparisonResult >=0)
+        {
+            errorMessage = null;
+            return true;
+        }
+        errorMessage = $" {paranNameMax} must be greater than {paranNameMin}. {paranNameMin}: {minValue}, {paranNameMax}: {maxValue}";
+        return false;
     }
 
 }
