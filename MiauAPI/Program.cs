@@ -20,7 +20,9 @@ public class Program
             .AddEndpointsApiExplorer()
             .AddSwaggerGen()
             .AddScoped<UserService>()
+            .AddScoped<PetService>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
             .AddMiauDb();   // Add Miau database context
 
         var app = builder.Build();

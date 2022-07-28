@@ -1,3 +1,5 @@
+/*using MiauDatabase;
+using MiauDatabase.Entities;*/
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
@@ -110,4 +112,30 @@ public static class Validate
 
         return errorMessage is null;
     }
+
+    /*
+   /// <summary>
+   /// Checks if <paramref name="text"/> only contains digits.
+   /// </summary>
+   /// <param name="text">The string to be checked.</param>
+   /// <param name="paramName">The name of the string parameter.</param>
+   /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
+   /// <returns><see langword="true"/> if <paramref name="text"/> only contains digits, <see langword="false"/> otherwise.</returns>
+   /// <exception cref="ArgumentNullException">Occurs when <paramref name="text"/> is <see langword="null"/>.</exception>
+
+
+   public static bool UserExistsInDatabase(UserEntity user, MiauDbContext db, [MaybeNullWhen(true)] out string errorMessage)
+   {
+       ArgumentNullException.ThrowIfNull(user);
+       errorMessage = null;
+       var verify = db.Users.Find(user.Id);
+
+       if (verify == null)
+       {
+           errorMessage = "The selected user does not exist.";
+       }
+
+       return errorMessage is null;
+   }
+   */
 }
