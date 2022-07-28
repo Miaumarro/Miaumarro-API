@@ -1,5 +1,6 @@
 using MiauAPI.Models.Requests;
 using MiauAPI.Validators.Abstractions;
+using MiauDatabase.Enums;
 
 namespace MiauAPI.Validators;
 
@@ -45,7 +46,7 @@ public sealed class CreatedProductRequestValidator : IRequestValidator<CreatedPr
         }
 
         // Check Tags
-        if (!Validate.IsValidProductTag(request.Tags.ToString(), out var tagsError))
+        if (!Validate.IsValidEnum<ProductTag>(request.Tags, out var tagsError))
         {
             errorMessages = errorMessages.Append(tagsError);
         }

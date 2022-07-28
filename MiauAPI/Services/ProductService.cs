@@ -1,5 +1,7 @@
+using MiauAPI.Models.Parameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
+using MiauAPI.Pagination;
 using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
@@ -22,6 +24,32 @@ public sealed class ProductService
     {
         _db = db;
         _validator = validator;
+    }
+
+    /// <summary>
+    /// Returns a list of products.
+    /// </summary>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetProductResponse, ErrorResponse>>> GetProductAsync(ProductParameters productParameters)
+    {
+        var errorMessages = Enumerable.Empty<string>();
+        var dbProducts = _db.Products
+                    .OrderByDescending(p => p.IsActive)
+                    .ToList();
+
+        // TODO: implement await in the correct way
+        await Task.Delay(1000);
+        if (dbProducts is null)
+        {
+            errorMessages = errorMessages.Append("No registered products.");
+            return new NotFoundObjectResult(new ErrorResponse(errorMessages.ToArray()));
+        }
+
+        var dbProductsPaged = PagedList<ProductEntity>.ToPagedList(
+                        dbProducts,
+                        productParameters.PageNumber,
+                        productParameters.PageSize);
+        return new OkObjectResult(new GetProductResponse(dbProductsPaged));
     }
 
     /// <summary>

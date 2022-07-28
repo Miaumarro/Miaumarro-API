@@ -153,22 +153,34 @@ public static class Validate
     }
 
     /// <summary>
-    /// Checks if <paramref name="text"/> is a valid product tag (a tag defined in the ProductTag Enum).
+    /// Checks if <paramref name="text"/> is a valid enum type.
     /// </summary>
     /// <param name="text">The string to be checked.</param>
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
     /// <returns><see langword="true"/> if <paramref name="text"/> is a valid product tag, <see langword="false"/> otherwise.</returns>
-    public static bool IsValidProductTag(string text, [MaybeNullWhen(true)] out string errorMessage)
+    public static bool IsValidEnum<T>(T enumValue, [MaybeNullWhen(true)] out string errorMessage)
     {
+        if (typeof(T).BaseType != typeof(System.Enum)) throw new ArgumentException($"{nameof(T)} must be an enum type.");
+
+        if (!EnumValueCache<T>.DefinedValues.Contains(enumValue))
+        {
+            errorMessage = $"{nameof(T)} must be a valid {typeof(T)} type.";
+            return false;
+        }
         errorMessage = null;
         return true;
+    }
 
-        /*
-        errorMessage = $"'{text}' is not a valid product tag (a tag defined in the ProductTag Enum).";
-        return false;
+    internal static class EnumValueCache<T>
+    {
+        public static HashSet<T> DefinedValues { get; }
 
-        */
+        static EnumValueCache()
+        {
+            if (typeof(T).BaseType != typeof(System.Enum)) throw new Exception($"{nameof(T)} must be an enum type.");
 
+            DefinedValues = new HashSet<T>((T[])System.Enum.GetValues(typeof(T)));
+        }
     }
 
     /// <summary>
