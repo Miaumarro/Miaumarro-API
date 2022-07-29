@@ -6,12 +6,12 @@ using MiauAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using MiauAPI.Pagination;
 using OneOf;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace MiauAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route(ApiConstants.MainEndpoint)]
 public sealed class ProductController : ControllerBase
 {
     private readonly ProductService _service;
@@ -39,12 +39,11 @@ public sealed class ProductController : ControllerBase
                 productResponse.Products.HasPrevious
             };
 
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 
         }
         return productsPaged;
     }
-
 
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedProductResponse), StatusCodes.Status201Created)]

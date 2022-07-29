@@ -142,11 +142,10 @@ public static class Validate
     /// <param name="paramName">The name of the parameter.</param>
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
     /// <returns><see langword="true"/> if <paramref name="value"/> is a positive number, <see langword="false"/> otherwise.</returns>
-    public static bool IsPositive(Decimal value, string paramName, [MaybeNullWhen(true)] out string errorMessage)
+    public static bool IsPositive(decimal value, string paramName, [MaybeNullWhen(true)] out string errorMessage)
     {
         if (value >= 0)
         {
-
             errorMessage = null;
             return true;
         }
@@ -155,50 +154,18 @@ public static class Validate
     }
 
     /// <summary>
-    /// Checks if <paramref name="text"/> is a valid enum type.
-    /// </summary>
-    /// <param name="enumValue">The enum value to be checked.</param>
-    /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
-    /// <typeparam name="T">The type of the object.</typeparam>
-    /// <returns><see langword="true"/> if parameter is a valid <typeparam name="T"> enum, <see langword="false"/> otherwise.</returns>
-    public static bool IsValidEnum<T>(T enumValue, [MaybeNullWhen(true)] out string errorMessage)
-    {
-        /*
-        if (typeof(T).BaseType != typeof(System.Enum)) throw new ArgumentException($"{nameof(T)} must be an enum type.");
-
-        if (!EnumValueCache<T>.DefinedValues.Contains(enumValue))
-        {
-            errorMessage = $"{nameof(T)} must be a valid {typeof(T)} type.";
-            return false;
-        }
-        */
-        errorMessage = null;
-        return true;
-    }
-
-    internal static class EnumValueCache<T>
-    {
-        public static HashSet<T> DefinedValues { get; }
-
-        static EnumValueCache()
-        {
-            if (typeof(T).BaseType != typeof(System.Enum)) throw new Exception($"{nameof(T)} must be an enum type.");
-
-            DefinedValues = new HashSet<T>((T[])System.Enum.GetValues(typeof(T)));
-        }
-    }
-
-    /// <summary>
-    /// Checks if <paramref name="text"/> is a valid discount (between 0 and 1).
+    /// Checks if <paramref name="value"/> is is within a range (between <paramref name="minValue"/> and <paramref name="maxValue"/>).
     /// </summary>
     /// <param name="value">The value to be checked.</param>
+    /// <param name="minValue">The minimum value of the range.</param>
+    /// <param name="maxValue">The maximum value of the range.</param>
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
-    /// <returns><see langword="true"/> if <paramref name="text"/> is a valid discount, <see langword="false"/> otherwise.</returns>
-    public static bool IsValidDiscount(decimal value, [MaybeNullWhen(true)] out string errorMessage)
+    /// <returns><see langword="true"/> if <paramref name="value"/> is within the specified range, <see langword="false"/> otherwise.</returns>
+    public static bool IsWithinRange(decimal value, decimal minValue, decimal maxValue, string paranName, [MaybeNullWhen(true)] out string errorMessage)
     {
 
-        errorMessage = (value < 0 || value > 1)
-            ? $"Discount must be between 0 and 1. Value: {value}"
+        errorMessage = (value < minValue || value > maxValue)
+            ? $"{paranName} must be between {minValue} and {maxValue}. Value: {value}."
             : null;
 
         return errorMessage is null;
@@ -216,10 +183,10 @@ public static class Validate
     /// <returns><see langword="true"/> if <paramref name="maxValue"/> is greather or equals to <paramref name="minValue"/>, <see langword="false"/> otherwise.</returns>
     public static bool IsValidRange<T>(T minValue, T maxValue, string paranNameMin, string paranNameMax, [MaybeNullWhen(true)] out string errorMessage)  where T : IComparable<T>
     {
-        var comparisonResult = maxValue.CompareTo(minValue);
 
+        var comparisonResult = Comparer<T>.Default.Compare(maxValue, minValue);
 
-        if (maxValue is null || comparisonResult >=0)
+        if (comparisonResult >=0)
         {
             errorMessage = null;
             return true;

@@ -34,7 +34,7 @@ public sealed class CreatedProductRequestValidator : IRequestValidator<CreatedPr
         }
 
         // Check Discount
-        if (!Validate.IsValidDiscount(request.Discount, out var discountError))
+        if (!Validate.IsWithinRange(request.Discount, 0, 1, nameof(request.Discount), out var discountError))
         {
             errorMessages = errorMessages.Append(discountError);
         }
@@ -43,12 +43,6 @@ public sealed class CreatedProductRequestValidator : IRequestValidator<CreatedPr
         if (!Validate.IsTextInRange(request.Brand, 30, nameof(request.Brand), out var brandError))
         {
             errorMessages = errorMessages.Append(brandError);
-        }
-
-        // Check Tags
-        if (!Validate.IsValidEnum<ProductTag>(request.Tags, out var tagsError))
-        {
-            errorMessages = errorMessages.Append(tagsError);
         }
 
         return !errorMessages.Any();
