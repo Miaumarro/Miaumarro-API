@@ -22,11 +22,11 @@ public static class IServiceCollectionExt
         // If the database doesn't exist, create it
         if (migrate)
         {
-            using var dbContext = new MiauDbContext(MiauDbStatics.MiauDbDefaultOptions);
+            using var dbContext = new MiauDbContext(MiauDbStatics.GetDefaultDbOptions<MiauDbContext>(null, connectionString).Options);
             dbContext.Database.Migrate();
         }
 
-        // Add the database context to the IoC
+        // Add the database context to the IoC container
         serviceCollection.AddDbContext<MiauDbContext>(options => MiauDbStatics.GetDefaultDbOptions(options, connectionString));
 
         return serviceCollection;

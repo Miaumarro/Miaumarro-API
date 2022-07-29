@@ -9,5 +9,5 @@ namespace MiauDatabase.Config;
 internal sealed class MiauDbContextFactory : IDesignTimeDbContextFactory<MiauDbContext>
 {
     public MiauDbContext CreateDbContext(string[] args)
-        => new(MiauDbStatics.MiauDbDefaultOptions);
+        => new(MiauDbStatics.GetDefaultDbOptions<MiauDbContext>().Options);
 }
