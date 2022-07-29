@@ -1,7 +1,5 @@
-using MiauAPI.Models.Requests;
-using MiauAPI.Services;
-using MiauAPI.Validators;
-using MiauAPI.Validators.Abstractions;
+using LinqToDB.EntityFrameworkCore;
+using MiauAPI.Extensions;
 using MiauDatabase.Extensions;
 
 namespace MiauAPI;
@@ -10,6 +8,10 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        // Enable LinqToDb extensions
+        LinqToDBForEFTools.Initialize();
+
+        // Build web api
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
@@ -19,11 +21,8 @@ public class Program
         builder.Services    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             .AddEndpointsApiExplorer()
             .AddSwaggerGen()
-            .AddScoped<UserService>()
-            .AddScoped<ProductService>()
-            .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
-            .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
-            .AddMiauDb();   // Add Miau database context
+            .AddMiauServices()
+            .AddMiauDb();
 
         var app = builder.Build();
 
