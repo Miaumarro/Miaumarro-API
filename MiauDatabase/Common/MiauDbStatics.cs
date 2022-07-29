@@ -15,13 +15,20 @@ internal static class MiauDbStatics
     private static readonly string _miauDbConnectionString = "Data Source=" + Path.Combine(Directory.GetParent(Assembly.GetExecutingAssembly().Location)?.FullName ?? string.Empty, "Miau.db");
 
     /// <summary>
-    /// Default options for a <see cref="MiauDbContext"/>
+    /// Gets a database options builder, adds the default settings, and returns it.
     /// </summary>
-    internal static DbContextOptions<MiauDbContext> MiauDbDefaultOptions { get; } = new DbContextOptionsBuilder<MiauDbContext>()
-        .UseSnakeCaseNamingConvention()     // Set column names to snake_case format
-        .UseSqlite(_miauDbConnectionString)  // Database connection string
-        .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) // Disable EF Core entity tracking - see https://docs.microsoft.com/en-us/ef/core/change-tracking/
-        .Options;
+    /// <param name="options">The database options to have the default settings applied to.</param>
+    /// <param name="connectionString">The connection string of the database.</param>
+    /// <typeparam name="T">The type of the <see cref="DbContext"/>.</typeparam>
+    /// <returns>A database options with the default settings applied.</returns>
+    internal static DbContextOptionsBuilder<T> GetDefaultDbOptions<T>(DbContextOptionsBuilder<T>? options = default, string? connectionString = default) where T : DbContext
+    {
+        options ??= new();
+
+        return options.UseSnakeCaseNamingConvention()                       // Set column names to snake_case format
+            .UseSqlite(connectionString ?? _miauDbConnectionString)         // Database connection string
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);    // Disable EF Core entity tracking - see https://docs.microsoft.com/en-us/ef/core/change-tracking/
+    }
 
     /// <summary>
     /// Gets a database options builder, adds the default settings, and returns it.
@@ -29,8 +36,10 @@ internal static class MiauDbStatics
     /// <param name="options">The database options to have the default settings applied to.</param>
     /// <param name="connectionString">The connection string of the database.</param>
     /// <returns>A database options with the default settings applied.</returns>
-    internal static DbContextOptionsBuilder GetDefaultDbOptions(DbContextOptionsBuilder options, string? connectionString = default)
+    internal static DbContextOptionsBuilder GetDefaultDbOptions(DbContextOptionsBuilder? options = default, string? connectionString = default)
     {
+        options ??= new();
+
         return options.UseSnakeCaseNamingConvention()                       // Set column names to snake_case format
             .UseSqlite(connectionString ?? _miauDbConnectionString)         // Database connection string
             .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);    // Disable EF Core entity tracking - see https://docs.microsoft.com/en-us/ef/core/change-tracking/

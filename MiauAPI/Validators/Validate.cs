@@ -24,7 +24,7 @@ public static class Validate
     /// The resulting error message if <paramref name="text"/> is not within the specified range,
     /// <see langword="null"/> otherwise.
     /// </param>
-    /// <returns><see langword="true"/> if <paramref name="text"/> is within the specified range, <see langword="false"/> otherwise.</returns>
+    /// <returns><see langword="true"/> if <paramref name="text"/> is <see langword="null"/> or within the specified range, <see langword="false"/> otherwise.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="maxLength"/> is less than 1.</exception>
     public static bool IsTextInRange(string? text, int maxLength, string paramName, [MaybeNullWhen(true)] out string errorMessage)
             => IsTextInRange(text, 1, maxLength, paramName, out errorMessage);
@@ -40,15 +40,23 @@ public static class Validate
     /// The resulting error message if <paramref name="text"/> is not within the specified range,
     /// <see langword="null"/> otherwise.
     /// </param>
-    /// <returns><see langword="true"/> if <paramref name="text"/> is within the specified range, <see langword="false"/> otherwise.</returns>
-    /// <exception cref="ArgumentException">Occurs when <paramref name="minLength"/> is greater than <paramref name="maxLength"/>.</exception>
+    /// <returns>
+    /// <see langword="true"/> if <paramref name="text"/> is <see langword="null"/> or within the specified range,
+    /// <see langword="false"/> otherwise.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Occurs when <paramref name="minLength"/> is greater than <paramref name="maxLength"/> or when either are
+    /// less than zero.
+    /// </exception>
     public static bool IsTextInRange(string? text, int minLength, int maxLength, string paramName, [MaybeNullWhen(true)] out string errorMessage)
     {
-        if (minLength > maxLength)
+        if (minLength < 0 || maxLength < 0)
+            throw new ArgumentException($"{nameof(minLength)} and {nameof(maxLength)} cannot be less than zero.");
+        else if (minLength > maxLength)
             throw new ArgumentException($"{nameof(minLength)} cannot be greater than {nameof(maxLength)}", nameof(minLength));
 
-        errorMessage = (text?.Length < minLength || text?.Length > maxLength)
-            ? $"{paramName} length must be between {minLength} and {maxLength}. Value: {text.Length}"
+        errorMessage = (text is null || text.Length < minLength || text.Length > maxLength)
+            ? $"{paramName} length must be between {minLength} and {maxLength}. Value: {text?.Length}"
             : null;
 
         return errorMessage is null;
@@ -104,7 +112,7 @@ public static class Validate
     {
         ArgumentNullException.ThrowIfNull(text, paramName);
 
-        errorMessage = (text.All(x => char.IsDigit(x)))
+        errorMessage = (text.Length > 0 && text.All(x => char.IsDigit(x)))
             ? null
             : $"{paramName} must only contain digits.";
 
