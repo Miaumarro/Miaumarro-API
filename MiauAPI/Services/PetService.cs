@@ -40,15 +40,27 @@ public sealed class PetService
         if (!_validator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
+        //Create the path for the Pet Image
+        var path = $"Data/{request.UserId}/pets";
+        if ((!Directory.Exists(path)))
+        {
+            Directory.CreateDirectory(path);
+        }
+        var filename = request.ImagePath.FileName;
+        using (var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create))
+        {
+            await request.ImagePath.CopyToAsync(fileStream);
+        }
+
         // Create the database pet
         var dbPet = new PetEntity()
         {
-            User = request.User,
+            User = _db.Users.First(x => x.Id == request.UserId),
             Name = request.Name,
             Type = request.Type,
             Gender = request.Gender,
             Breed = request.Breed,
-            ImageFileUrl = request.ImageFileUrl,
+            ImagePath = "images/" + filename,
             DateOfBirth = request.DateOfBirth,
         };
 

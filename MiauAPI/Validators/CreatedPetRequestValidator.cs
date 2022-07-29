@@ -9,24 +9,16 @@ namespace MiauAPI.Validators;
 /// </summary>
 public sealed class CreatedPetRequestValidator : IRequestValidator<CreatedPetRequest>
 {
-    /*private readonly MiauDbContext _db;
-
-    public CreatedPetRequestValidator(MiauDbContext db)
-    {
-        _db = db;
-    }*/
     public bool IsRequestValid(CreatedPetRequest request, out IEnumerable<string> errorMessages)
     {
         errorMessages = Enumerable.Empty<string>();
 
         //Check User
-        /*
-        if (Validate.IsNull(request.User, nameof(request.User), out var userError)
-            || !Validate.UserExistsInDatabase(request.User, db, out userError))
+        if (Validate.IsNull(request.UserId, nameof(request.UserId), out var userError))
         {
             errorMessages = errorMessages.Append(userError);
         }
-        */
+        
 
         // Check name
         if (Validate.IsNull(request.Name, nameof(request.Name), out var nameError)
@@ -55,15 +47,9 @@ public sealed class CreatedPetRequestValidator : IRequestValidator<CreatedPetReq
             errorMessages = errorMessages.Append(breedError);
         }
 
-        // Check ImageFileUrl
-        if (!Validate.IsTextInRange(request.ImageFileUrl, 256, nameof(request.ImageFileUrl), out var imageFileUrlError))
-            //Acho que precisa adicionar um validador para verificar se o url é válido, mas não sei como fazer
-        {
-            errorMessages = errorMessages.Append(imageFileUrlError);
-        }
-
         // Check DateOfBirth
-        if (Validate.IsNull(request.DateOfBirth, nameof(request.DateOfBirth), out var dateOfBirthError))
+        if (Validate.IsNull(request.DateOfBirth, nameof(request.DateOfBirth), out var dateOfBirthError) 
+            || !Validate.IsDateValid(request.DateOfBirth, nameof(request.DateOfBirth), out dateOfBirthError))
         //Acho que precisa adicionar um validador para verificar se a data é válida (se não é no futuro ou se o pet tem mais de 30 anos, não sei)
         {
             errorMessages = errorMessages.Append(dateOfBirthError);
