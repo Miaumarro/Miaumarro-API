@@ -19,6 +19,8 @@ public static class IServiceCollectionExt
     {
         return serviceCollection
             .AddScoped<UserService>()
-            .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>();
+            .AddScoped<ProductService>()
+            .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>();
     }
 }
