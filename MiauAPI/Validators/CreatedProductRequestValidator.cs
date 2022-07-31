@@ -1,6 +1,5 @@
 using MiauAPI.Models.Requests;
 using MiauAPI.Validators.Abstractions;
-using MiauDatabase.Enums;
 
 namespace MiauAPI.Validators;
 
@@ -13,7 +12,7 @@ public sealed class CreatedProductRequestValidator : IRequestValidator<CreatedPr
     {
         errorMessages = Enumerable.Empty<string>();
 
-        // Check Description
+        // Check Name
         if (!Validate.IsNullOrWhiteSpace(request.Name, nameof(request.Name), out var nameError)
             || !Validate.IsTextInRange(request.Name, 50, nameof(request.Name), out nameError))
         {

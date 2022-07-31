@@ -1,4 +1,4 @@
-namespace MiauAPI.Models.Parameters;
+namespace MiauAPI.Models.QueryParameters;
 
 /// <summary>
 /// Defines how the resulted query will be visualized.

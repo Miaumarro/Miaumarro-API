@@ -1,10 +1,9 @@
 using MiauAPI.Common;
-using MiauAPI.Models.Parameters;
+using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using MiauAPI.Pagination;
 using OneOf;
 using System.Text.Json;
 
