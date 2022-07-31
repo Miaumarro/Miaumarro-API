@@ -159,6 +159,26 @@ public sealed class ProductService
     }
 
     /// <summary>
+    /// Deletes the product with the given Id.
+    /// </summary>
+    /// <param name="productId">The Id of the product to be deleted.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteProductByIdAsync(int productId)
+    {
+
+        var dbProduct = await _db.Products.FindAsync(productId);
+        if (dbProduct == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {productId} was found"));
+        }
+
+        _db.Products.Remove(dbProduct);
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new DeleteResponse($"Successfull delete product with the Id = {productId}"));
+    }
+
+    /// <summary>
     /// Lists products with an specific term in the description
     /// </summary>
     /// <returns>The result of the operation and a description error.</returns>

@@ -56,4 +56,10 @@ public sealed class ProductController : ControllerBase
     public async Task<ActionResult<OneOf<CreatedProductResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedProductRequest product)
         => await _service.CreateProductAsync(product, base.Request.Path.Value!);
 
+    [HttpDelete("delete")]
+    [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
+        => await _service.DeleteProductByIdAsync(id);
+
 }
