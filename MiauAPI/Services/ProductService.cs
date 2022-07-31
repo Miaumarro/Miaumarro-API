@@ -96,7 +96,7 @@ public sealed class ProductService
     }
 
     /// <summary>
-    /// Return the product with the given Id.
+    /// Returns the product with the given Id.
     /// </summary>
     /// <param name="productId">The Id of the product to be searched.</param>
     /// <returns>The result of the operation.</returns>
@@ -176,6 +176,36 @@ public sealed class ProductService
         await _db.SaveChangesAsync();
 
         return new OkObjectResult(new DeleteResponse($"Successfull delete product with the Id = {productId}"));
+    }
+
+    /// <summary>
+    /// Updates the product with the given Id.
+    /// </summary>
+    /// <param name="id">The Id of the product to be updated.</param>
+    /// <param name="product">The product object with the parameters to be updated.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateProductByIdAsync(UpdateProductRequest request)
+    {
+
+        var dbProduct = await _db.Products.FindAsync(request.Id);
+
+        if (dbProduct == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {request.Id} was found"));
+        }
+        dbProduct.Name = request.Name;
+        dbProduct.Description = request.Description;
+        dbProduct.Brand = request.Brand;
+        dbProduct.Price = request.Price;
+        dbProduct.IsActive = request.IsActive;
+        dbProduct.Amount = request.Amount;
+        dbProduct.Tags = request.Tags;
+        dbProduct.Discount = request.Discount;
+
+        _db.Products.Update(dbProduct);
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new UpdateResponse($"Successfull update product with the Id = {request.Id}"));
     }
 
     /// <summary>

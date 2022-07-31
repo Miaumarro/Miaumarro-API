@@ -1,4 +1,5 @@
 using MiauAPI.Common;
+using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
@@ -61,5 +62,11 @@ public sealed class ProductController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
         => await _service.DeleteProductByIdAsync(id);
+
+    [HttpPut("update")]
+    [ProducesResponseType(typeof(UpdateResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateProductRequest product)
+        => await _service.UpdateProductByIdAsync(product);
 
 }
