@@ -13,6 +13,12 @@ public sealed class CreatedProductRequestValidator : IRequestValidator<CreatedPr
     {
         errorMessages = Enumerable.Empty<string>();
 
+        // Check Description
+        if (!Validate.IsNullOrWhiteSpace(request.Name, nameof(request.Name), out var nameError)
+            || !Validate.IsTextInRange(request.Name, 50, nameof(request.Name), out nameError))
+        {
+            errorMessages = errorMessages.Append(nameError);
+        }
 
         // Check Description
         if (!Validate.IsNullOrWhiteSpace(request.Description, nameof(request.Description), out var descriptionError)

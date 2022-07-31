@@ -1,10 +1,11 @@
 using MiauDatabase.Enums;
 
-namespace MiauAPI.Models.Requests;
+namespace MiauAPI.Models.QueryObjects;
 
 /// <summary>
-/// Represents a request for creation of a new product.
+/// Represents the object in a product query.
 /// </summary>
+/// <param name="Id">The description of the product.</param>
 /// <param name="Name">The name of the product.</param>
 /// <param name="Description">The description of the product.</param>
 /// <param name="Price">The price of the product.</param>
@@ -13,5 +14,16 @@ namespace MiauAPI.Models.Requests;
 /// <param name="Tags">The product's store tags.</param>
 /// <param name="Brand">The product's brand.</param>
 /// <param name="Discount">The password entered by the user.</param>
-public sealed record CreatedProductRequest(string Name, string Description, decimal Price, bool IsActive, int Amount, ProductTag Tags, string? Brand, decimal Discount);
+public sealed record ProductObject
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = null!;
+    public string Description { get; set; } = null!;
+    public string? Brand { get; set; }
+    public decimal Price { get; set; }
+    public bool IsActive { get; set; }
+    public int Amount { get; set; }
+    public ProductTag Tags { get; set; }
+    public decimal Discount { get; set; }
 
+} 

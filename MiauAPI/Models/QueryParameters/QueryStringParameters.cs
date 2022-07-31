@@ -13,9 +13,6 @@ public abstract class QueryStringParameters
     public int PageSize 
     {
         get => _pageSize;
-        set
-        {
-            _pageSize = (value > _maxPageSize) ? _maxPageSize : value;
-        }
+        set => _pageSize = (value > _maxPageSize) ? _maxPageSize : value;
     }
 }

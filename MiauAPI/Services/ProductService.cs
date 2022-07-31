@@ -11,6 +11,7 @@ using MiauAPI.Validators;
 using LinqToDB;
 using MiauDatabase.Enums;
 using MiauAPI.Enums;
+using MiauAPI.Models.QueryObjects;
 
 namespace MiauAPI.Services;
 
@@ -20,12 +21,12 @@ namespace MiauAPI.Services;
 public sealed class ProductService
 {
     private readonly MiauDbContext _db;
-    private readonly IRequestValidator<CreatedProductRequest> _validatorCreatedProduct;
+    private readonly IRequestValidator<CreatedProductRequest> _validator;
 
-    public ProductService(MiauDbContext db, IRequestValidator<CreatedProductRequest> validatorCreatedProduct)
+    public ProductService(MiauDbContext db, IRequestValidator<CreatedProductRequest> validator)
     {
         _db = db;
-        _validatorCreatedProduct = validatorCreatedProduct;
+        _validator = validator;
     }
 
     /// <summary>
@@ -36,20 +37,26 @@ public sealed class ProductService
     {
 
         var errorMessages = Enumerable.Empty<string>();
-        var dbProducts = _db.Products.Select(p => p);
+        var dbProducts = _db.Products.Select(p => new ProductObject{
+                                                        Id = p.Id,
+                                                        Name = p.Name,
+                                                        Description = p.Description,
+                                                        Brand = p.Brand,
+                                                        Price = p.Price,
+                                                        IsActive = p.IsActive,
+                                                        Amount = p.Amount,
+                                                        Tags = p.Tags,
+                                                        Discount = p.Discount
+                                                    });
 
         if (productParameters.SearchedTerm is not null)
         {
-            dbProducts = SearchByTerm(dbProducts, productParameters.SearchedTerm, out var descriptionError);
-            if (descriptionError != string.Empty)
-                return new NotFoundObjectResult(descriptionError);
+            dbProducts = SearchByTerm(dbProducts, productParameters.SearchedTerm);
         }
 
         if (productParameters.Brand is not null)
         {
-            dbProducts = SearchByBrand(dbProducts, productParameters.Brand, out var descriptionError);
-            if (descriptionError != string.Empty)
-                return new NotFoundObjectResult(descriptionError);
+            dbProducts = SearchByBrand(dbProducts, productParameters.Brand);
         }
 
         if (productParameters.MaxPrice != 0 || productParameters.MinPrice != 0)
@@ -61,16 +68,12 @@ public sealed class ProductService
 
         if (productParameters.ActiveDiscount)
         {
-            dbProducts = SearchByActiveDiscount(dbProducts, out var descriptionError);
-            if (descriptionError != string.Empty)
-                return new NotFoundObjectResult(descriptionError);
+            dbProducts = SearchByActiveDiscount(dbProducts);
         }
 
         if (productParameters.Tags != 0)
         {
-            dbProducts = SearchByTags(dbProducts, productParameters.Tags, out var descriptionError);
-            if (descriptionError != string.Empty)
-                return new NotFoundObjectResult(descriptionError);
+            dbProducts = SearchByTags(dbProducts, productParameters.Tags);
         }
 
         dbProducts = Sort(dbProducts, productParameters.SortParameter);
@@ -78,7 +81,12 @@ public sealed class ProductService
         var dbProductsList = await dbProducts
                             .ToListAsync();
 
-        var dbProductsPaged = PagedList<ProductEntity>.ToPagedList(
+        if (dbProductsList.Count==0)
+        {
+            return new NotFoundObjectResult("No products with the given paramenters were found.");
+        }
+
+        var dbProductsPaged = PagedList<ProductObject>.ToPagedList(
                         dbProductsList,
                         productParameters.PageNumber,
                         productParameters.PageSize);
@@ -100,12 +108,13 @@ public sealed class ProductService
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));
 
         // Check if request contains valid data
-        if (!_validatorCreatedProduct.IsRequestValid(request, out var errorMessages))
+        if (!_validator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
         // Create the database user
         var dbProduct = new ProductEntity()
         {
+            Name = request.Name,
             Description = request.Description,
             Price = request.Price,
             IsActive = request.IsActive,
@@ -126,41 +135,42 @@ public sealed class ProductService
     /// Lists products with an specific term in the description
     /// </summary>
     /// <returns>The result of the operation and a description error.</returns>
-    public IQueryable<ProductEntity> SearchByTerm(IQueryable<ProductEntity> products, string description, out string errorMessages)
+    public IQueryable<ProductObject> SearchByTerm(IQueryable<ProductObject> products, string term)
     {
-        products = products.Where(p => p.Description.ToLower().Contains(description.ToLower()));
-        errorMessages = !products.Any()
-                    ? $"No products with the term '{description}' were found."
-                    : String.Empty;
-        return products;
+        return products.Where(p => p.Name.ToLower().Contains(term.ToLower()));
     }
 
     /// <summary>
     /// Lists products with an specific brand
     /// </summary>
     /// <returns>The result of the operation and a description error.</returns>
-    public IQueryable<ProductEntity> SearchByBrand(IQueryable<ProductEntity> products, string brand, out string errorMessages)
+    public IQueryable<ProductObject> SearchByBrand(IQueryable<ProductObject> products, string brand)
     {
-        products = products.Where(p => p.Brand == brand.ToLower());
-        errorMessages = !products.Any()
-                    ? $"No products with the brand '{brand}' were found."
-                    : String.Empty;
-        return products;
+        return products.Where(p => p.Brand == brand.ToLower());
     }
 
     /// <summary>
     /// Lists products within an specific price range
     /// </summary>
     /// <returns>The result of the operation and a description error.</returns>
-    public IQueryable<ProductEntity> SearchByPriceRange(IQueryable<ProductEntity> products, decimal minPrice, decimal maxPrice, out string errorMessages)
+    public IQueryable<ProductObject> SearchByPriceRange(IQueryable<ProductObject> products, decimal minPrice, decimal maxPrice, out string errorMessages)
     {
+        errorMessages = string.Empty;
         if (maxPrice == 0 && minPrice != 0)
         {
             var mostExpensiveProduct = products
                                         .Where(p => (p.IsActive))
                                         .OrderByDescending(p => (double)p.Price * (1 - (double)p.Discount))
+                                        .Select(p => p.Price)
                                         .First();
-            maxPrice = mostExpensiveProduct.Price;
+            if(mostExpensiveProduct > minPrice)
+            {
+                maxPrice = mostExpensiveProduct;
+            }
+            else
+            {
+                maxPrice = minPrice;
+            }
         }
 
         if (!Validate.IsPositive(minPrice, nameof(minPrice), out var messageError)
@@ -172,13 +182,9 @@ public sealed class ProductService
         }
         else
         {
-            products = products
+            return products
                             .Where(p => ((p.Price * (1 - p.Discount)) >= minPrice)
                                      && ((p.Price * (1 - p.Discount)) <= maxPrice));
-            errorMessages = !products.Any()
-                        ? "No products were found."
-                        : String.Empty;
-            return products;
         }
     }
 
@@ -186,33 +192,25 @@ public sealed class ProductService
     /// Lists products with an active discount
     /// </summary>
     /// <returns>The result of the operation and a description error.</returns>
-    public IQueryable<ProductEntity> SearchByActiveDiscount(IQueryable<ProductEntity> products, out string errorMessages)
+    public IQueryable<ProductObject> SearchByActiveDiscount(IQueryable<ProductObject> products)
     {
-        products = products.Where(p => p.Discount > 0);
-        errorMessages = !products.Any()
-                    ? "No products were found."
-                    : String.Empty;
-        return products;
+        return products.Where(p => p.Discount > 0);
     }
 
     /// <summary>
     /// Lists products with specifics tags
     /// </summary>
     /// <returns>The result of the operation and a description error.</returns>
-    public IQueryable<ProductEntity> SearchByTags(IQueryable<ProductEntity> products, ProductTag tags, out string errorMessages)
+    public IQueryable<ProductObject> SearchByTags(IQueryable<ProductObject> products, ProductTag tags)
     {
-        products = products.Where(p => p.Tags.HasFlag(tags));
-        errorMessages = !products.Any()
-                    ? "No products were found."
-                    : String.Empty;
-        return products;
+        return products.Where(p => p.Tags.HasFlag(tags));
     }
 
     /// <summary>
     /// Sorts products by a given parameter (Ascending Price as default, Descending Price, Ascending Discount, Descending Discount)
     /// </summary>
     /// <returns>The sorted product list.</returns>
-    public IQueryable<ProductEntity> Sort(IQueryable<ProductEntity> products, Enum sortOrder)
+    public IQueryable<ProductObject> Sort(IQueryable<ProductObject> products, Enum sortOrder)
     {
         switch (sortOrder)
         {
