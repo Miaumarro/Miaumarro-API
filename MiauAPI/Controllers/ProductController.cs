@@ -44,6 +44,12 @@ public sealed class ProductController : ControllerBase
         return productsPaged;
     }
 
+    [HttpGet("detail")]
+    [ProducesResponseType(typeof(GetProductByIdResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<GetProductByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)
+        => await _service.GetProductByIdAsync(id);
+
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedProductResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

@@ -96,6 +96,33 @@ public sealed class ProductService
     }
 
     /// <summary>
+    /// Return the product with the given Id.
+    /// </summary>
+    /// <param name="productId">The Id of the product to be searched.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetProductByIdResponse, ErrorResponse>>> GetProductByIdAsync(int productId)
+    {
+
+        var dbProduct = await _db.Products.Where(p => p.Id == productId)
+                                            .Select(p => new ProductObject{
+                                                Id = p.Id,
+                                                Name = p.Name,
+                                                Description = p.Description,
+                                                Brand = p.Brand,
+                                                Price = p.Price,
+                                                IsActive = p.IsActive,
+                                                Amount = p.Amount,
+                                                Tags = p.Tags,
+                                                Discount = p.Discount
+                                            })
+                                            .FirstOrDefaultAsync();
+
+        return dbProduct == null
+                ? new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {productId} was found"))
+                : new OkObjectResult(new GetProductByIdResponse(dbProduct));
+    }
+
+    /// <summary>
     /// Creates a new product.
     /// </summary>
     /// <param name="request">The controller request.</param>
