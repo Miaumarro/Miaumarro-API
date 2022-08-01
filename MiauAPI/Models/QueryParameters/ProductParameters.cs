@@ -1,7 +1,7 @@
 using MiauAPI.Enums;
 using MiauDatabase.Enums;
 
-namespace MiauAPI.Models.Parameters;
+namespace MiauAPI.Models.QueryParameters;
 
 /// <summary>
 /// Set relevant parameters for a product search.

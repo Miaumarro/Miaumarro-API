@@ -1,4 +1,4 @@
-using MiauAPI.Models.Parameters;
+using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Pagination;
@@ -96,6 +96,33 @@ public sealed class ProductService
     }
 
     /// <summary>
+    /// Returns the product with the given Id.
+    /// </summary>
+    /// <param name="productId">The Id of the product to be searched.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetProductByIdResponse, ErrorResponse>>> GetProductByIdAsync(int productId)
+    {
+
+        var dbProduct = await _db.Products.Where(p => p.Id == productId)
+                                            .Select(p => new ProductObject{
+                                                Id = p.Id,
+                                                Name = p.Name,
+                                                Description = p.Description,
+                                                Brand = p.Brand,
+                                                Price = p.Price,
+                                                IsActive = p.IsActive,
+                                                Amount = p.Amount,
+                                                Tags = p.Tags,
+                                                Discount = p.Discount
+                                            })
+                                            .FirstOrDefaultAsync();
+
+        return dbProduct == null
+                ? new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {productId} was found"))
+                : new OkObjectResult(new GetProductByIdResponse(dbProduct));
+    }
+
+    /// <summary>
     /// Creates a new product.
     /// </summary>
     /// <param name="request">The controller request.</param>
@@ -129,6 +156,60 @@ public sealed class ProductService
 
         // TODO: handle authentication properly
         return new CreatedResult(location, new CreatedProductResponse(dbProduct.Id));
+    }
+
+    /// <summary>
+    /// Deletes the product with the given Id.
+    /// </summary>
+    /// <param name="productId">The Id of the product to be deleted.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteProductByIdAsync(int productId)
+    {
+
+        var dbProduct = await _db.Products.FindAsync(productId);
+        if (dbProduct == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {productId} was found"));
+        }
+
+        await _db.Products.DeleteAsync(x => x.Id == productId);
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new DeleteResponse($"Successfull delete product with the Id = {productId}"));
+    }
+
+    /// <summary>
+    /// Updates the product with the given Id.
+    /// </summary>
+    /// <param name="id">The Id of the product to be updated.</param>
+    /// <param name="product">The product object with the parameters to be updated.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateProductByIdAsync(UpdateProductRequest request)
+    {
+
+        var dbProduct = await _db.Products.FindAsync(request.Id);
+
+        if (dbProduct == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {request.Id} was found"));
+        }
+
+        await _db.Products.UpdateAsync(
+                                p => p.Id == request.Id,
+                                _ => new ProductEntity() {
+                                        Id = request.Id,
+                                        Name = request.Name,
+                                        Description = request.Description,
+                                        Brand = request.Brand,
+                                        Price = request.Price,
+                                        IsActive = request.IsActive,
+                                        Amount = request.Amount,
+                                        Tags = request.Tags,
+                                        Discount = request.Discount
+                                });
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new UpdateResponse($"Successfull update product with the Id = {request.Id}"));
     }
 
     /// <summary>
