@@ -172,7 +172,7 @@ public sealed class ProductService
             return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {productId} was found"));
         }
 
-        _db.Products.Remove(dbProduct);
+        await _db.Products.DeleteAsync(x => x.Id == productId);
         await _db.SaveChangesAsync();
 
         return new OkObjectResult(new DeleteResponse($"Successfull delete product with the Id = {productId}"));
@@ -193,16 +193,20 @@ public sealed class ProductService
         {
             return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {request.Id} was found"));
         }
-        dbProduct.Name = request.Name;
-        dbProduct.Description = request.Description;
-        dbProduct.Brand = request.Brand;
-        dbProduct.Price = request.Price;
-        dbProduct.IsActive = request.IsActive;
-        dbProduct.Amount = request.Amount;
-        dbProduct.Tags = request.Tags;
-        dbProduct.Discount = request.Discount;
 
-        _db.Products.Update(dbProduct);
+        await _db.Products.UpdateAsync(
+                                p => p.Id == request.Id,
+                                _ => new ProductEntity() {
+                                        Id = request.Id,
+                                        Name = request.Name,
+                                        Description = request.Description,
+                                        Brand = request.Brand,
+                                        Price = request.Price,
+                                        IsActive = request.IsActive,
+                                        Amount = request.Amount,
+                                        Tags = request.Tags,
+                                        Discount = request.Discount
+                                });
         await _db.SaveChangesAsync();
 
         return new OkObjectResult(new UpdateResponse($"Successfull update product with the Id = {request.Id}"));
