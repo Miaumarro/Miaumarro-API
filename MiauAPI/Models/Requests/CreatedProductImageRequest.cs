@@ -4,6 +4,6 @@ namespace MiauAPI.Models.Requests;
 /// Represents a request for create or update a product iamge.
 /// </summary>
 /// <param name="ProductId">The id of pet's user.</param>
-/// <param name="ImagePath">This Products's image location in the file system.</param>
-public sealed record ProductImageRequest(int ProductId, IFormFile ImagePath);
+/// <param name="ImageFile">This Products's image file.</param>
+public sealed record CreatedProductImageRequest(int ProductId, IFormFile ImageFile);
 

@@ -21,12 +21,10 @@ namespace MiauAPI.Services;
 public sealed class ProductImageService
 {
     private readonly MiauDbContext _db;
-    private readonly IRequestValidator<ProductImageRequest> _validator;
 
-    public ProductImageService(MiauDbContext db, IRequestValidator<ProductImageRequest> validator)
+    public ProductImageService(MiauDbContext db)
     {
         _db = db;
-        _validator = validator;
     }
 
     /// <summary>
@@ -36,20 +34,16 @@ public sealed class ProductImageService
     /// <param name="location">The URL of the new resource or the content of the Location header.</param>
     /// <returns>The result of the operation.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
-    public async Task<ActionResult<OneOf<ProductImageResponse, ErrorResponse>>> CreatedProductImageAsync(ProductImageRequest request, string location)
+    public async Task<ActionResult<OneOf<CreatedProductImageResponse, ErrorResponse>>> CreatedProductImageAsync(CreatedProductImageRequest request, string location)
     {
         if (string.IsNullOrWhiteSpace(location))
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));
 
-        // Checks if request contains valid data
-        if (!_validator.IsRequestValid(request, out var errorMessages))
-            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
-
         // Checks the ProductId
-        var dbProduct = await _db.Products.FirstAsync(x => x.Id == request.ProductId);
+        var dbProduct = await _db.Products.FirstOrDefaultAsync(x => x.Id == request.ProductId);
         if (dbProduct == null)
         {
-            new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {request.ProductId} was found"));
+            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {request.ProductId} was found"));
         }
 
         //Creates the path for the Product Image
@@ -58,10 +52,10 @@ public sealed class ProductImageService
         {
             Directory.CreateDirectory(path);
         }
-        var filename = request.ImagePath.FileName;
+        var filename = request.ImageFile.FileName;
         using (var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create))
         {
-            await request.ImagePath.CopyToAsync(fileStream);
+            await request.ImageFile.CopyToAsync(fileStream);
         }
 
         // Create the database product image
@@ -75,7 +69,7 @@ public sealed class ProductImageService
         await _db.SaveChangesAsync();
 
         // TODO: handle authentication properly
-        return new CreatedResult(location, new ProductImageResponse(dbProductImage.Id));
+        return new CreatedResult(location, new CreatedProductImageResponse(dbProductImage.Id));
     }
 
     /// <summary>

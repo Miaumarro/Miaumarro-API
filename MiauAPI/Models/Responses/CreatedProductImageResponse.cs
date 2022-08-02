@@ -4,4 +4,4 @@ namespace MiauAPI.Models.Responses;
 /// Represents the response given when a product image is successfully created or updated.
 /// </summary>
 /// <param name="Id">The database ID of the product image.</param>
-public sealed record ProductImageResponse(int Id);
+public sealed record CreatedProductImageResponse(int Id);

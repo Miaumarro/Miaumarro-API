@@ -4,11 +4,11 @@ using MiauAPI.Validators.Abstractions;
 namespace MiauAPI.Validators;
 
 /// <summary>
-/// Validates a <see cref="ProductImageRequest"/>.
+/// Validates a <see cref="CreatedProductImageRequest"/>.
 /// </summary>
-public sealed class ProductImageRequestValidator : IRequestValidator<ProductImageRequest>
+public sealed class ProductImageRequestValidator : IRequestValidator<CreatedProductImageRequest>
 {
-    public bool IsRequestValid(ProductImageRequest request, out IEnumerable<string> errorMessages)
+    public bool IsRequestValid(CreatedProductImageRequest request, out IEnumerable<string> errorMessages)
     {
         errorMessages = Enumerable.Empty<string>();
 

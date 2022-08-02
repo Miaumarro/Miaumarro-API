@@ -8,8 +8,8 @@ namespace MiauAPI.Models.QueryObjects;
 /// <param name="ImagePath">The Path of the image.</param>
 public sealed record ProductImageObject
 {
-    public int Id { get; set; }
-    public int ProductId { get; set; }
+    public int Id { get; init; }
+    public int ProductId { get; init; }
     public string ImagePath { get; set; } = null!;
 
 } 

@@ -26,9 +26,9 @@ public sealed class ProductImageController : ControllerBase
         => await _service.GetProductImageAsync(productImageParameters);
 
     [HttpPost("create")]
-    [ProducesResponseType(typeof(ProductImageResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreatedProductImageResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<ProductImageResponse, ErrorResponse>>> RegisterAsync([FromBody] ProductImageRequest productImage)
+    public async Task<ActionResult<OneOf<CreatedProductImageResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedProductImageRequest productImage)
         => await _service.CreatedProductImageAsync(productImage, base.Request.Path.Value!);
 
     [HttpDelete("delete")]
