@@ -19,10 +19,12 @@ public static class IServiceCollectionExt
     {
         return serviceCollection
             .AddScoped<UserService>()
+            .AddScoped<ProductService>()
             .AddScoped<PetService>()
             .AddScoped<AddressService>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
-            .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>(); ;
+            .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>(); 
     }
 }
