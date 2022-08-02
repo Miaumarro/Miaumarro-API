@@ -10,27 +10,27 @@ using OneOf;
 namespace MiauAPI.Services;
 
 /// <summary>
-/// Handles requests pertaining to pet.
+/// Handles requests pertaining to address.
 /// </summary>
-public sealed class PetService
+public sealed class AddressService
 {
     private readonly MiauDbContext _db;
-    private readonly IRequestValidator<CreatedPetRequest> _validator;
+    private readonly IRequestValidator<CreatedAddressRequest> _validator;
 
-    public PetService(MiauDbContext db, IRequestValidator<CreatedPetRequest> validator)
+    public AddressService(MiauDbContext db, IRequestValidator<CreatedAddressRequest> validator)
     {
         _db = db;
         _validator = validator;
     }
 
     /// <summary>
-    /// Creates a new pet.
+    /// Creates a new address.
     /// </summary>
     /// <param name="request">The controller request.</param>
     /// <param name="location">The URL of the new resource or the content of the Location header.</param>
     /// <returns>The result of the operation.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
-    public async Task<ActionResult<OneOf<CreatedPetResponse, ErrorResponse>>> CreatePetAsync(CreatedPetRequest request, string location)
+    public async Task<ActionResult<OneOf<CreatedAddressResponse, ErrorResponse>>> CreateAddressAsync(CreatedAddressRequest request, string location)
     {
         if (string.IsNullOrWhiteSpace(location))
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));
@@ -39,34 +39,25 @@ public sealed class PetService
         if (!_validator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        //Create the path for the Pet Image
-        var path = $"Data/{request.UserId}/pets";
-        if ((!Directory.Exists(path)))
-        {
-            Directory.CreateDirectory(path);
-        }
-        var filename = request.ImagePath.FileName;
-        using (var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create))
-        {
-            await request.ImagePath.CopyToAsync(fileStream);
-        }
-
         // Create the database pet
-        var dbPet = new PetEntity()
+        var dbAddress = new AddressEntity()
         {
             User = _db.Users.First(x => x.Id == request.UserId),
-            Name = request.Name,
-            Type = request.Type,
-            Gender = request.Gender,
-            Breed = request.Breed,
-            ImagePath = "images/" + filename,
-            DateOfBirth = request.DateOfBirth,
+            Address = request.Address,
+            Number = request.Number,
+            Reference = request.Reference,
+            Complement = request.Complement,
+            Neighborhood = request.Neighborhood,
+            City = request.City,
+            State = request.State,
+            Destinatary = request.Destinatary,
+            Cep = request.Cep
         };
 
-        _db.Pets.Add(dbPet);
+        _db.Addresses.Add(dbAddress);
         await _db.SaveChangesAsync();
 
         // TODO: handle authentication properly
-        return new CreatedResult(location, new CreatedPetResponse(dbPet.Id));
+        return new CreatedResult(location, new CreatedPetResponse(dbAddress.Id));
     }
 }

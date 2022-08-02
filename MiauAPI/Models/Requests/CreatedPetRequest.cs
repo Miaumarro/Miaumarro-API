@@ -1,4 +1,3 @@
-using MiauDatabase.Entities;
 using MiauDatabase.Enums;
 
 namespace MiauAPI.Models.Requests;
