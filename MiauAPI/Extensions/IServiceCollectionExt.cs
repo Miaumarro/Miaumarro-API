@@ -20,6 +20,7 @@ public static class IServiceCollectionExt
         return serviceCollection
             .AddScoped<UserService>()
             .AddScoped<ProductService>()
+            .AddScoped<ProductImageService>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>();
     }
