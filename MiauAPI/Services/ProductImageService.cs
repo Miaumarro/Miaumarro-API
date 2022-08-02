@@ -78,4 +78,41 @@ public sealed class ProductImageService
         return new CreatedResult(location, new ProductImageResponse(dbProductImage.Id));
     }
 
+    /// <summary>
+    /// Returns a list of products images.
+    /// </summary>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetProductImageResponse, ErrorResponse>>> GetProductImageAsync(ProductImageParameters productImageParameters)
+    {
+
+        var errorMessages = Enumerable.Empty<string>();
+        var dbProductImages = _db.ProductImages.Select(p => new ProductImageObject
+        {
+            Id = p.Id,
+            ProductId = p.Product.Id,
+            ImagePath = p.FileUrl
+        });
+
+        if (productImageParameters.ProductId != 0)
+        {
+            dbProductImages = dbProductImages.Where(p => p.ProductId == productImageParameters.ProductId);
+        }
+
+        if (productImageParameters.Id != 0)
+        {
+            dbProductImages = dbProductImages.Where(p => p.Id == productImageParameters.Id);
+        }
+
+        var dbProductImagesList = await dbProductImages
+                            .ToListAsync();
+
+        if (dbProductImagesList.Count == 0)
+        {
+            return new NotFoundObjectResult("No product images with the given paramenters were found.");
+        }
+
+        return new OkObjectResult(new GetProductImageResponse(dbProductImagesList));
+
+    }
+
 }
