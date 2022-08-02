@@ -79,7 +79,7 @@ public sealed class ProductImageService
     }
 
     /// <summary>
-    /// Returns a list of products images.
+    /// Returns a list of product images.
     /// </summary>
     /// <returns>The result of the operation.</returns>
     public async Task<ActionResult<OneOf<GetProductImageResponse, ErrorResponse>>> GetProductImageAsync(ProductImageParameters productImageParameters)
@@ -113,6 +113,26 @@ public sealed class ProductImageService
 
         return new OkObjectResult(new GetProductImageResponse(dbProductImagesList));
 
+    }
+
+    /// <summary>
+    /// Deletes the product image with the given Id.
+    /// </summary>
+    /// <param name="id">The id of the product image to be deleted.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteProductImageByIdAsync(int id)
+    {
+
+        var dbProductImage = await _db.ProductImages.FindAsync(id);
+        if (dbProductImage == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No product image with the Id = {id} was found"));
+        }
+
+        await _db.ProductImages.DeleteAsync(x => x.Id == id);
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new DeleteResponse($"Successfull delete product image with the Id = {id}"));
     }
 
 }
