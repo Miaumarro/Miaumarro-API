@@ -46,10 +46,9 @@ public sealed class PetService
             Directory.CreateDirectory(path);
         }
         var filename = request.ImagePath.FileName;
-        using (var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create))
-        {
-            await request.ImagePath.CopyToAsync(fileStream);
-        }
+        using var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create);
+        await request.ImagePath.CopyToAsync(fileStream);
+   
 
         // Create the database pet
         var dbPet = new PetEntity()
@@ -59,7 +58,7 @@ public sealed class PetService
             Type = request.Type,
             Gender = request.Gender,
             Breed = request.Breed,
-            ImagePath = "images/" + filename,
+            ImagePath = $"Data/{request.UserId}/pets" + filename,
             DateOfBirth = request.DateOfBirth,
         };
 

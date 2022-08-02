@@ -27,20 +27,6 @@ public sealed class CreatedPetRequestValidator : IRequestValidator<CreatedPetReq
             errorMessages = errorMessages.Append(nameError);
         }
 
-        // Check PetType
-        if (Validate.IsNull(request.Type, nameof(request.Type), out var typeError)) 
-            //Falta adicionar função que verifica se o tipo é válido no Enum PetType
-        {
-            errorMessages = errorMessages.Append(typeError);
-        }
-
-        // Check PetGender
-        if (Validate.IsNull(request.Gender, nameof(request.Gender), out var genderError)) 
-            //Falta adicionar função que verifica se o gênero é válido no Enum PetGender
-        {
-            errorMessages = errorMessages.Append(genderError);
-        }
-
         // Check breed
         if (!Validate.IsTextInRange(request.Breed, 30, nameof(request.Breed), out var breedError))
         {
@@ -50,7 +36,6 @@ public sealed class CreatedPetRequestValidator : IRequestValidator<CreatedPetReq
         // Check DateOfBirth
         if (Validate.IsNull(request.DateOfBirth, nameof(request.DateOfBirth), out var dateOfBirthError) 
             || !Validate.IsDateValid(request.DateOfBirth, nameof(request.DateOfBirth), out dateOfBirthError))
-        //Acho que precisa adicionar um validador para verificar se a data é válida (se não é no futuro ou se o pet tem mais de 30 anos, não sei)
         {
             errorMessages = errorMessages.Append(dateOfBirthError);
         }
