@@ -21,6 +21,7 @@ public static class IServiceCollectionExt
             .AddScoped<UserService>()
             .AddScoped<PetService>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
-            .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>();
+            .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>(); ;
     }
 }
