@@ -53,16 +53,14 @@ public sealed class ProductImageService
             Directory.CreateDirectory(path);
         }
         var filename = request.ImageFile.FileName;
-        using (var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create))
-        {
-            await request.ImageFile.CopyToAsync(fileStream);
-        }
+        using var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create);
+        await request.ImageFile.CopyToAsync(fileStream);
 
         // Create the database product image
         var dbProductImage = new ProductImageEntity()
         {
             Product = dbProduct!,
-            FileUrl = $"images/{request.ProductId}/" + filename
+            FileUrl = $"Data/{request.ProductId}/images/" + filename
         };
 
         await _db.ProductImages.AddAsync(dbProductImage);
