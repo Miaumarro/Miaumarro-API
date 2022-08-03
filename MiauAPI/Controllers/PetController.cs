@@ -44,6 +44,12 @@ public sealed class PetController : ControllerBase
         return petsPaged;
     }
 
+    [HttpGet("detail")]
+    [ProducesResponseType(typeof(GetPetByIdResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<GetPetByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)
+    => await _service.GetPetByIdAsync(id);
+
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedPetResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

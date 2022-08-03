@@ -129,4 +129,31 @@ public sealed class PetService
 
         return new OkObjectResult(new GetPetResponse(dbPetsPaged));
     }
+
+    /// <summary>
+    /// Return the pet with the given Id.
+    /// </summary>
+    /// <param name="petId">The Id of the pet to be searched.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetPetByIdResponse, ErrorResponse>>> GetPetByIdAsync(int petId)
+    {
+
+        var dbPet = await _db.Pets.Where(p => p.Id == petId)
+                                            .Select(p => new PetObject
+                                            {
+                                                UserId = p.User.Id,
+                                                Id = p.Id,
+                                                Name = p.Name,
+                                                Type = p.Type,
+                                                Gender = p.Gender,
+                                                Breed = p.Breed!,
+                                                ImagePath = p.ImagePath!,
+                                                DateOfBirth = p.DateOfBirth
+                                            })
+                                            .FirstOrDefaultAsync();
+
+        return dbPet == null
+                ? new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {petId} was found"))
+                : new OkObjectResult(new GetPetByIdResponse(dbPet));
+    }
 }
