@@ -24,6 +24,7 @@ public static class IServiceCollectionExt
             .AddScoped<AppointmentService>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
-            .AddSingleton<IRequestValidator<CreatedAppointmentRequest>, CreatedAppointmentRequestValidator>();
+            .AddSingleton<IRequestValidator<CreatedAppointmentRequest>, CreatedAppointmentRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdateAppointmentRequest>, UpdateAppointmentRequestValidator>();
     }
 }

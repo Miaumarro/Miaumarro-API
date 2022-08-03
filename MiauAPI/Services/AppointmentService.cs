@@ -22,11 +22,13 @@ public sealed class AppointmentService
 {
     private readonly MiauDbContext _db;
     private readonly IRequestValidator<CreatedAppointmentRequest> _validator;
+    private readonly IRequestValidator<UpdateAppointmentRequest> _validatorUpdate;
 
-    public AppointmentService(MiauDbContext db, IRequestValidator<CreatedAppointmentRequest> validator)
+    public AppointmentService(MiauDbContext db, IRequestValidator<CreatedAppointmentRequest> validator, IRequestValidator<UpdateAppointmentRequest> validatorUpdate)
     {
         _db = db;
         _validator = validator;
+        _validatorUpdate = validatorUpdate;
     }
 
     /// <summary>
@@ -153,5 +155,47 @@ public sealed class AppointmentService
         await _db.SaveChangesAsync();
 
         return new OkObjectResult(new DeleteResponse($"Successfull delete appointment with the Id = {appointmentId}"));
+    }
+
+    /// <summary>
+    /// Updates an appointment.
+    /// </summary>
+    /// <param name="request">The controller request.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateAppointmentByIdAsync(UpdateAppointmentRequest request)
+    {
+        // Check if request contains valid data
+        if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))
+            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
+
+        var dbAppointment = await _db.Appointments.FindAsync(request.Id);
+
+        if (dbAppointment == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No appointment with the Id = {request.Id} was found"));
+        }
+
+        // Checks the PetId
+        var dbPet = await _db.Pets.FirstOrDefaultAsync(x => x.Id == request.PetId);
+        if (dbPet == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No pet with the Id = {request.PetId} was found"));
+        }
+
+        dbAppointment = new AppointmentEntity()
+        {
+            Id = request.Id,
+            Pet = dbPet,
+            Price = request.Price,
+            Type = request.Type,
+            ScheduledTime = request.ScheduledTime
+        };
+
+        _db.Appointments.Update(dbAppointment);
+
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new UpdateResponse($"Successfull update appointment with the Id = {request.Id}"));
+
     }
 }

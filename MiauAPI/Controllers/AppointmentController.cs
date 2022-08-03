@@ -19,13 +19,6 @@ public sealed class AppointmentController : ControllerBase
     public AppointmentController(AppointmentService service)
         => _service = service;
 
-
-    [HttpPost("create")]
-    [ProducesResponseType(typeof(CreatedAppointmentResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<CreatedAppointmentResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedAppointmentRequest appointment)
-        => await _service.CreateAppointmentAsync(appointment, base.Request.Path.Value!);
-
     [HttpGet()]
     [ProducesResponseType(typeof(GetAppointmentResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -57,10 +50,22 @@ public sealed class AppointmentController : ControllerBase
     public async Task<ActionResult<OneOf<GetAppointmentByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)
     => await _service.GetAppointmentByIdAsync(id);
 
+    [HttpPost("create")]
+    [ProducesResponseType(typeof(CreatedAppointmentResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<CreatedAppointmentResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedAppointmentRequest appointment)
+        => await _service.CreateAppointmentAsync(appointment, base.Request.Path.Value!);
+
     [HttpDelete("delete")]
     [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
         => await _service.DeleteAppointmentByIdAsync(id);
+
+    [HttpPut("update")]
+    [ProducesResponseType(typeof(UpdateResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateAppointmentRequest appointment)
+        => await _service.UpdateAppointmentByIdAsync(appointment);
 
 }
