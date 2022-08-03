@@ -48,7 +48,7 @@ public sealed record PetEntity : MiauDbEntity
     /// This pet's image location in the file system.
     /// </summary>
     [MaxLength(256)]
-    public string? ImageFileUrl { get; set; }
+    public string? ImagePath { get; set; }
 
     /// <summary>
     /// This pet's date of birth.

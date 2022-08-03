@@ -1,4 +1,3 @@
-using MiauDatabase.Enums;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
@@ -144,6 +143,23 @@ public static class Validate
     }
 
     /// <summary>
+    /// Checks if <paramref name="date"/> is valid.
+    /// </summary>
+    /// <param name="date">The date to be checked.</param>
+    /// <param name="paramName">The name of the string parameter.</param>
+    /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
+    /// <returns><see langword="true"/> if <paramref name="text"/> the date is valid, <see langword="false"/> otherwise.</returns>
+    /// <exception cref="ArgumentNullException">Occurs when <paramref name="text"/> is <see langword="null"/>.</exception>
+    public static bool IsDateValid(DateTime date, string paramName, [MaybeNullWhen(true)] out string errorMessage)
+    {
+        ArgumentNullException.ThrowIfNull(date, paramName);
+        errorMessage = (date >= DateTime.UtcNow)
+           ? $"{paramName} must be a valid date."
+           : null;
+        return errorMessage is null;
+    }
+
+    /// <summary>
     /// Checks if <paramref name="value"/> is a positive number.
     /// </summary>
     /// <param name="value">The number to be checked.</param>
@@ -202,5 +218,4 @@ public static class Validate
         errorMessage = $" {paranNameMax} must be greater than {paranNameMin}. {paranNameMin}: {minValue}, {paranNameMax}: {maxValue}";
         return false;
     }
-
 }
