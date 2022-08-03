@@ -134,4 +134,24 @@ public sealed class AppointmentService
                 ? new NotFoundObjectResult(new ErrorResponse($"No appointment with the Id = {appointmentId} was found"))
                 : new OkObjectResult(new GetAppointmentByIdResponse(dbAppointment));
     }
+
+    /// <summary>
+    /// Deletes the appointment with the given Id.
+    /// </summary>
+    /// <param name="appointmentId">The Id of the appointment to be deleted.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteAppointmentByIdAsync(int appointmentId)
+    {
+
+        var dbAppointment = await _db.Appointments.FindAsync(appointmentId);
+        if (dbAppointment == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No appointment with the Id = {appointmentId} was found"));
+        }
+
+        await _db.Appointments.DeleteAsync(p => p.Id == appointmentId);
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new DeleteResponse($"Successfull delete appointment with the Id = {appointmentId}"));
+    }
 }

@@ -57,4 +57,10 @@ public sealed class AppointmentController : ControllerBase
     public async Task<ActionResult<OneOf<GetAppointmentByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)
     => await _service.GetAppointmentByIdAsync(id);
 
+    [HttpDelete("delete")]
+    [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
+        => await _service.DeleteAppointmentByIdAsync(id);
+
 }
