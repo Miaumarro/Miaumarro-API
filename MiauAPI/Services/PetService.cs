@@ -156,4 +156,25 @@ public sealed class PetService
                 ? new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {petId} was found"))
                 : new OkObjectResult(new GetPetByIdResponse(dbPet));
     }
+
+    /// <summary>
+    /// Deletes the pet with the given Id.
+    /// </summary>
+    /// <param name="petId">The Id of the pet to be deleted.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeletePetByIdAsync(int petId)
+    {
+
+        var dbPet = await _db.Pets.FindAsync(petId);
+        if (dbPet == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {petId} was found"));
+        }
+
+        await _db.Pets.DeleteAsync(p => p.Id == petId);
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new DeleteResponse($"Successfull delete product with the Id = {petId}"));
+    }
+
 }
