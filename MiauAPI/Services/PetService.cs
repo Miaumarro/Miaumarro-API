@@ -47,6 +47,8 @@ public sealed class PetService
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
         // Checks the UserId
+        if(request.UserId == 0)
+            return new BadRequestObjectResult(new ErrorResponse($"The pet must be related to a user. 'UserId = {request.UserId}'"));
         var dbUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
         if (dbUser == null)
         {
@@ -70,7 +72,6 @@ public sealed class PetService
         }
 
         // Create the database pet
-
         var dbPet = new PetEntity()
         {
             User = dbUser,
@@ -89,4 +90,43 @@ public sealed class PetService
         return new CreatedResult(location, new CreatedPetResponse(dbPet.Id));
     }
 
+    /// <summary>
+    /// Returns a list of pets.
+    /// </summary>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetPetResponse, ErrorResponse>>> GetPetAsync(PetParameters petParameters)
+    {
+
+        var errorMessages = Enumerable.Empty<string>();
+        var dbPets = _db.Pets.Select(p => new PetObject
+        {
+            UserId = p.User.Id,
+            Id = p.Id,
+            Name = p.Name,
+            Type = p.Type,
+            Gender = p.Gender,
+            Breed = p.Breed!,
+            ImagePath = p.ImagePath!,
+            DateOfBirth = p.DateOfBirth
+        });
+
+        if (petParameters.UserId != 0)
+        {
+            dbPets = dbPets.Where(p => p.UserId == petParameters.UserId);
+        }
+
+        var dbPetsList = await dbPets.ToListAsync();
+
+        if (dbPetsList.Count == 0)
+        {
+            return new NotFoundObjectResult("No product images with the given paramenters were found.");
+        }
+
+        var dbPetsPaged = PagedList<PetObject>.ToPagedList(
+                        dbPetsList,
+                        petParameters.PageNumber,
+                        petParameters.PageSize);
+
+        return new OkObjectResult(new GetPetResponse(dbPetsPaged));
+    }
 }

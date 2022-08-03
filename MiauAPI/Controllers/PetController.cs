@@ -19,6 +19,31 @@ public sealed class PetController : ControllerBase
     public PetController(PetService service)
         => _service = service;
 
+    [HttpGet()]
+    [ProducesResponseType(typeof(GetPetResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<GetPetResponse, ErrorResponse>>> GetAsync([FromQuery] PetParameters petParameters)
+    {
+        var petsPaged = await _service.GetPetAsync(petParameters);
+
+        if (petsPaged.Result is OkObjectResult response && response.Value is GetPetResponse petResponse)
+        {
+            var metadata = new
+            {
+                petResponse.Pets.TotalCount,
+                petResponse.Pets.PageSize,
+                petResponse.Pets.CurrentPage,
+                petResponse.Pets.TotalPages,
+                petResponse.Pets.HasNext,
+                petResponse.Pets.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+
+        }
+        return petsPaged;
+    }
+
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedPetResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
