@@ -16,7 +16,7 @@ using MiauAPI.Models.QueryObjects;
 namespace MiauAPI.Services;
 
 /// <summary>
-/// Handles requests pertaining to products.
+/// Handles requests pertaining to appointments.
 /// </summary>
 public sealed class AppointmentService
 {
@@ -61,10 +61,52 @@ public sealed class AppointmentService
             ScheduledTime = request.ScheduledTime
         };
 
-        await _db.Appointments.AddAsync(dbAppointment);
+        _db.Appointments.Update(dbAppointment);
         await _db.SaveChangesAsync();
 
         // TODO: handle authentication properly
         return new CreatedResult(location, new CreatedAppointmentResponse(dbAppointment.Id));
+    }
+
+    /// <summary>
+    /// Returns a list of appointments.
+    /// </summary>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetAppointmentResponse, ErrorResponse>>> GetAppointmentAsync(AppointmentParameters appointmentParameters)
+    {
+
+        var dbAppointments = _db.Appointments.Select(p => new AppointmentObject
+        {
+            Id = p.Id,
+            UserId = p.Pet.User.Id,
+            PetId = p.Pet.Id,
+            Price = p.Price,
+            Type = p.Type,
+            ScheduledTime = p.ScheduledTime
+        });
+
+        if (appointmentParameters.UserId != 0)
+        {
+            dbAppointments = dbAppointments.Where(p => p.UserId == appointmentParameters.UserId);
+        }
+
+        if (appointmentParameters.PetId != 0)
+        {
+            dbAppointments = dbAppointments.Where(p => p.PetId == appointmentParameters.PetId);
+        }
+
+        var dbAppointmentsList = await dbAppointments.ToListAsync();
+
+        if (dbAppointmentsList.Count == 0)
+        {
+            return new NotFoundObjectResult("No appointments with the given paramenters were found.");
+        }
+
+        var dbAppointmentsPaged = PagedList<AppointmentObject>.ToPagedList(
+                        dbAppointmentsList,
+                        appointmentParameters.PageNumber,
+                        appointmentParameters.PageSize);
+
+        return new OkObjectResult(new GetAppointmentResponse(dbAppointmentsPaged));
     }
 }
