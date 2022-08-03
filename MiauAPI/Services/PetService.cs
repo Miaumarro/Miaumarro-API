@@ -1,11 +1,18 @@
+using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
+using MiauAPI.Pagination;
 using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using OneOf;
+using MiauAPI.Validators;
+using LinqToDB;
+using MiauDatabase.Enums;
+using MiauAPI.Enums;
+using MiauAPI.Models.QueryObjects;
+
 
 namespace MiauAPI.Services;
 
@@ -46,7 +53,6 @@ public sealed class PetService
             return new NotFoundObjectResult(new ErrorResponse($"No User with the Id = {request.UserId} was found"));
         }
 
-
         string? imagePath = null;
 
         //Create the path for the Pet Image
@@ -62,9 +68,9 @@ public sealed class PetService
             await request.ImagePath.CopyToAsync(fileStream);
             imagePath = $"Data/{request.UserId}/pets" + filename;
         }
-   
 
         // Create the database pet
+
         var dbPet = new PetEntity()
         {
             User = dbUser,
@@ -73,13 +79,14 @@ public sealed class PetService
             Gender = request.Gender,
             Breed = request.Breed,
             ImagePath = imagePath,
-            DateOfBirth = request.DateOfBirth,
+            DateOfBirth = request.DateOfBirth
         };
 
-        await _db.Pets.AddAsync(dbPet);
+        _db.Pets.Update(dbPet);
         await _db.SaveChangesAsync();
 
         // TODO: handle authentication properly
         return new CreatedResult(location, new CreatedPetResponse(dbPet.Id));
     }
+
 }
