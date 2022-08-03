@@ -22,9 +22,11 @@ public static class IServiceCollectionExt
             .AddScoped<ProductService>()
             .AddScoped<PetService>()
             .AddScoped<AddressService>()
+            .AddScoped<ProductReviewService>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
-            .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>(); 
+            .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedProductReviewRequest>, CreatedProductReviewRequestValidator>();
     }
 }
