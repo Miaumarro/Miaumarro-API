@@ -39,30 +39,44 @@ public sealed class PetService
         if (!_validator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        //Create the path for the Pet Image
-        var path = $"Data/{request.UserId}/pets";
-        if ((!Directory.Exists(path)))
+        // Checks the UserId
+        var dbUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
+        if (dbUser == null)
         {
-            Directory.CreateDirectory(path);
+            return new NotFoundObjectResult(new ErrorResponse($"No User with the Id = {request.UserId} was found"));
         }
-        var filename = request.ImagePath.FileName;
-        using var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create);
-        await request.ImagePath.CopyToAsync(fileStream);
+
+
+        string? imagePath = null;
+
+        //Create the path for the Pet Image
+        if (request.ImagePath != null)
+        {
+            var path = $"Data/{request.UserId}/pets";
+            if ((!Directory.Exists(path)))
+            {
+                Directory.CreateDirectory(path);
+            }
+            var filename = request.ImagePath.FileName!;
+            using var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create);
+            await request.ImagePath.CopyToAsync(fileStream);
+            imagePath = $"Data/{request.UserId}/pets" + filename;
+        }
    
 
         // Create the database pet
         var dbPet = new PetEntity()
         {
-            User = _db.Users.First(x => x.Id == request.UserId),
+            User = dbUser,
             Name = request.Name,
             Type = request.Type,
             Gender = request.Gender,
             Breed = request.Breed,
-            ImagePath = $"Data/{request.UserId}/pets" + filename,
+            ImagePath = imagePath,
             DateOfBirth = request.DateOfBirth,
         };
 
-        _db.Pets.Add(dbPet);
+        await _db.Pets.AddAsync(dbPet);
         await _db.SaveChangesAsync();
 
         // TODO: handle authentication properly
