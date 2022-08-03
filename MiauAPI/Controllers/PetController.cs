@@ -62,4 +62,10 @@ public sealed class PetController : ControllerBase
     public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
         => await _service.DeletePetByIdAsync(id);
 
+    [HttpPut("update")]
+    [ProducesResponseType(typeof(UpdateResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdatePetRequest pet)
+        => await _service.UpdatePetByIdAsync(pet);
+
 }

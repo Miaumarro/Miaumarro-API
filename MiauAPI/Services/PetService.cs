@@ -23,11 +23,13 @@ public sealed class PetService
 {
     private readonly MiauDbContext _db;
     private readonly IRequestValidator<CreatedPetRequest> _validator;
+    private readonly IRequestValidator<UpdatePetRequest> _validatorUpdate;
 
-    public PetService(MiauDbContext db, IRequestValidator<CreatedPetRequest> validator)
+    public PetService(MiauDbContext db, IRequestValidator<CreatedPetRequest> validator, IRequestValidator<UpdatePetRequest> validatorUpdate)
     {
         _db = db;
         _validator = validator;
+        _validatorUpdate = validatorUpdate;
     }
 
     /// <summary>
@@ -97,7 +99,6 @@ public sealed class PetService
     public async Task<ActionResult<OneOf<GetPetResponse, ErrorResponse>>> GetPetAsync(PetParameters petParameters)
     {
 
-        var errorMessages = Enumerable.Empty<string>();
         var dbPets = _db.Pets.Select(p => new PetObject
         {
             UserId = p.User.Id,
@@ -119,7 +120,7 @@ public sealed class PetService
 
         if (dbPetsList.Count == 0)
         {
-            return new NotFoundObjectResult("No product images with the given paramenters were found.");
+            return new NotFoundObjectResult("No pets with the given paramenters were found.");
         }
 
         var dbPetsPaged = PagedList<PetObject>.ToPagedList(
@@ -141,8 +142,8 @@ public sealed class PetService
         var dbPet = await _db.Pets.Where(p => p.Id == petId)
                                             .Select(p => new PetObject
                                             {
-                                                UserId = p.User.Id,
                                                 Id = p.Id,
+                                                UserId = p.User.Id,
                                                 Name = p.Name,
                                                 Type = p.Type,
                                                 Gender = p.Gender,
@@ -153,7 +154,7 @@ public sealed class PetService
                                             .FirstOrDefaultAsync();
 
         return dbPet == null
-                ? new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {petId} was found"))
+                ? new NotFoundObjectResult(new ErrorResponse($"No pet with the Id = {petId} was found"))
                 : new OkObjectResult(new GetPetByIdResponse(dbPet));
     }
 
@@ -168,13 +169,76 @@ public sealed class PetService
         var dbPet = await _db.Pets.FindAsync(petId);
         if (dbPet == null)
         {
-            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {petId} was found"));
+            return new NotFoundObjectResult(new ErrorResponse($"No pet with the Id = {petId} was found"));
         }
 
         await _db.Pets.DeleteAsync(p => p.Id == petId);
         await _db.SaveChangesAsync();
 
-        return new OkObjectResult(new DeleteResponse($"Successfull delete product with the Id = {petId}"));
+        return new OkObjectResult(new DeleteResponse($"Successfull delete pet with the Id = {petId}"));
+    }
+
+    /// <summary>
+    /// Updates a pet.
+    /// </summary>
+    /// <param name="request">The controller request.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdatePetByIdAsync(UpdatePetRequest request)
+    {
+        // Check if request contains valid data
+        if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))
+            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
+
+        var dbPet = await _db.Pets.FindAsync(request.Id);
+
+        if (dbPet == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No pet with the Id = {request.Id} was found"));
+        }
+
+        // Checks the UserId
+        if (request.UserId == 0)
+            return new BadRequestObjectResult(new ErrorResponse($"The pet must be related to a user. 'UserId = {request.UserId}'"));
+        var dbUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
+        if (dbUser == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No User with the Id = {request.UserId} was found"));
+        }
+
+        string? imagePath = null;
+
+        //Create the path for the Pet Image
+        if (request.ImagePath != null)
+        {
+            var path = $"Data/{request.UserId}/pets";
+            if ((!Directory.Exists(path)))
+            {
+                Directory.CreateDirectory(path);
+            }
+            var filename = request.ImagePath.FileName!;
+            using var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create);
+            await request.ImagePath.CopyToAsync(fileStream);
+            imagePath = $"Data/{request.UserId}/pets" + filename;
+        }
+
+        dbPet = new PetEntity()
+        {
+            Id = request.Id,
+            User = dbUser,
+            Name = request.Name,
+            Type = request.Type,
+            Gender = request.Gender,
+            Breed = request.Breed,
+            ImagePath = imagePath,
+            DateOfBirth = request.DateOfBirth
+        };
+
+        _db.Pets.Update(dbPet);
+
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new UpdateResponse($"Successfull update pet with the Id = {request.Id}"));
+
     }
 
 }
