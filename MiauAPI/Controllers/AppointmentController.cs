@@ -51,4 +51,10 @@ public sealed class AppointmentController : ControllerBase
         return appointmentsPaged;
     }
 
+    [HttpGet("detail")]
+    [ProducesResponseType(typeof(GetAppointmentByIdResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<GetAppointmentByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)
+    => await _service.GetAppointmentByIdAsync(id);
+
 }

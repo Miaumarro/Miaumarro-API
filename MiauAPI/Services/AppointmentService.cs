@@ -109,4 +109,29 @@ public sealed class AppointmentService
 
         return new OkObjectResult(new GetAppointmentResponse(dbAppointmentsPaged));
     }
+
+    /// <summary>
+    /// Return the appointment with the given Id.
+    /// </summary>
+    /// <param name="appointmentId">The Id of the appointment to be searched.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetAppointmentByIdResponse, ErrorResponse>>> GetAppointmentByIdAsync(int appointmentId)
+    {
+
+        var dbAppointment = await _db.Appointments.Where(p => p.Id == appointmentId)
+                                            .Select(p => new AppointmentObject
+                                            {
+                                                Id = p.Id,
+                                                UserId = p.Pet.User.Id,
+                                                PetId = p.Pet.Id,
+                                                Price = p.Price,
+                                                Type = p.Type,
+                                                ScheduledTime = p.ScheduledTime
+                                            })
+                                            .FirstOrDefaultAsync();
+
+        return dbAppointment == null
+                ? new NotFoundObjectResult(new ErrorResponse($"No appointment with the Id = {appointmentId} was found"))
+                : new OkObjectResult(new GetAppointmentByIdResponse(dbAppointment));
+    }
 }
