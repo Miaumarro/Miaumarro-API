@@ -19,11 +19,13 @@ public sealed class AddressService
 {
     private readonly MiauDbContext _db;
     private readonly IRequestValidator<CreatedAddressRequest> _validator;
+    private readonly IRequestValidator<UpdateAddressRequest> _validatorUpdate;
 
-    public AddressService(MiauDbContext db, IRequestValidator<CreatedAddressRequest> validator)
+    public AddressService(MiauDbContext db, IRequestValidator<CreatedAddressRequest> validator, IRequestValidator<UpdateAddressRequest> validatorUpdate)
     {
         _db = db;
         _validator = validator;
+        _validatorUpdate = validatorUpdate;
     }
 
     /// <summary>
@@ -155,6 +157,56 @@ public sealed class AddressService
         return ((await _db.Addresses.DeleteAsync(p => p.Id == addressId)) is 0)
             ? new NotFoundObjectResult(new ErrorResponse($"No address with the Id = {addressId} was found"))
             : new OkObjectResult(new DeleteResponse($"Successful delete address with the Id = {addressId}"));
+    }
+
+    /// <summary>
+    /// Updates an address.
+    /// </summary>
+    /// <param name="request">The controller request.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateAddressByIdAsync(UpdateAddressRequest request)
+    {
+        // Check if request contains valid data
+        if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))
+            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
+
+        var dbAddress = await _db.Addresses.FindAsync(request.Id);
+
+        if (dbAddress == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No address with the Id = {request.Id} was found"));
+        }
+
+        // Checks the UserId
+        if (request.UserId == 0)
+            return new BadRequestObjectResult(new ErrorResponse($"The address must be related to a user. 'UserId = {request.UserId}'"));
+        var dbUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
+        if (dbUser == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No user with the Id = {request.UserId} was found"));
+        }
+
+        dbAddress = new AddressEntity()
+        {
+            Id = request.Id,
+            User = dbUser,
+            Address = request.Address,
+            Number = request.Number,
+            Reference = request.Reference,
+            Complement = request.Complement,
+            Neighborhood = request.Neighborhood,
+            City = request.City,
+            State = request.State,
+            Destinatary = request.Destinatary,
+            Cep = request.Cep
+        };
+
+        _db.Addresses.Update(dbAddress);
+
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new UpdateResponse($"Successful update address with the Id = {request.Id}"));
+
     }
 
 }

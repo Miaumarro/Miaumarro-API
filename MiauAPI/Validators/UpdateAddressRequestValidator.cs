@@ -4,11 +4,11 @@ using MiauAPI.Validators.Abstractions;
 namespace MiauAPI.Validators;
 
 /// <summary>
-/// Validates a <see cref="CreatedAddressRequest"/>.
+/// Validates a <see cref="UpdateAddressRequest"/>.
 /// </summary>
-public sealed class CreatedAddressRequestValidator : IRequestValidator<CreatedAddressRequest>
+public sealed class UpdateAddressRequestValidator : IRequestValidator<UpdateAddressRequest>
 {
-    public bool IsRequestValid(CreatedAddressRequest request, out IEnumerable<string> errorMessages)
+    public bool IsRequestValid(UpdateAddressRequest request, out IEnumerable<string> errorMessages)
     {
         errorMessages = Enumerable.Empty<string>();
 
