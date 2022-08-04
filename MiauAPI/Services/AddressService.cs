@@ -39,10 +39,19 @@ public sealed class AddressService
         if (!_validator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        // Create the database pet
+        // Checks the UserId
+        if (request.UserId == 0)
+            return new BadRequestObjectResult(new ErrorResponse($"The address must be related to a user. 'UserId = {request.UserId}'"));
+        var dbUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
+        if (dbUser == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No User with the Id = {request.UserId} was found"));
+        }
+
+        // Create the database address
         var dbAddress = new AddressEntity()
         {
-            User = _db.Users.First(x => x.Id == request.UserId),
+            User = dbUser,
             Address = request.Address,
             Number = request.Number,
             Reference = request.Reference,
@@ -54,10 +63,10 @@ public sealed class AddressService
             Cep = request.Cep
         };
 
-        _db.Addresses.Add(dbAddress);
+        _db.Addresses.Update(dbAddress);
         await _db.SaveChangesAsync();
 
         // TODO: handle authentication properly
-        return new CreatedResult(location, new CreatedPetResponse(dbAddress.Id));
+        return new CreatedResult(location, new CreatedAddressResponse(dbAddress.Id));
     }
 }

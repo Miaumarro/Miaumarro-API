@@ -32,13 +32,15 @@ public sealed class CreatedAddressRequestValidator : IRequestValidator<CreatedAd
         }
 
         // Check reference
-        if (!Validate.IsTextInRange(request.Reference, 100, nameof(request.Reference), out var referenceError))
+        if (request.Reference != null &&
+            !Validate.IsTextInRange(request.Reference, 100, nameof(request.Reference), out var referenceError))
         {
             errorMessages = errorMessages.Append(referenceError);
         }
 
         // Check complement
-        if (!Validate.IsTextInRange(request.Complement, 15, nameof(request.Complement), out var complementError))
+        if (request.Complement != null &&
+            !Validate.IsTextInRange(request.Complement, 15, nameof(request.Complement), out var complementError))
         {
             errorMessages = errorMessages.Append(complementError);
         }
@@ -65,14 +67,15 @@ public sealed class CreatedAddressRequestValidator : IRequestValidator<CreatedAd
         }
 
         // Check destinatary
-        if (!Validate.IsTextInRange(request.Destinatary, 60, nameof(request.Destinatary), out var destinataryError))
+        if (request.Destinatary != null && 
+            !Validate.IsTextInRange(request.Destinatary, 60, nameof(request.Destinatary), out var destinataryError))
         {
             errorMessages = errorMessages.Append(destinataryError);
         }
 
         // Check CEP
         if (Validate.IsNull(request.Cep, nameof(request.Cep), out var cepError)
-            || !Validate.IsTextInRange(request.Cep, 10, nameof(request.Cep), out cepError))
+            || !Validate.IsTextInRange(request.Cep, 8, 8, nameof(request.Cep), out cepError))
         {
             errorMessages = errorMessages.Append(cepError);
         }
