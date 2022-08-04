@@ -10,27 +10,27 @@ using OneOf;
 namespace MiauAPI.Services;
 
 /// <summary>
-/// Handles requests pertaining to product review.
+/// Handles requests pertaining to wishlist.
 /// </summary>
-public sealed class ProductReviewService
+public sealed class WishlistService
 {
     private readonly MiauDbContext _db;
-    private readonly IRequestValidator<CreatedProductReviewRequest> _validator;
+    private readonly IRequestValidator<CreatedWishlistItemRequest> _validator;
 
-    public ProductReviewService(MiauDbContext db, IRequestValidator<CreatedProductReviewRequest> validator)
+    public WishlistService(MiauDbContext db, IRequestValidator<CreatedWishlistItemRequest> validator)
     {
         _db = db;
         _validator = validator;
     }
 
     /// <summary>
-    /// Creates a new product review.
+    /// Creates a new wishlist item.
     /// </summary>
     /// <param name="request">The controller request.</param>
     /// <param name="location">The URL of the new resource or the content of the Location header.</param>
     /// <returns>The result of the operation.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
-    public async Task<ActionResult<OneOf<CreatedProductReviewResponse, ErrorResponse>>> CreateProductReviewAsync(CreatedProductReviewRequest request, string location)
+    public async Task<ActionResult<OneOf<CreatedWishlistItemResponse, ErrorResponse>>> CreateWishlistItemAsync(CreatedWishlistItemRequest request, string location)
     {
         if (string.IsNullOrWhiteSpace(location))
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));
@@ -39,19 +39,17 @@ public sealed class ProductReviewService
         if (!_validator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        // Create the database product review
-        var dbProductReview = new ProductReviewEntity()
+        // Create the database wishlist item
+        var dbWishlistItem = new WishlistEntity()
         {
             User = _db.Users.First(x => x.Id == request.UserId),
-            Product = _db.Products.First(x => x.Id == request.ProductId),
-            Description = request.Description,
-            Score = request.Score
+            Product = _db.Products.First(x => x.Id == request.ProductId)
         };
 
-        _db.ProductReviews.Add(dbProductReview);
+        _db.Wishlist.Add(dbWishlistItem);
         await _db.SaveChangesAsync();
 
         // TODO: handle authentication properly
-        return new CreatedResult(location, new CreatedPetResponse(dbProductReview.Id));
+        return new CreatedResult(location, new CreatedPetResponse(dbWishlistItem.Id));
     }
 }
