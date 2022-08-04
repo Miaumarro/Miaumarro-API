@@ -1,6 +1,3 @@
-using MiauAPI.Enums;
-using MiauDatabase.Enums;
-
 namespace MiauAPI.Models.QueryParameters;
 
 /// <summary>

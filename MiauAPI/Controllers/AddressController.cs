@@ -19,6 +19,31 @@ public sealed class AddressController : ControllerBase
     public AddressController(AddressService service)
         => _service = service;
 
+    [HttpGet()]
+    [ProducesResponseType(typeof(GetAddressResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<GetAddressResponse, ErrorResponse>>> GetAsync([FromQuery] AddressParameters addressParameters)
+    {
+        var adressesPaged = await _service.GetAddressAsync(addressParameters);
+
+        if (adressesPaged.Result is OkObjectResult response && response.Value is GetAddressResponse addressResponse)
+        {
+            var metadata = new
+            {
+                addressResponse.Addresses.TotalCount,
+                addressResponse.Addresses.PageSize,
+                addressResponse.Addresses.CurrentPage,
+                addressResponse.Addresses.TotalPages,
+                addressResponse.Addresses.HasNext,
+                addressResponse.Addresses.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+
+        }
+        return adressesPaged;
+    }
+
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedAddressResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

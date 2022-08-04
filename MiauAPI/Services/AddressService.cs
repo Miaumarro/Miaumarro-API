@@ -1,5 +1,8 @@
+using MiauAPI.Models.QueryObjects;
+using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
+using MiauAPI.Pagination;
 using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
@@ -69,4 +72,47 @@ public sealed class AddressService
         // TODO: handle authentication properly
         return new CreatedResult(location, new CreatedAddressResponse(dbAddress.Id));
     }
+
+    /// <summary>
+    /// Returns a list of addresses.
+    /// </summary>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetAddressResponse, ErrorResponse>>> GetAddressAsync(AddressParameters addressParameters)
+    {
+
+        var dbAddresses = _db.Addresses.Select(p => new AddressObject
+        {
+            UserId = p.User.Id,
+            Id = p.Id,
+            Address = p.Address,
+            Number = p.Number,
+            Reference = p.Reference,
+            Complement = p.Complement,
+            Neighborhood = p.Neighborhood,
+            City = p.City,
+            State = p.State,
+            Destinatary = p.Destinatary,
+            Cep = p.Cep
+        });
+
+        if (addressParameters.UserId != 0)
+        {
+            dbAddresses = dbAddresses.Where(p => p.UserId == addressParameters.UserId);
+        }
+
+        var dbAddressesList = await dbAddresses.ToListAsync();
+
+        if (dbAddressesList.Count == 0)
+        {
+            return new NotFoundObjectResult("No addresses with the given paramenters were found.");
+        }
+
+        var dbAddressesPaged = PagedList<AddressObject>.ToPagedList(
+                        dbAddressesList,
+                        addressParameters.PageNumber,
+                        addressParameters.PageSize);
+
+        return new OkObjectResult(new GetAddressResponse(dbAddressesPaged));
+    }
+
 }
