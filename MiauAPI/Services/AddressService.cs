@@ -1,3 +1,4 @@
+using LinqToDB;
 using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
@@ -7,7 +8,6 @@ using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using OneOf;
 
 namespace MiauAPI.Services;
@@ -143,6 +143,18 @@ public sealed class AddressService
         return dbAddress == null
                 ? new NotFoundObjectResult(new ErrorResponse($"No address with the Id = {addressId} was found"))
                 : new OkObjectResult(new GetAddressByIdResponse(dbAddress));
+    }
+
+    /// <summary>
+    /// Deletes the address with the given Id.
+    /// </summary>
+    /// <param name="addressId">The Id of the address to be deleted.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteAddressByIdAsync(int addressId)
+    {
+        return ((await _db.Addresses.DeleteAsync(p => p.Id == addressId)) is 0)
+            ? new NotFoundObjectResult(new ErrorResponse($"No address with the Id = {addressId} was found"))
+            : new OkObjectResult(new DeleteResponse($"Successful delete address with the Id = {addressId}"));
     }
 
 }

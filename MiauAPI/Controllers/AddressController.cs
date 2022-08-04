@@ -56,4 +56,10 @@ public sealed class AddressController : ControllerBase
     public async Task<ActionResult<OneOf<CreatedAddressResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedAddressRequest address)
         => await _service.CreateAddressAsync(address, base.Request.Path.Value!);
 
+    [HttpDelete("delete")]
+    [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
+        => await _service.DeleteAddressByIdAsync(id);
+
 }
