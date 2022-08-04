@@ -165,17 +165,9 @@ public sealed class PetService
     /// <returns>The result of the operation.</returns>
     public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeletePetByIdAsync(int petId)
     {
-
-        var dbPet = await _db.Pets.FindAsync(petId);
-        if (dbPet == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No pet with the Id = {petId} was found"));
-        }
-
-        await _db.Pets.DeleteAsync(p => p.Id == petId);
-        await _db.SaveChangesAsync();
-
-        return new OkObjectResult(new DeleteResponse($"Successfull delete pet with the Id = {petId}"));
+        return ((await _db.Pets.DeleteAsync(p => p.Id == petId)) is 0)
+            ? new NotFoundObjectResult(new ErrorResponse($"No pet with the Id = {petId} was found"))
+            : new OkObjectResult(new DeleteResponse($"Successful delete pet with the Id = {petId}"));
     }
 
     /// <summary>
@@ -237,7 +229,7 @@ public sealed class PetService
 
         await _db.SaveChangesAsync();
 
-        return new OkObjectResult(new UpdateResponse($"Successfull update pet with the Id = {request.Id}"));
+        return new OkObjectResult(new UpdateResponse($"Successful update pet with the Id = {request.Id}"));
 
     }
 

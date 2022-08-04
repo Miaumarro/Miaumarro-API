@@ -2,15 +2,11 @@ using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Pagination;
-using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
-using MiauAPI.Validators;
 using LinqToDB;
-using MiauDatabase.Enums;
-using MiauAPI.Enums;
 using MiauAPI.Models.QueryObjects;
 
 namespace MiauAPI.Services;
@@ -103,28 +99,25 @@ public sealed class ProductImageService
             return new NotFoundObjectResult("No product images with the given paramenters were found.");
         }
 
-        return new OkObjectResult(new GetProductImageResponse(dbProductImagesList));
+        var dbProductImagesPaged = PagedList<ProductImageObject>.ToPagedList(
+                        dbProductImagesList,
+                        productImageParameters.PageNumber,
+                        productImageParameters.PageSize);
+
+        return new OkObjectResult(new GetProductImageResponse(dbProductImagesPaged));
 
     }
 
     /// <summary>
     /// Deletes the product image with the given Id.
     /// </summary>
-    /// <param name="id">The id of the product image to be deleted.</param>
+    /// <param name="productImageId">The id of the product image to be deleted.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteProductImageByIdAsync(int id)
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteProductImageByIdAsync(int productImageId)
     {
-
-        var dbProductImage = await _db.ProductImages.FindAsync(id);
-        if (dbProductImage == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No product image with the Id = {id} was found"));
-        }
-
-        await _db.ProductImages.DeleteAsync(x => x.Id == id);
-        await _db.SaveChangesAsync();
-
-        return new OkObjectResult(new DeleteResponse($"Successfull delete product image with the Id = {id}"));
+        return ((await _db.ProductImages.DeleteAsync(p => p.Id == productImageId)) is 0)
+            ? new NotFoundObjectResult(new ErrorResponse($"No product image with the Id = {productImageId} was found"))
+            : new OkObjectResult(new DeleteResponse($"Successful delete product image with the Id = {productImageId}"));
     }
 
 }
