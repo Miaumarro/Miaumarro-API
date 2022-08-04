@@ -45,7 +45,7 @@ public sealed class ProductImageService
         {
             return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {request.ProductId} was found"));
         }
-
+        
         //Creates the path for the Product Image
         var path = $"Data/{request.ProductId}/images";
         if ((!Directory.Exists(path)))
@@ -55,7 +55,7 @@ public sealed class ProductImageService
         var filename = request.ImageFile.FileName;
         using var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create);
         await request.ImageFile.CopyToAsync(fileStream);
-
+        
         // Create the database product image
         var dbProductImage = new ProductImageEntity()
         {
@@ -63,7 +63,7 @@ public sealed class ProductImageService
             FileUrl = $"Data/{request.ProductId}/images/" + filename
         };
 
-        await _db.ProductImages.AddAsync(dbProductImage);
+        _db.ProductImages.Update(dbProductImage);
         await _db.SaveChangesAsync();
 
         // TODO: handle authentication properly

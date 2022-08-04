@@ -21,9 +21,14 @@ public static class IServiceCollectionExt
             .AddScoped<UserService>()
             .AddScoped<ProductService>()
             .AddScoped<ProductImageService>()
+            .AddScoped<PetService>()
+            .AddScoped<AddressService>()
             .AddScoped<AppointmentService>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdatePetRequest>, UpdatePetRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>(); 
             .AddSingleton<IRequestValidator<CreatedAppointmentRequest>, CreatedAppointmentRequestValidator>()
             .AddSingleton<IRequestValidator<UpdateAppointmentRequest>, UpdateAppointmentRequestValidator>();
     }
