@@ -152,7 +152,6 @@ public static class Validate
     /// <exception cref="ArgumentNullException">Occurs when <paramref name="text"/> is <see langword="null"/>.</exception>
     public static bool IsDateValid(DateTime date, string paramName, [MaybeNullWhen(true)] out string errorMessage)
     {
-        ArgumentNullException.ThrowIfNull(date, paramName);
         errorMessage = (date >= DateTime.UtcNow)
            ? $"{paramName} must be a valid date."
            : null;
@@ -169,7 +168,6 @@ public static class Validate
     /// <exception cref="ArgumentNullException">Occurs when <paramref name="text"/> is <see langword="null"/>.</exception>
     public static bool IsFutureDate(DateTime date, string paramName, [MaybeNullWhen(true)] out string errorMessage)
     {
-        ArgumentNullException.ThrowIfNull(date, paramName);
         errorMessage = (date <= DateTime.UtcNow)
            ? $"{paramName} must be a future date."
            : null;
