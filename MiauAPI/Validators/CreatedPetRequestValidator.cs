@@ -27,8 +27,7 @@ public sealed class CreatedPetRequestValidator : IRequestValidator<CreatedPetReq
         }
 
         // Check DateOfBirth
-        if (Validate.IsNull(request.DateOfBirth, nameof(request.DateOfBirth), out var dateOfBirthError) 
-            || !Validate.IsDateValid(request.DateOfBirth, nameof(request.DateOfBirth), out dateOfBirthError))
+        if (!Validate.IsDateValid(request.DateOfBirth, nameof(request.DateOfBirth), out var dateOfBirthError))
         {
             errorMessages = errorMessages.Append(dateOfBirthError);
         }
