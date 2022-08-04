@@ -115,4 +115,34 @@ public sealed class AddressService
         return new OkObjectResult(new GetAddressResponse(dbAddressesPaged));
     }
 
+    /// <summary>
+    /// Return the address with the given Id.
+    /// </summary>
+    /// <param name="addressId">The Id of the address to be searched.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetAddressByIdResponse, ErrorResponse>>> GetAddressByIdAsync(int addressId)
+    {
+
+        var dbAddress = await _db.Addresses.Where(p => p.Id == addressId)
+                                            .Select(p => new AddressObject
+                                            {
+                                                Id = p.Id,
+                                                UserId = p.User.Id,
+                                                Address = p.Address,
+                                                Number = p.Number,
+                                                Reference = p.Reference,
+                                                Complement = p.Complement,
+                                                Neighborhood = p.Neighborhood,
+                                                City = p.City,
+                                                State = p.State,
+                                                Destinatary = p.Destinatary,
+                                                Cep = p.Cep
+                                            })
+                                            .FirstOrDefaultAsync();
+
+        return dbAddress == null
+                ? new NotFoundObjectResult(new ErrorResponse($"No address with the Id = {addressId} was found"))
+                : new OkObjectResult(new GetAddressByIdResponse(dbAddress));
+    }
+
 }

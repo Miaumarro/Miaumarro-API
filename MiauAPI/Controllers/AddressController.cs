@@ -44,6 +44,12 @@ public sealed class AddressController : ControllerBase
         return adressesPaged;
     }
 
+    [HttpGet("detail")]
+    [ProducesResponseType(typeof(GetAddressByIdResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<GetAddressByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)
+    => await _service.GetAddressByIdAsync(id);
+
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedAddressResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
