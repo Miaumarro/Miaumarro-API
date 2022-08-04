@@ -146,7 +146,7 @@ public sealed class AppointmentService
     {
         return ((await _db.Appointments.DeleteAsync(p => p.Id == appointmentId)) is 0)
             ? new NotFoundObjectResult(new ErrorResponse($"No appointment with the Id = {appointmentId} was found"))
-            : new OkObjectResult(new DeleteResponse($"Successfull delete appointment with the Id = {appointmentId}"));  
+            : new OkObjectResult(new DeleteResponse($"Successful delete appointment with the Id = {appointmentId}"));  
     }
 
     /// <summary>
