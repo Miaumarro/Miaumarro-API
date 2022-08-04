@@ -5,11 +5,11 @@ using MiauDatabase;
 namespace MiauAPI.Validators;
 
 /// <summary>
-/// Validates a <see cref="CreatedPetRequest"/>.
+/// Validates a <see cref="UpdatePetRequest"/>.
 /// </summary>
-public sealed class CreatedPetRequestValidator : IRequestValidator<CreatedPetRequest>
+public sealed class UpdatePetRequestValidator : IRequestValidator<UpdatePetRequest>
 {
-    public bool IsRequestValid(CreatedPetRequest request, out IEnumerable<string> errorMessages)
+    public bool IsRequestValid(UpdatePetRequest request, out IEnumerable<string> errorMessages)
     {
         errorMessages = Enumerable.Empty<string>();
 

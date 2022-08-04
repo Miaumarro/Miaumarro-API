@@ -22,11 +22,13 @@ public sealed class ProductService
 {
     private readonly MiauDbContext _db;
     private readonly IRequestValidator<CreatedProductRequest> _validator;
+    private readonly IRequestValidator<UpdateProductRequest> _validatorUpdate;
 
-    public ProductService(MiauDbContext db, IRequestValidator<CreatedProductRequest> validator)
+    public ProductService(MiauDbContext db, IRequestValidator<CreatedProductRequest> validator, IRequestValidator<UpdateProductRequest> validatorUpdate)
     {
         _db = db;
         _validator = validator;
+        _validatorUpdate = validatorUpdate;
     }
 
     /// <summary>
@@ -151,7 +153,7 @@ public sealed class ProductService
             Discount = request.Discount
         };
 
-        _db.Products.Add(dbProduct);
+        await _db.Products.AddAsync(dbProduct);
         await _db.SaveChangesAsync();
 
         // TODO: handle authentication properly
@@ -165,17 +167,9 @@ public sealed class ProductService
     /// <returns>The result of the operation.</returns>
     public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteProductByIdAsync(int productId)
     {
-
-        var dbProduct = await _db.Products.FindAsync(productId);
-        if (dbProduct == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {productId} was found"));
-        }
-
-        await _db.Products.DeleteAsync(x => x.Id == productId);
-        await _db.SaveChangesAsync();
-
-        return new OkObjectResult(new DeleteResponse($"Successfull delete product with the Id = {productId}"));
+        return ((await _db.Products.DeleteAsync(p => p.Id == productId)) is 0)
+            ? new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {productId} was found"))
+            : new OkObjectResult(new DeleteResponse($"Successful delete product with the Id = {productId}"));
     }
 
     /// <summary>
@@ -186,6 +180,9 @@ public sealed class ProductService
     /// <returns>The result of the operation.</returns>
     public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateProductByIdAsync(UpdateProductRequest request)
     {
+        // Check if request contains valid data
+        if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))
+            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
         var dbProduct = await _db.Products.FindAsync(request.Id);
 
@@ -209,7 +206,7 @@ public sealed class ProductService
                                 });
         await _db.SaveChangesAsync();
 
-        return new OkObjectResult(new UpdateResponse($"Successfull update product with the Id = {request.Id}"));
+        return new OkObjectResult(new UpdateResponse($"Successful update product with the Id = {request.Id}"));
     }
 
     /// <summary>
