@@ -26,6 +26,7 @@ public static class IServiceCollectionExt
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdatePetRequest>, UpdatePetRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>(); 
     }
 }
