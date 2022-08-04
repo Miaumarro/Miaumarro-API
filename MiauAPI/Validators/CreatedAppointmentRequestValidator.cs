@@ -18,6 +18,12 @@ public sealed class CreatedAppointmentRequestValidator : IRequestValidator<Creat
             errorMessages = errorMessages.Append(priceError);
         }
 
+        // Check ScheduledTime
+        if (!Validate.IsFutureDate(request.ScheduledTime, nameof(request.ScheduledTime), out var scheduledTimeError))
+        {
+            errorMessages = errorMessages.Append(scheduledTimeError);
+        }
+
         return !errorMessages.Any();
 
     }
