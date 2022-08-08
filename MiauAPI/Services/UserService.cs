@@ -1,5 +1,8 @@
+using MiauAPI.Models.QueryObjects;
+using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
+using MiauAPI.Pagination;
 using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
@@ -62,4 +65,38 @@ public sealed class UserService
         // TODO: handle authentication properly
         return new CreatedResult(location, new CreatedUserResponse(dbUser.Id, "placeholder_token"));
     }
+
+    /// <summary>
+    /// Returns a list of users.
+    /// </summary>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetUserResponse, ErrorResponse>>> GetUserAsync(UserParameters userParameters)
+    {
+
+        var dbUsers = _db.Users.Select(p => new UserObject
+        {
+            Id = p.Id,
+            Cpf = p.Cpf,
+            Name = p.Name,
+            Surname = p.Surname,
+            Email = p.Email,
+            Phone = p.Phone,
+            Password = p.HashedPassword
+        });
+
+        if (userParameters.Cpf != null)
+        {
+            dbUsers = dbUsers.Where(p => p.Cpf.Contains(userParameters.Cpf));
+        }
+
+        var dbUsersList = await dbUsers.ToListAsync();
+
+        return (dbUsersList.Count is 0)
+            ? new NotFoundObjectResult(new ErrorResponse($"No users with the given parameters were found."))
+            : new OkObjectResult(new GetUserResponse(PagedList<UserObject>.ToPagedList(
+                                                        dbUsersList,
+                                                        userParameters.PageNumber,
+                                                        userParameters.PageSize)));
+    }
+
 }
