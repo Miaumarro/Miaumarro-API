@@ -99,4 +99,32 @@ public sealed class UserService
                                                         userParameters.PageSize)));
     }
 
+    /// <summary>
+    /// Return the user with the given Id.
+    /// </summary>
+    /// <param name="id">The id of the user to be searched.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetUserByIdResponse, ErrorResponse>>> GetUserByIdAsync(int id)
+    {
+
+        var dbUser = await _db.Users.Where(p => p.Id == id)
+                                            .Select(p => new UserObject
+                                            {
+                                                Id = p.Id,
+                                                Cpf = p.Cpf,
+                                                Name = p.Name,
+                                                Surname = p.Surname,
+                                                Email = p.Email,
+                                                Phone = p.Phone,
+                                                Password = p.HashedPassword
+                                            })
+                                            .FirstOrDefaultAsync();
+
+        return dbUser == null
+                ? new NotFoundObjectResult(new ErrorResponse($"No user with the Id = {id} was found"))
+                : new OkObjectResult(new GetUserByIdResponse(dbUser));
+    }
+
+
+
 }

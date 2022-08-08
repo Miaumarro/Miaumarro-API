@@ -43,7 +43,11 @@ public sealed class UserController : ControllerBase
         return usersPaged;
     }
 
-
+    [HttpGet("detail")]
+    [ProducesResponseType(typeof(GetUserByIdResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<GetUserByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)
+        => await _service.GetUserByIdAsync(id);
 
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedUserResponse), StatusCodes.Status201Created)]
