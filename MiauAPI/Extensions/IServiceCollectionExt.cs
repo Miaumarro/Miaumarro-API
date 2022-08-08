@@ -1,0 +1,36 @@
+using MiauAPI.Models.Requests;
+using MiauAPI.Services;
+using MiauAPI.Validators;
+using MiauAPI.Validators.Abstractions;
+
+namespace MiauAPI.Extensions;
+
+/// <summary>
+/// Contains extension methods for <see cref="IServiceCollection"/>.
+/// </summary>
+public static class IServiceCollectionExt
+{
+    /// <summary>
+    /// Adds all services used by the MiauAPI.
+    /// </summary>
+    /// <param name="serviceCollection">This service collection.</param>
+    /// <returns>This service collection, with the services added.</returns>
+    public static IServiceCollection AddMiauServices(this IServiceCollection serviceCollection)
+    {
+        return serviceCollection
+            .AddScoped<UserService>()
+            .AddScoped<ProductService>()
+            .AddScoped<ProductImageService>()
+            .AddScoped<PetService>()
+            .AddScoped<AddressService>()
+            .AddScoped<AppointmentService>()
+            .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdateProductRequest>, UpdateProductRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdatePetRequest>, UpdatePetRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>() 
+            .AddSingleton<IRequestValidator<CreatedAppointmentRequest>, CreatedAppointmentRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdateAppointmentRequest>, UpdateAppointmentRequestValidator>();
+    }
+}

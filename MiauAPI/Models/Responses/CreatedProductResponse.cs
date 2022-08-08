@@ -1,6 +1,3 @@
-using MiauAPI.Pagination;
-using MiauDatabase.Entities;
-
 namespace MiauAPI.Models.Responses;
 
 /// <summary>
@@ -8,4 +5,3 @@ namespace MiauAPI.Models.Responses;
 /// </summary>
 /// <param name="Id">The database ID of the product.</param>
 public sealed record CreatedProductResponse(int Id);
-public sealed record GetProductResponse(PagedList<ProductEntity> Products);

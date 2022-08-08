@@ -1,4 +1,4 @@
-using MiauAPI.Models.Parameters;
+using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Pagination;
@@ -8,22 +8,27 @@ using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using MiauAPI.Validators;
-using System.Diagnostics.CodeAnalysis;
+using LinqToDB;
+using MiauDatabase.Enums;
+using MiauAPI.Enums;
+using MiauAPI.Models.QueryObjects;
 
 namespace MiauAPI.Services;
 
 /// <summary>
-/// Handles requests pertaining to users.
+/// Handles requests pertaining to products.
 /// </summary>
 public sealed class ProductService
 {
     private readonly MiauDbContext _db;
     private readonly IRequestValidator<CreatedProductRequest> _validator;
+    private readonly IRequestValidator<UpdateProductRequest> _validatorUpdate;
 
-    public ProductService(MiauDbContext db, IRequestValidator<CreatedProductRequest> validator)
+    public ProductService(MiauDbContext db, IRequestValidator<CreatedProductRequest> validator, IRequestValidator<UpdateProductRequest> validatorUpdate)
     {
         _db = db;
         _validator = validator;
+        _validatorUpdate = validatorUpdate;
     }
 
     /// <summary>
@@ -32,144 +37,91 @@ public sealed class ProductService
     /// <returns>The result of the operation.</returns>
     public async Task<ActionResult<OneOf<GetProductResponse, ErrorResponse>>> GetProductAsync(ProductParameters productParameters)
     {
+
         var errorMessages = Enumerable.Empty<string>();
-        var dbProducts = _db.Products
-                    .ToList();
+        var dbProducts = _db.Products.Select(p => new ProductObject{
+                                                        Id = p.Id,
+                                                        Name = p.Name,
+                                                        Description = p.Description,
+                                                        Brand = p.Brand,
+                                                        Price = p.Price,
+                                                        IsActive = p.IsActive,
+                                                        Amount = p.Amount,
+                                                        Tags = p.Tags,
+                                                        Discount = p.Discount
+                                                    });
 
-        static bool CheckQuery(List<ProductEntity> resultedQuery, [MaybeNullWhen(true)] out string errorMessage)
-        {
-            errorMessage = (!resultedQuery.Any())
-                ? "No products were found."
-                : null;
-
-            return errorMessage is null;
-        }
-
-        // TODO: implement await in the correct way
-        await Task.Delay(1000);
-
-
-        // List products with an specific term in the description
         if (productParameters.SearchedTerm is not null)
         {
-            dbProducts = dbProducts
-                                .Where(p => p.Description.ToLower().Contains(productParameters.SearchedTerm.ToLower()))
-                                .ToList();
-
-            if (!CheckQuery(dbProducts, out var descriptionError))
-            {
-                return new NotFoundObjectResult(new ErrorResponse(descriptionError));
-            }
+            dbProducts = SearchByTerm(dbProducts, productParameters.SearchedTerm);
         }
 
-
-        // List products with an specific brand
         if (productParameters.Brand is not null)
         {
-            dbProducts = dbProducts
-                                .Where(p => p.Brand == productParameters.Brand.ToLower())
-                                .ToList();
-
-            if (!CheckQuery(dbProducts, out var descriptionError))
-            {
-                return new NotFoundObjectResult(new ErrorResponse(descriptionError));
-            }
+            dbProducts = SearchByBrand(dbProducts, productParameters.Brand);
         }
 
-        // List products within a price range
         if (productParameters.MaxPrice != 0 || productParameters.MinPrice != 0)
         {
-            if (productParameters.MaxPrice == 0 && productParameters.MinPrice != 0)
-            {
-                var dbProductMostExpensive = dbProducts
-                                            .Where(p => (p.IsActive))
-                                            .OrderByDescending(p => p.Price * (1 - p.Discount))
-                                            .First();
-                productParameters.MaxPrice = dbProductMostExpensive.Price;
-            }
-
-            if (!Validate.IsPositive(productParameters.MinPrice, nameof(productParameters.MinPrice), out var descriptionError)
-                || !Validate.IsPositive(productParameters.MaxPrice, nameof(productParameters.MaxPrice), out descriptionError)
-                || !Validate.IsValidRange<Decimal>(productParameters.MinPrice, productParameters.MaxPrice, nameof(productParameters.MinPrice), nameof(productParameters.MaxPrice), out descriptionError))
-            {
-                errorMessages = errorMessages.Append(descriptionError);
-                return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
-            }
-            else
-            {
-                dbProducts = dbProducts
-                                .Where(p => ((p.Price * (1 - p.Discount)) >= productParameters.MinPrice)
-                                         && ((p.Price * (1 - p.Discount)) <= productParameters.MaxPrice))
-                                .ToList();
-            }
-
-            if (!CheckQuery(dbProducts, out descriptionError))
-            {
-                return new NotFoundObjectResult(new ErrorResponse(descriptionError));
-            }
+            dbProducts = SearchByPriceRange(dbProducts, productParameters.MinPrice, productParameters.MaxPrice, out var descriptionError);
+            if (descriptionError != string.Empty)
+                return new BadRequestObjectResult(descriptionError);
         }
 
-        // List products with an active discount
         if (productParameters.ActiveDiscount)
         {
-            dbProducts = dbProducts
-                            .Where(p => p.Discount > 0)
-                            .ToList();
-
-            if (!CheckQuery(dbProducts, out var descriptionError))
-            {
-                return new NotFoundObjectResult(new ErrorResponse(descriptionError));
-            }
+            dbProducts = SearchByActiveDiscount(dbProducts);
         }
 
-        // List products with specifics tags
         if (productParameters.Tags != 0)
         {
-            dbProducts = dbProducts
-                            .Where(p => p.Tags.HasFlag(productParameters.Tags))
-                            .ToList();
-
-            if (!CheckQuery(dbProducts, out var descriptionError))
-            {
-                return new NotFoundObjectResult(new ErrorResponse(descriptionError));
-            }
+            dbProducts = SearchByTags(dbProducts, productParameters.Tags);
         }
 
-        // Sort products by Price Asc (default), PriceDesc,  DiscountAsc, DiscountDesc
-        switch (productParameters.SortParameter)
+        dbProducts = Sort(dbProducts, productParameters.SortParameter);
+
+        var dbProductsList = await dbProducts
+                            .ToListAsync();
+
+        if (dbProductsList.Count==0)
         {
-            case SortParameter.PriceAsc:
-                dbProducts = dbProducts
-                            .OrderBy(p => (p.Price * (1 - p.Discount)))
-                            .ToList();
-                break;
-            case SortParameter.PriceDesc:
-                dbProducts = dbProducts
-                            .OrderByDescending(p => (p.Price * (1 - p.Discount)))
-                            .ToList();
-                break;
-            case SortParameter.DiscountAsc:
-                dbProducts = dbProducts
-                            .OrderBy(p => p.Discount)
-                            .ToList();
-                break;
-            case SortParameter.DiscountDesc:
-                dbProducts = dbProducts
-                            .OrderByDescending(p => p.Discount)
-                            .ToList();
-                break;
+            return new NotFoundObjectResult("No products with the given paramenters were found.");
         }
 
-        dbProducts = dbProducts
-                            .OrderByDescending(p => p.IsActive)
-                            .ToList();
-
-        var dbProductsPaged = PagedList<ProductEntity>.ToPagedList(
-                        dbProducts,
+        var dbProductsPaged = PagedList<ProductObject>.ToPagedList(
+                        dbProductsList,
                         productParameters.PageNumber,
                         productParameters.PageSize);
 
         return new OkObjectResult(new GetProductResponse(dbProductsPaged));
+
+    }
+
+    /// <summary>
+    /// Returns the product with the given Id.
+    /// </summary>
+    /// <param name="productId">The Id of the product to be searched.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<GetProductByIdResponse, ErrorResponse>>> GetProductByIdAsync(int productId)
+    {
+
+        var dbProduct = await _db.Products.Where(p => p.Id == productId)
+                                            .Select(p => new ProductObject{
+                                                Id = p.Id,
+                                                Name = p.Name,
+                                                Description = p.Description,
+                                                Brand = p.Brand,
+                                                Price = p.Price,
+                                                IsActive = p.IsActive,
+                                                Amount = p.Amount,
+                                                Tags = p.Tags,
+                                                Discount = p.Discount
+                                            })
+                                            .FirstOrDefaultAsync();
+
+        return dbProduct == null
+                ? new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {productId} was found"))
+                : new OkObjectResult(new GetProductByIdResponse(dbProduct));
     }
 
     /// <summary>
@@ -191,6 +143,7 @@ public sealed class ProductService
         // Create the database user
         var dbProduct = new ProductEntity()
         {
+            Name = request.Name,
             Description = request.Description,
             Price = request.Price,
             IsActive = request.IsActive,
@@ -200,10 +153,166 @@ public sealed class ProductService
             Discount = request.Discount
         };
 
-        _db.Products.Add(dbProduct);
+        await _db.Products.AddAsync(dbProduct);
         await _db.SaveChangesAsync();
 
         // TODO: handle authentication properly
         return new CreatedResult(location, new CreatedProductResponse(dbProduct.Id));
+    }
+
+    /// <summary>
+    /// Deletes the product with the given Id.
+    /// </summary>
+    /// <param name="productId">The Id of the product to be deleted.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteProductByIdAsync(int productId)
+    {
+        return ((await _db.Products.DeleteAsync(p => p.Id == productId)) is 0)
+            ? new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {productId} was found"))
+            : new OkObjectResult(new DeleteResponse($"Successful delete product with the Id = {productId}"));
+    }
+
+    /// <summary>
+    /// Updates the product with the given Id.
+    /// </summary>
+    /// <param name="id">The Id of the product to be updated.</param>
+    /// <param name="product">The product object with the parameters to be updated.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateProductByIdAsync(UpdateProductRequest request)
+    {
+        // Check if request contains valid data
+        if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))
+            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
+
+        var dbProduct = await _db.Products.FindAsync(request.Id);
+
+        if (dbProduct == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {request.Id} was found"));
+        }
+
+        await _db.Products.UpdateAsync(
+                                p => p.Id == request.Id,
+                                _ => new ProductEntity() {
+                                        Id = request.Id,
+                                        Name = request.Name,
+                                        Description = request.Description,
+                                        Brand = request.Brand,
+                                        Price = request.Price,
+                                        IsActive = request.IsActive,
+                                        Amount = request.Amount,
+                                        Tags = request.Tags,
+                                        Discount = request.Discount
+                                });
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new UpdateResponse($"Successful update product with the Id = {request.Id}"));
+    }
+
+    /// <summary>
+    /// Lists products with an specific term in the description
+    /// </summary>
+    /// <returns>The result of the operation and a description error.</returns>
+    public IQueryable<ProductObject> SearchByTerm(IQueryable<ProductObject> products, string term)
+    {
+        return products.Where(p => p.Name.ToLower().Contains(term.ToLower()));
+    }
+
+    /// <summary>
+    /// Lists products with an specific brand
+    /// </summary>
+    /// <returns>The result of the operation and a description error.</returns>
+    public IQueryable<ProductObject> SearchByBrand(IQueryable<ProductObject> products, string brand)
+    {
+        return products.Where(p => p.Brand == brand.ToLower());
+    }
+
+    /// <summary>
+    /// Lists products within an specific price range
+    /// </summary>
+    /// <returns>The result of the operation and a description error.</returns>
+    public IQueryable<ProductObject> SearchByPriceRange(IQueryable<ProductObject> products, decimal minPrice, decimal maxPrice, out string errorMessages)
+    {
+        errorMessages = string.Empty;
+        if (maxPrice == 0 && minPrice != 0)
+        {
+            var mostExpensiveProduct = products
+                                        .Where(p => (p.IsActive))
+                                        .OrderByDescending(p => (double)p.Price * (1 - (double)p.Discount))
+                                        .Select(p => p.Price)
+                                        .First();
+            if(mostExpensiveProduct > minPrice)
+            {
+                maxPrice = mostExpensiveProduct;
+            }
+            else
+            {
+                maxPrice = minPrice;
+            }
+        }
+
+        if (!Validate.IsPositive(minPrice, nameof(minPrice), out var messageError)
+            || !Validate.IsPositive(maxPrice, nameof(maxPrice), out messageError)
+            || !Validate.IsValidRange<decimal>(minPrice, maxPrice, nameof(minPrice), nameof(maxPrice), out messageError))
+        {
+            errorMessages = messageError;
+            return products;
+        }
+        else
+        {
+            return products
+                            .Where(p => ((p.Price * (1 - p.Discount)) >= minPrice)
+                                     && ((p.Price * (1 - p.Discount)) <= maxPrice));
+        }
+    }
+
+    /// <summary>
+    /// Lists products with an active discount
+    /// </summary>
+    /// <returns>The result of the operation and a description error.</returns>
+    public IQueryable<ProductObject> SearchByActiveDiscount(IQueryable<ProductObject> products)
+    {
+        return products.Where(p => p.Discount > 0);
+    }
+
+    /// <summary>
+    /// Lists products with specifics tags
+    /// </summary>
+    /// <returns>The result of the operation and a description error.</returns>
+    public IQueryable<ProductObject> SearchByTags(IQueryable<ProductObject> products, ProductTag tags)
+    {
+        return products.Where(p => p.Tags.HasFlag(tags));
+    }
+
+    /// <summary>
+    /// Sorts products by a given parameter (Ascending Price as default, Descending Price, Ascending Discount, Descending Discount)
+    /// </summary>
+    /// <returns>The sorted product list.</returns>
+    public IQueryable<ProductObject> Sort(IQueryable<ProductObject> products, Enum sortOrder)
+    {
+        switch (sortOrder)
+        {
+            case SortParameter.PriceAsc:
+                products = products
+                        .OrderByDescending(p => p.IsActive)
+                        .ThenBy(p => ((double)p.Price * (1 - (double)p.Discount)));
+                break;
+            case SortParameter.PriceDesc:
+                products = products
+                            .OrderByDescending(p => p.IsActive)
+                            .ThenByDescending(p => ((double)p.Price * (1 - (double)p.Discount)));
+                break;
+            case SortParameter.DiscountAsc:
+                products = products
+                            .OrderByDescending(p => p.IsActive)
+                            .ThenBy(p => (double)p.Discount);
+                break;
+            case SortParameter.DiscountDesc:
+                products = products
+                            .OrderByDescending(p => p.IsActive)
+                            .ThenByDescending(p => (double)p.Discount);
+                break;
+        }
+        return products;
     }
 }

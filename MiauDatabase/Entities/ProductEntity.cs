@@ -35,6 +35,13 @@ public sealed record ProductEntity : MiauDbEntity
     public List<WishlistEntity> Wishlist { get; init; } = new();
 
     /// <summary>
+    /// This product's name.
+    /// </summary>
+    [Required]
+    [MaxLength(50)]
+    public string Name { get; set; } = null!;
+
+    /// <summary>
     /// This product's description.
     /// </summary>
     [Required]
