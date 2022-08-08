@@ -20,12 +20,10 @@ public sealed class LoginService
 {
     private IConfiguration _config;
     private readonly MiauDbContext _db;
-    private readonly IRequestValidator<LoginUserRequest> _validator;
 
-    public LoginService(MiauDbContext db, IRequestValidator<LoginUserRequest> validator, IConfiguration config)
+    public LoginService(MiauDbContext db, IConfiguration config)
     {
         _db = db;
-        _validator = validator;
         _config = config;
     }
 
@@ -38,9 +36,7 @@ public sealed class LoginService
     /// <returns>The result of the operation.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
     public async Task<ActionResult<OneOf<LoginUserResponse, ErrorResponse>>> LoginUserAsync(LoginUserRequest request, string location)
-        {
-
-
+    {
         var user = _db.Users.SingleOrDefault(dbUser => dbUser.Email == request.Email);
 
         // verify password
@@ -48,7 +44,6 @@ public sealed class LoginService
         {
             return new BadRequestObjectResult(new ErrorResponse("Login ou senha invalida"));
         }
-
 
         // TODO: handle authentication properly
         return new CreatedResult(location, new LoginUserResponse(GetToken(user)));
