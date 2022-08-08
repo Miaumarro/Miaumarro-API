@@ -20,11 +20,13 @@ public sealed class UserService
 {
     private readonly MiauDbContext _db;
     private readonly IRequestValidator<CreatedUserRequest> _validator;
+    private readonly IRequestValidator<UpdateUserRequest> _validatorUpdate;
 
-    public UserService(MiauDbContext db, IRequestValidator<CreatedUserRequest> validator)
+    public UserService(MiauDbContext db, IRequestValidator<CreatedUserRequest> validator, IRequestValidator<UpdateUserRequest> validatorUpdate)
     {
         _db = db;
         _validator = validator;
+        _validatorUpdate = validatorUpdate;
     }
 
     /// <summary>
@@ -137,4 +139,40 @@ public sealed class UserService
             : new OkObjectResult(new DeleteResponse($"Successful delete user with the Id = {id}"));
     }
 
+    /// <summary>
+    /// Updates an user.
+    /// </summary>
+    /// <param name="request">The controller request.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateUserByIdAsync(UpdateUserRequest request)
+    {
+        // Check if request contains valid data
+        if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))
+            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
+
+        var dbUser = await _db.Users.FindAsync(request.Id);
+
+        if (dbUser == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No user with the Id = {request.Id} was found"));
+        }
+
+        dbUser = new UserEntity()
+        {
+            Id = request.Id,
+            Cpf = dbUser.Cpf,
+            Name = request.Name,
+            Surname = request.Surname,
+            Email = request.Email,
+            Phone = request.Phone,
+            HashedPassword = Encrypt.HashPassword(request.Password)
+        };
+
+        _db.Users.Update(dbUser);
+
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new UpdateResponse($"Successful update user with the Id = {request.Id}"));
+
+    }
 }

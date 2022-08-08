@@ -61,4 +61,10 @@ public sealed class UserController : ControllerBase
     public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
         => await _service.DeleteUserByIdAsync(id);
 
+    [HttpPut("update")]
+    [ProducesResponseType(typeof(UpdateResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateUserRequest user)
+        => await _service.UpdateUserByIdAsync(user);
+
 }
