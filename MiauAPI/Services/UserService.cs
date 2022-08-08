@@ -1,3 +1,4 @@
+using LinqToDB;
 using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
@@ -7,7 +8,6 @@ using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using OneOf;
 using Encrypt = BCrypt.Net.BCrypt;
 
@@ -125,6 +125,16 @@ public sealed class UserService
                 : new OkObjectResult(new GetUserByIdResponse(dbUser));
     }
 
-
+    /// <summary>
+    /// Deletes the user with the given Id.
+    /// </summary>
+    /// <param name="id">The Id of the user to be deleted.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteUserByIdAsync(int id)
+    {
+        return ((await _db.Users.DeleteAsync(p => p.Id == id)) is 0)
+            ? new NotFoundObjectResult(new ErrorResponse($"No user with the Id = {id} was found"))
+            : new OkObjectResult(new DeleteResponse($"Successful delete user with the Id = {id}"));
+    }
 
 }
