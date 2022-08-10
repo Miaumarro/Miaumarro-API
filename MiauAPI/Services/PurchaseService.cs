@@ -39,26 +39,53 @@ public sealed class PurchaseService
         if (!_validator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        //Create the list of purchased products
-        var purchasedProduct = new List<PurchasedProductEntity>();
-        foreach(var product in request.PurchasedProductsId)
-        {
-            purchasedProduct.Add(_db.PurchasedProducts.First(x => x.Id == product));
-        }
-
         // Create the database purchase
-        var dbPurchase = new PurchaseEntity()
+        var dbPurchaseTemp = new PurchaseEntity()
         {
             User = _db.Users.First(x => x.Id == request.UserId),
             Coupon = _db.Coupons.First(x => x.Id == request.CouponId),
-            PurchasedProduct = purchasedProduct,
             Status = request.Status
         };
-
+        var purchasedProducts = CreatePurchasedProductsList(request.ProductsId, dbPurchaseTemp.Id);
+        var dbPurchase = new PurchaseEntity()
+        {
+            Id = dbPurchaseTemp.Id,
+            PurchasedProduct = purchasedProducts
+        };
         _db.Purchases.Add(dbPurchase);
         await _db.SaveChangesAsync();
 
+
         // TODO: handle authentication properly
         return new CreatedResult(location, new CreatedPurchaseResponse(dbPurchase.Id));
+    }
+    private sealed record PurchasedProductRequest(int Id, decimal SalePrice);
+    private List<PurchasedProductEntity> CreatePurchasedProductsList(List<int> productsId, int purchaseId)
+    {
+        decimal salePrice = 0;
+        ProductEntity purchased;
+        PurchasedProductEntity dbPurchasedProduct;
+        var purchasedProducts = new List<PurchasedProductRequest>();
+        foreach (var product in productsId)
+        {
+            purchased = _db.Products.First(x => x.Id == product);
+            salePrice = purchased.Price - (purchased.Price*purchased.Discount);
+            purchasedProducts.Add(new PurchasedProductRequest(product, salePrice));
+        }
+
+        var purchasedProductsList = new List<PurchasedProductEntity>();
+        foreach(var purchase in purchasedProducts)
+        {
+            dbPurchasedProduct = new PurchasedProductEntity()
+            {
+                Product = _db.Products.First(x => x.Id == purchase.Id),
+                Purchase = _db.Purchases.First(x => x.Id == purchaseId),
+                SalePrice = purchase.SalePrice
+            };
+            purchasedProductsList.Add(dbPurchasedProduct);
+            _db.PurchasedProducts.Add(dbPurchasedProduct);
+        }
+        _db.SaveChanges();
+        return purchasedProductsList;
     }
 }
