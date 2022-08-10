@@ -26,6 +26,7 @@ public static class IServiceCollectionExt
             .AddScoped<ProductReviewService>()
             .AddScoped<WishlistService>()
             .AddScoped<AppointmentService>()
+            .AddScoped<PurchaseService>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
             .AddSingleton<IRequestValidator<UpdateProductRequest>, UpdateProductRequestValidator>()
@@ -35,6 +36,7 @@ public static class IServiceCollectionExt
             .AddSingleton<IRequestValidator<CreatedWishlistItemRequest>, CreatedWishlistItemRequestValidator>()
             .AddSingleton<IRequestValidator<UpdatePetRequest>, UpdatePetRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedAppointmentRequest>, CreatedAppointmentRequestValidator>()
-            .AddSingleton<IRequestValidator<UpdateAppointmentRequest>, UpdateAppointmentRequestValidator>();
+            .AddSingleton<IRequestValidator<UpdateAppointmentRequest>, UpdateAppointmentRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedPurchaseRequest>, CreatedPurchaseRequestValidator>();
     }
 }
