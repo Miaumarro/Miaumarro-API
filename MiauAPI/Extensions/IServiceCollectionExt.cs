@@ -26,11 +26,13 @@ public static class IServiceCollectionExt
             .AddScoped<AppointmentService>()
             .AddScoped<LoginService>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdateUserRequest>, UpdateUserRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
             .AddSingleton<IRequestValidator<UpdateProductRequest>, UpdateProductRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
             .AddSingleton<IRequestValidator<UpdatePetRequest>, UpdatePetRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>() 
+            .AddSingleton<IRequestValidator<UpdateAddressRequest>, UpdateAddressRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedAppointmentRequest>, CreatedAppointmentRequestValidator>()
             .AddSingleton<IRequestValidator<UpdateAppointmentRequest>, UpdateAppointmentRequestValidator>();
     }
