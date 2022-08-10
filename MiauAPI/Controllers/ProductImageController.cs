@@ -23,7 +23,26 @@ public sealed class ProductImageController : ControllerBase
     [ProducesResponseType(typeof(GetProductImageResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<GetProductImageResponse, ErrorResponse>>> GetAsync([FromQuery] ProductImageParameters productImageParameters)
-        => await _service.GetProductImageAsync(productImageParameters);
+    {
+        var productImagesPaged = await _service.GetProductImageAsync(productImageParameters);
+
+        if (productImagesPaged.Result is OkObjectResult response && response.Value is GetProductImageResponse productImageResponse)
+        {
+            var metadata = new
+            {
+                productImageResponse.ProductImages.TotalCount,
+                productImageResponse.ProductImages.PageSize,
+                productImageResponse.ProductImages.CurrentPage,
+                productImageResponse.ProductImages.TotalPages,
+                productImageResponse.ProductImages.HasNext,
+                productImageResponse.ProductImages.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+
+        }
+        return productImagesPaged;
+    }
 
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedProductImageResponse), StatusCodes.Status201Created)]
