@@ -25,13 +25,11 @@ public static class IServiceCollectionExt
             .AddScoped<AddressService>()
             .AddScoped<ProductReviewService>()
             .AddScoped<WishlistService>()
-            .AddScoped<PurchaseService>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedProductReviewRequest>, CreatedProductReviewRequestValidator>()
-            .AddSingleton<IRequestValidator<CreatedWishlistItemRequest>, CreatedWishlistItemRequestValidator>()
-            .AddSingleton<IRequestValidator<CreatedPurchaseRequest>, CreatedPurchaseRequestValidator>();
+            .AddSingleton<IRequestValidator<CreatedWishlistItemRequest>, CreatedWishlistItemRequestValidator>();
     }
 }
