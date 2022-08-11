@@ -4,6 +4,7 @@ using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OneOf;
 using System.IdentityModel.Tokens.Jwt;
@@ -37,37 +38,32 @@ public sealed class LoginService
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
     public async Task<ActionResult<OneOf<LoginUserResponse, ErrorResponse>>> LoginUserAsync(LoginUserRequest request, string location)
     {
-        var user = _db.Users.SingleOrDefault(dbUser => dbUser.Email == request.Email);
+        var user = await _db.Users.FirstOrDefaultAsync(dbUser => dbUser.Email == request.Email);
 
         // verify password
-        if (user == null || !Encrypt.Verify(request.Password, user.HashedPassword))
-        {
-            return new BadRequestObjectResult(new ErrorResponse("Login ou senha invalida"));
-        }
-
-        // TODO: handle authentication properly
-        return new CreatedResult(location, new LoginUserResponse(GetToken(user)));
-
+        return (user is null || !Encrypt.Verify(request.Password, user.HashedPassword))
+            ? new BadRequestObjectResult(new ErrorResponse("Login ou senha inválida"))
+            : (ActionResult<OneOf<LoginUserResponse, ErrorResponse>>)new CreatedResult(location, new LoginUserResponse(GetToken(user)));
     }
-    // Get token 
+
     private string GetToken(UserEntity user)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_config.GetSection("Jwt:key").Value);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            Expires = DateTime.UtcNow.AddHours(2),
             Subject = new ClaimsIdentity(new Claim[]
             {
-                    new Claim(ClaimTypes.Name, user.Name),
-                    new Claim(ClaimTypes.Email, user.Email),
-                   //new Claim(ClaimTypes.Role, user.Role)
-                                   
-
-            }),
-            Expires = DateTime.UtcNow.AddHours(2),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Email, user.Email),
+                //new Claim(ClaimTypes.Role, $"{user.Permissions:d}")
+            })
         };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
+
         return tokenHandler.WriteToken(token);
     }
 }
