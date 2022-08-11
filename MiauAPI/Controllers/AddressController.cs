@@ -18,7 +18,7 @@ public sealed class AddressController : ControllerBase
     public AddressController(AddressService service)
         => _service = service;
 
-    [HttpGet()]
+    [HttpGet]
     [ProducesResponseType(typeof(GetAddressResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<GetAddressResponse, ErrorResponse>>> GetAsync([FromQuery] AddressParameters addressParameters)
@@ -38,8 +38,8 @@ public sealed class AddressController : ControllerBase
             };
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
-
         }
+
         return adressesPaged;
     }
 
@@ -66,5 +66,4 @@ public sealed class AddressController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateAddressRequest address)
         => await _service.UpdateAddressByIdAsync(address);
-
 }

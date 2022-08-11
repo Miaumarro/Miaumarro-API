@@ -1,5 +1,4 @@
 using MiauAPI.Common;
-using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
@@ -19,7 +18,7 @@ public sealed class PetController : ControllerBase
     public PetController(PetService service)
         => _service = service;
 
-    [HttpGet()]
+    [HttpGet]
     [ProducesResponseType(typeof(GetPetResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<GetPetResponse, ErrorResponse>>> GetAsync([FromQuery] PetParameters petParameters)
@@ -39,8 +38,8 @@ public sealed class PetController : ControllerBase
             };
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
-
         }
+
         return petsPaged;
     }
 
@@ -67,5 +66,4 @@ public sealed class PetController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdatePetRequest pet)
         => await _service.UpdatePetByIdAsync(pet);
-
 }

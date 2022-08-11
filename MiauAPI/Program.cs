@@ -1,9 +1,16 @@
 using LinqToDB.EntityFrameworkCore;
+using MiauAPI.Common;
 using MiauAPI.Extensions;
 using MiauDatabase.Enums;
 using MiauDatabase.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Security.Claims;
 
 namespace MiauAPI;
 
@@ -24,19 +31,19 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services
             .AddEndpointsApiExplorer()
-            .AddSwaggerGen()
             .AddMiauServices()
             .AddMiauDb()
             .AddAuthorization(x =>
             {
-                foreach (var value in Enum.GetValues<UserPermissions>().Where(x => x is not UserPermissions.Blocked))
-                    x.AddPolicy(value.ToString(), policy => policy.RequireClaim(nameof(MiauAPI), value.ToString()));
+                // Require all users to be authenticated
+                x.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+
+                // foreach (var value in Enum.GetValues<UserPermissions>().Where(x => x is not UserPermissions.Blocked))
+                //     x.AddPolicy(value.ToString(), policy => policy.RequireClaim(ClaimTypes.Role, value.ToString()));
             })
-            .AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(x =>
             {
                 x.RequireHttpsMetadata = false;
@@ -45,12 +52,35 @@ public class Program
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(builder.Configuration.GetValue<byte[]>("Jwt:Key")),
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidIssuer = builder.Configuration.GetValue<string>("Jwt:Issuer"),
-                    ValidAudience = builder.Configuration.GetValue<string>("Jwt:Audience")
+                    ValidateIssuer = false,
+                    ValidateAudience = false
                 };
             });
+
+        builder.Services//.AddCors()
+            .AddSwaggerGen(x =>
+            {
+                var apiSecurityScheme = new OpenApiSecurityScheme()
+                {
+                    Name = "Authorization",
+                    Description = "Enter the Bearer Authorization string in the format: `bearer jwt-token-here`",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = JwtBearerDefaults.AuthenticationScheme,
+                    Reference = new OpenApiReference
+                    {
+                        Id = JwtBearerDefaults.AuthenticationScheme,
+                        Type = ReferenceType.SecurityScheme
+                    }
+                };
+
+                x.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, apiSecurityScheme);
+
+                // OpenApiSecurityRequirement is a Dictionary<OpenApiSecurityScheme, IList<string>>
+                // Any scheme other than "oauth2" or "openIdConnect" must contain an empty IList
+                x.AddSecurityRequirement(new OpenApiSecurityRequirement() { [apiSecurityScheme] = Array.Empty<string>() });
+            })
+            .AddRouting();
 
         var app = builder.Build();
 
@@ -62,9 +92,24 @@ public class Program
         }
 
         app.UseHttpsRedirection();
-        //app.UseRouting();
+        // app.UseStaticFiles();
+        // app.UseCookiePolicy();
+
+        app.UseRouting();
+        // app.UseRequestLocalization();
+        // app.UseCors(x =>
+        //     x.AllowAnyOrigin()
+        //         .AllowAnyMethod()
+        //         .AllowAnyHeader()
+        // );//
+
         app.UseAuthentication();
+        //app.UseRouting();
         app.UseAuthorization();
+        // app.UseSession();
+        // app.UseResponseCompression();
+        // app.UseResponseCaching();
+
         app.MapControllers();
         app.Run();
     }

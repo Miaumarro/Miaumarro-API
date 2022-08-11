@@ -1,9 +1,10 @@
 using MiauAPI.Common;
-using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Services;
+using MiauDatabase.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using System.Text.Json;
@@ -19,7 +20,8 @@ public sealed class ProductImageController : ControllerBase
     public ProductImageController(ProductImageService service)
         => _service = service;
 
-    [HttpGet()]
+    [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(GetProductImageResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<GetProductImageResponse, ErrorResponse>>> GetAsync([FromQuery] ProductImageParameters productImageParameters)
@@ -39,21 +41,24 @@ public sealed class ProductImageController : ControllerBase
             };
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
-
         }
+
         return productImagesPaged;
     }
 
     [HttpPost("create")]
+    [Authorize(nameof(UserPermissions.Administrator))]
+    [Authorize(nameof(UserPermissions.Clerk))]
     [ProducesResponseType(typeof(CreatedProductImageResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<CreatedProductImageResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedProductImageRequest productImage)
         => await _service.CreatedProductImageAsync(productImage, base.Request.Path.Value!);
 
     [HttpDelete("delete")]
+    [Authorize(nameof(UserPermissions.Administrator))]
+    [Authorize(nameof(UserPermissions.Clerk))]
     [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
         => await _service.DeleteProductImageByIdAsync(id);
-
 }

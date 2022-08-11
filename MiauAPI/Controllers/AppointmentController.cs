@@ -1,5 +1,4 @@
 using MiauAPI.Common;
-using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
@@ -19,7 +18,7 @@ public sealed class AppointmentController : ControllerBase
     public AppointmentController(AppointmentService service)
         => _service = service;
 
-    [HttpGet()]
+    [HttpGet]
     [ProducesResponseType(typeof(GetAppointmentResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<GetAppointmentResponse, ErrorResponse>>> GetAsync([FromQuery] AppointmentParameters appointmentsParameters)
@@ -39,8 +38,8 @@ public sealed class AppointmentController : ControllerBase
             };
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
-
         }
+
         return appointmentsPaged;
     }
 
@@ -67,5 +66,4 @@ public sealed class AppointmentController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateAppointmentRequest appointment)
         => await _service.UpdateAppointmentByIdAsync(appointment);
-
 }
