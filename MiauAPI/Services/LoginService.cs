@@ -36,9 +36,9 @@ public sealed class LoginService
     {
         var user = await _db.Users.FirstOrDefaultAsync(dbUser => dbUser.Email == request.Email);
 
-        return (user is null || !Encrypt.Verify(request.Password, user.HashedPassword))
-            ? new BadRequestObjectResult(new ErrorResponse("Login ou senha inválida"))
-            : new OkObjectResult(new LoginUserResponse(GetToken(user)));
+        return (user is not null && Encrypt.Verify(request.Password, user.HashedPassword))
+            ? new OkObjectResult(new LoginUserResponse(GetToken(user)))
+            : new BadRequestObjectResult(new ErrorResponse("Login ou senha inválida"));
     }
 
     private string GetToken(UserEntity user)
@@ -51,14 +51,14 @@ public sealed class LoginService
         };
 
         // Make it so each UserPermissions the user has is a role claim
-        foreach (var value in user.Permissions.ToValues())
-            claims.Add(new Claim(ClaimTypes.Role, value.ToString()));
+        foreach (var permission in user.Permissions.ToValues())
+            claims.Add(new Claim(ClaimTypes.Role, permission.ToString()));
 
         // Generate the token
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(_config.GetValue<byte[]>("Jwt:Key")), SecurityAlgorithms.HmacSha256Signature),
-            Expires = DateTime.UtcNow.AddHours(2),
+            Expires = DateTime.UtcNow.AddDays(7),
             Subject = new ClaimsIdentity(claims)
         };
 
