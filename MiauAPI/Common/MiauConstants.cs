@@ -6,11 +6,6 @@ namespace MiauAPI.Common;
 public static class ApiConstants
 {
     /// <summary>
-    /// Represents the name of this program.
-    /// </summary>
-    public const string AppName = "MiauAPI";
-
-    /// <summary>
     /// Represents the version of the API.
     /// </summary>
     public const string Version = "v1";
