@@ -1,15 +1,11 @@
 using LinqToDB.EntityFrameworkCore;
-using MiauAPI.Common;
 using MiauAPI.Extensions;
 using MiauDatabase.Enums;
 using MiauDatabase.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Security.Claims;
 
 namespace MiauAPI;
@@ -40,8 +36,10 @@ public class Program
                     .RequireAuthenticatedUser()
                     .Build();
 
-                // foreach (var value in Enum.GetValues<UserPermissions>().Where(x => x is not UserPermissions.Blocked))
-                //     x.AddPolicy(value.ToString(), policy => policy.RequireClaim(ClaimTypes.Role, value.ToString()));
+                // Add authorization policies
+                // Based on the name of UserPermissions enums (except "Blocked")
+                foreach (var value in Enum.GetValues<UserPermissions>().Where(x => x is not UserPermissions.Blocked))
+                    x.AddPolicy(value.ToString(), policy => policy.RequireClaim(ClaimTypes.Role, value.ToString()));
             })
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(x =>
@@ -57,8 +55,8 @@ public class Program
                 };
             });
 
-        builder.Services//.AddCors()
-            .AddSwaggerGen(x =>
+        builder.Services
+            .AddSwaggerGen(x => // Add Swagger authentication button
             {
                 var apiSecurityScheme = new OpenApiSecurityScheme()
                 {
@@ -92,24 +90,9 @@ public class Program
         }
 
         app.UseHttpsRedirection();
-        // app.UseStaticFiles();
-        // app.UseCookiePolicy();
-
         app.UseRouting();
-        // app.UseRequestLocalization();
-        // app.UseCors(x =>
-        //     x.AllowAnyOrigin()
-        //         .AllowAnyMethod()
-        //         .AllowAnyHeader()
-        // );//
-
         app.UseAuthentication();
-        //app.UseRouting();
         app.UseAuthorization();
-        // app.UseSession();
-        // app.UseResponseCompression();
-        // app.UseResponseCaching();
-
         app.MapControllers();
         app.Run();
     }

@@ -4,7 +4,6 @@ using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Services;
 using MiauDatabase.Enums;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
@@ -13,6 +12,7 @@ using System.Text.Json;
 namespace MiauAPI.Controllers;
 
 [ApiController]
+[Authorize(Roles = $"{nameof(UserPermissions.Administrator)},{nameof(UserPermissions.Clerk)}")]
 [Route(ApiConstants.MainEndpoint)]
 public sealed class ProductController : ControllerBase
 {
@@ -55,24 +55,18 @@ public sealed class ProductController : ControllerBase
         => await _service.GetProductByIdAsync(id);
 
     [HttpPost("create")]
-    [Authorize(nameof(UserPermissions.Administrator))]
-    [Authorize(nameof(UserPermissions.Clerk))]
     [ProducesResponseType(typeof(CreatedProductResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<CreatedProductResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedProductRequest product)
         => await _service.CreateProductAsync(product, base.Request.Path.Value!);
 
     [HttpDelete("delete")]
-    [Authorize(nameof(UserPermissions.Administrator))]
-    [Authorize(nameof(UserPermissions.Clerk))]
     [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
         => await _service.DeleteProductByIdAsync(id);
 
     [HttpPut("update")]
-    [Authorize(nameof(UserPermissions.Administrator))]
-    [Authorize(nameof(UserPermissions.Clerk))]
     [ProducesResponseType(typeof(UpdateResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateProductRequest product)
