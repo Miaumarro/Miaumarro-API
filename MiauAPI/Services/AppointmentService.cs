@@ -66,7 +66,6 @@ public sealed class AppointmentService
         _db.Appointments.Update(dbAppointment);
         await _db.SaveChangesAsync();
 
-        // TODO: handle authentication properly
         return new CreatedResult(location, new CreatedAppointmentResponse(dbAppointment.Id));
     }
 

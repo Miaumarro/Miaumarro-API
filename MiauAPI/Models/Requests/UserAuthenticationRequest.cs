@@ -6,4 +6,4 @@ namespace MiauAPI.Models.Requests;
 /// <param name="Cpf">The CPF of the user.</param>
 /// <param name="Email">The e-mail of the user.</param>
 /// <param name="Password">The password of the user.</param>
-public sealed record LoginUserRequest(string? Cpf, string? Email, string Password);
+public sealed record UserAuthenticationRequest(string? Cpf, string? Email, string Password);

@@ -156,7 +156,6 @@ public sealed class ProductService
         await _db.Products.AddAsync(dbProduct);
         await _db.SaveChangesAsync();
 
-        // TODO: handle authentication properly
         return new CreatedResult(location, new CreatedProductResponse(dbProduct.Id));
     }
 

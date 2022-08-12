@@ -71,7 +71,6 @@ public sealed class AddressService
         _db.Addresses.Update(dbAddress);
         await _db.SaveChangesAsync();
 
-        // TODO: handle authentication properly
         return new CreatedResult(location, new CreatedAddressResponse(dbAddress.Id));
     }
 

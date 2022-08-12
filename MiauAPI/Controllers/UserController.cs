@@ -52,9 +52,9 @@ public sealed class UserController : ControllerBase
 
     [HttpPost("create")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(CreatedUserResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(UserAuthenticationResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<CreatedUserResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedUserRequest user)
+    public async Task<ActionResult<OneOf<UserAuthenticationResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedUserRequest user)
         => await _service.CreateUserAsync(user, base.Request.Path.Value!);
 
     [HttpDelete("delete")]

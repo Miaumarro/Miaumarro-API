@@ -4,11 +4,11 @@ using MiauAPI.Validators.Abstractions;
 namespace MiauAPI.Validators;
 
 /// <summary>
-/// Validates a <see cref="LoginUserRequest"/>.
+/// Validates a <see cref="UserAuthenticationRequest"/>.
 /// </summary>
-public sealed class LoginRequestValidator : IRequestValidator<LoginUserRequest>
+public sealed class LoginRequestValidator : IRequestValidator<UserAuthenticationRequest>
 {
-    public bool IsRequestValid(LoginUserRequest request, out IEnumerable<string> errorMessages)
+    public bool IsRequestValid(UserAuthenticationRequest request, out IEnumerable<string> errorMessages)
     {
         errorMessages = Enumerable.Empty<string>();
 

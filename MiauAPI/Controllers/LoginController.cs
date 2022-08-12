@@ -21,6 +21,6 @@ public sealed class LoginController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(UserAuthenticationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<UserAuthenticationResponse, ErrorResponse>>> RegisterAsync([FromBody] LoginUserRequest user)
+    public async Task<ActionResult<OneOf<UserAuthenticationResponse, ErrorResponse>>> RegisterAsync([FromBody] UserAuthenticationRequest user)
         => await _service.LoginUserAsync(user);
 }

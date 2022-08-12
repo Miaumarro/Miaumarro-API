@@ -19,12 +19,14 @@ namespace MiauAPI.Services;
 public sealed class UserService
 {
     private readonly MiauDbContext _db;
+    private readonly LoginService _loginService;
     private readonly IRequestValidator<CreatedUserRequest> _validator;
     private readonly IRequestValidator<UpdateUserRequest> _validatorUpdate;
 
-    public UserService(MiauDbContext db, IRequestValidator<CreatedUserRequest> validator, IRequestValidator<UpdateUserRequest> validatorUpdate)
+    public UserService(MiauDbContext db, LoginService loginService, IRequestValidator<CreatedUserRequest> validator, IRequestValidator<UpdateUserRequest> validatorUpdate)
     {
         _db = db;
+        _loginService = loginService;
         _validator = validator;
         _validatorUpdate = validatorUpdate;
     }
@@ -37,7 +39,7 @@ public sealed class UserService
     /// <remarks>If the request contains invalid data or the CPF/e-mail are already registered, the operation fails.</remarks>
     /// <returns>The result of the operation.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
-    public async Task<ActionResult<OneOf<CreatedUserResponse, ErrorResponse>>> CreateUserAsync(CreatedUserRequest request, string location)
+    public async Task<ActionResult<OneOf<UserAuthenticationResponse, ErrorResponse>>> CreateUserAsync(CreatedUserRequest request, string location)
     {
         if (string.IsNullOrWhiteSpace(location))
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));
@@ -64,8 +66,9 @@ public sealed class UserService
         _db.Users.Add(dbUser);
         await _db.SaveChangesAsync();
 
-        // TODO: handle authentication properly
-        return new CreatedResult(location, new CreatedUserResponse(dbUser.Id, "placeholder_token"));
+        var expireAt = _loginService.TokenExpirationTime;
+
+        return new CreatedResult(location, new UserAuthenticationResponse(dbUser.Id, _loginService.GenerateSessionToken(dbUser, expireAt), expireAt));
     }
 
     /// <summary>
