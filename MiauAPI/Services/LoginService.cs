@@ -22,6 +22,9 @@ public sealed class LoginService
     private readonly IConfiguration _config;
     private readonly MiauDbContext _db;
 
+    /// <summary>
+    /// Gets the expiration time for a new session token.
+    /// </summary>
     public DateTime TokenExpirationTime
         => DateTime.UtcNow.AddDays(7);
 
