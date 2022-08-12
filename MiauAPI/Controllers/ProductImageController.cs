@@ -47,16 +47,14 @@ public sealed class ProductImageController : ControllerBase
     }
 
     [HttpPost("create")]
-    [Authorize(nameof(UserPermissions.Administrator))]
-    [Authorize(nameof(UserPermissions.Clerk))]
+    [Authorize(Roles = $"{nameof(UserPermissions.Administrator)},{nameof(UserPermissions.Clerk)}")]
     [ProducesResponseType(typeof(CreatedProductImageResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<CreatedProductImageResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedProductImageRequest productImage)
         => await _service.CreatedProductImageAsync(productImage, base.Request.Path.Value!);
 
     [HttpDelete("delete")]
-    [Authorize(nameof(UserPermissions.Administrator))]
-    [Authorize(nameof(UserPermissions.Clerk))]
+    [Authorize(Roles = $"{nameof(UserPermissions.Administrator)},{nameof(UserPermissions.Clerk)}")]
     [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
