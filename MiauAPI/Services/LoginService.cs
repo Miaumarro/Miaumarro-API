@@ -103,7 +103,7 @@ public sealed class LoginService
         };
 
         // Make it so each UserPermissions the user has is a role claim
-        foreach (var permission in permissions.ToValues())
+        foreach (var permission in permissions.ToValues().When(x => x.Count() != 1, x => x.Where(y => y is not UserPermissions.Blocked)))
             claims.Add(new Claim(ClaimTypes.Role, permission.ToString()));
 
         // Generate the token
