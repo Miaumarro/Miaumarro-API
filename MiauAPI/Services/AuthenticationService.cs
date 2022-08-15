@@ -97,9 +97,9 @@ public sealed class AuthenticationService
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Username cannot be null or whitespace.", nameof(name));
-        if (string.IsNullOrWhiteSpace(email))
+        else if (string.IsNullOrWhiteSpace(email))
             throw new ArgumentException("User e-mail cannot be null or whitespace.", nameof(email));
-        if (expiresAt <= DateTime.UtcNow)
+        else if (expiresAt <= DateTime.UtcNow)
             throw new ArgumentException("Token must expire in the future.", nameof(expiresAt));
 
         // Generate the claims (for authorization)

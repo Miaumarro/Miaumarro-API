@@ -29,8 +29,9 @@ public sealed class AuthenticationServiceTest : BaseApiServiceTest
         _service = base.Scope.ServiceProvider.GetRequiredService<AuthenticationService>();
 
         // Create one user once for the entire test run
-        // Since this class is instantiated once per test,
-        // we must watch out for race conditions.
+        // Since this class is instantiated once per test
+        // and tests run in parallel, we must watch out
+        // for race conditions.
         lock (_lockObject)
         {
             if (!_firstRun)
