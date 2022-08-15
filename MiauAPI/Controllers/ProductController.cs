@@ -1,9 +1,10 @@
 using MiauAPI.Common;
-using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Services;
+using MiauDatabase.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using System.Text.Json;
@@ -11,6 +12,7 @@ using System.Text.Json;
 namespace MiauAPI.Controllers;
 
 [ApiController]
+[Authorize(Roles = $"{nameof(UserPermissions.Administrator)},{nameof(UserPermissions.Clerk)}")]
 [Route(ApiConstants.MainEndpoint)]
 public sealed class ProductController : ControllerBase
 {
@@ -19,8 +21,8 @@ public sealed class ProductController : ControllerBase
     public ProductController(ProductService service)
         => _service = service;
 
-    
-    [HttpGet()]
+    [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(GetProductResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<GetProductResponse, ErrorResponse>>> GetAsync([FromQuery] ProductParameters productParameters)
@@ -40,12 +42,13 @@ public sealed class ProductController : ControllerBase
             };
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
-
         }
+
         return productsPaged;
     }
 
     [HttpGet("detail")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(GetProductByIdResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<GetProductByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)
@@ -68,5 +71,4 @@ public sealed class ProductController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateProductRequest product)
         => await _service.UpdateProductByIdAsync(product);
-
 }

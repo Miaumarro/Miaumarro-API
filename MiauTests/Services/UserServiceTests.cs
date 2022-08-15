@@ -51,7 +51,7 @@ public sealed class UserServiceTests : BaseApiServiceTest
         var request = new CreatedUserRequest(cpf, name, surname, email, phone, password);
 
         // Use the service
-        var actionResult = await _service.CreateUserAsync(request, "location/here/doesnt/matter");
+        var actionResult = await _service.RegisterUserAsync(request, "location/here/doesnt/matter");
 
         // Test the result
         Assert.IsType(expectedType, actionResult.Result);
@@ -59,7 +59,7 @@ public sealed class UserServiceTests : BaseApiServiceTest
         // If request succeeded, try to do it again
         if (actionResult.Result is CreatedResult)
         {
-            var newActionResult = await _service.CreateUserAsync(request, "location/here/doesnt/matter");
+            var newActionResult = await _service.RegisterUserAsync(request, "location/here/doesnt/matter");
             Assert.IsType<BadRequestObjectResult>(newActionResult.Result);
         }
     }
@@ -70,6 +70,6 @@ public sealed class UserServiceTests : BaseApiServiceTest
     internal async Task RegisterUserFailTestAsync(string? location)
     {
         var validRequest = new CreatedUserRequest("12345678910", "Name", "Surname", "email1@test.com", "21999999999", "password");
-        await Assert.ThrowsAsync<ArgumentException>(() => _service.CreateUserAsync(validRequest, location!));
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.RegisterUserAsync(validRequest, location!));
     }
 }

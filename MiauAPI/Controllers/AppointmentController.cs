@@ -1,9 +1,10 @@
 using MiauAPI.Common;
-using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Services;
+using MiauDatabase.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using System.Text.Json;
@@ -19,7 +20,7 @@ public sealed class AppointmentController : ControllerBase
     public AppointmentController(AppointmentService service)
         => _service = service;
 
-    [HttpGet()]
+    [HttpGet]
     [ProducesResponseType(typeof(GetAppointmentResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<GetAppointmentResponse, ErrorResponse>>> GetAsync([FromQuery] AppointmentParameters appointmentsParameters)
@@ -39,8 +40,8 @@ public sealed class AppointmentController : ControllerBase
             };
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
-
         }
+
         return appointmentsPaged;
     }
 
@@ -51,6 +52,7 @@ public sealed class AppointmentController : ControllerBase
     => await _service.GetAppointmentByIdAsync(id);
 
     [HttpPost("create")]
+    [Authorize(Roles = $"{nameof(UserPermissions.Customer)}")]
     [ProducesResponseType(typeof(CreatedAppointmentResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<CreatedAppointmentResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedAppointmentRequest appointment)
@@ -67,5 +69,4 @@ public sealed class AppointmentController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateAppointmentRequest appointment)
         => await _service.UpdateAppointmentByIdAsync(appointment);
-
 }

@@ -3,6 +3,7 @@ using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using System.Text.Json;
@@ -18,7 +19,7 @@ public sealed class UserController : ControllerBase
     public UserController(UserService service)
         => _service = service;
 
-    [HttpGet()]
+    [HttpGet]
     [ProducesResponseType(typeof(GetUserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<GetUserResponse, ErrorResponse>>> GetAsync([FromQuery] UserParameters userParameters)
@@ -38,8 +39,8 @@ public sealed class UserController : ControllerBase
             };
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
-
         }
+
         return usersPaged;
     }
 
@@ -50,10 +51,11 @@ public sealed class UserController : ControllerBase
         => await _service.GetUserByIdAsync(id);
 
     [HttpPost("create")]
-    [ProducesResponseType(typeof(CreatedUserResponse), StatusCodes.Status201Created)]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(UserAuthenticationResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<CreatedUserResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedUserRequest user)
-        => await _service.CreateUserAsync(user, base.Request.Path.Value!);
+    public async Task<ActionResult<OneOf<UserAuthenticationResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedUserRequest user)
+        => await _service.RegisterUserAsync(user, base.Request.Path.Value!);
 
     [HttpDelete("delete")]
     [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]
@@ -66,5 +68,4 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateUserRequest user)
         => await _service.UpdateUserByIdAsync(user);
-
 }

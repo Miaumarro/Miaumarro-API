@@ -18,11 +18,13 @@ public class Program
         builder.Services.AddControllers();
 
         // Add IoC services
-        builder.Services    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        builder.Services
             .AddEndpointsApiExplorer()
-            .AddSwaggerGen()
+            .AddRouting()
             .AddMiauServices()
-            .AddMiauDb();
+            .AddMiauDb()
+            .AddMiauAuth(builder.Configuration.GetValue<byte[]>("Jwt:Key"));
 
         var app = builder.Build();
 
@@ -33,8 +35,11 @@ public class Program
             app.UseSwaggerUI();
         }
 
-        app.UseHttpsRedirection();
-        app.UseAuthorization();
+        app.UseHttpsRedirection()
+            .UseRouting()
+            .UseAuthentication()
+            .UseAuthorization();
+
         app.MapControllers();
         app.Run();
     }
