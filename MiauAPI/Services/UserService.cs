@@ -85,8 +85,7 @@ public sealed class UserService
             Name = p.Name,
             Surname = p.Surname,
             Email = p.Email,
-            Phone = p.Phone,
-            Password = p.HashedPassword
+            Phone = p.Phone
         });
 
         if (userParameters.Cpf != null)
@@ -120,8 +119,7 @@ public sealed class UserService
                                                 Name = p.Name,
                                                 Surname = p.Surname,
                                                 Email = p.Email,
-                                                Phone = p.Phone,
-                                                Password = p.HashedPassword
+                                                Phone = p.Phone
                                             })
                                             .FirstOrDefaultAsync();
 
