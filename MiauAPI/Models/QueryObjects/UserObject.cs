@@ -18,5 +18,4 @@ public sealed record UserObject
     public string Surname { get; init; } = null!;
     public string Email { get; init; } = null!;
     public string? Phone { get; init; }
-    public string Password { get; set; } = null!;
 }
