@@ -55,7 +55,7 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(UserAuthenticationResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<UserAuthenticationResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedUserRequest user)
-        => await _service.CreateUserAsync(user, base.Request.Path.Value!);
+        => await _service.RegisterUserAsync(user, base.Request.Path.Value!);
 
     [HttpDelete("delete")]
     [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]

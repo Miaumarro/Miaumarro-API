@@ -3,6 +3,8 @@ using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Services;
+using MiauDatabase.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using System.Text.Json;
@@ -50,6 +52,7 @@ public sealed class AppointmentController : ControllerBase
     => await _service.GetAppointmentByIdAsync(id);
 
     [HttpPost("create")]
+    [Authorize(Roles = $"{nameof(UserPermissions.Customer)}")]
     [ProducesResponseType(typeof(CreatedAppointmentResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<CreatedAppointmentResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedAppointmentRequest appointment)

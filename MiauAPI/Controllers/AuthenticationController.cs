@@ -10,11 +10,11 @@ namespace MiauAPI.Controllers;
 
 [ApiController]
 [Route(ApiConstants.MainEndpoint)]
-public sealed class LoginController : ControllerBase
+public sealed class AuthenticationController : ControllerBase
 {
-    private readonly LoginService _service;
+    private readonly AuthenticationService _service;
 
-    public LoginController(LoginService service)
+    public AuthenticationController(AuthenticationService service)
         => _service = service;
 
     [HttpPost]

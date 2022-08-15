@@ -17,7 +17,7 @@ namespace MiauAPI.Services;
 /// <summary>
 /// Handles requests pertaining to users.
 /// </summary>
-public sealed class LoginService
+public sealed class AuthenticationService
 {
     private readonly IConfiguration _config;
     private readonly MiauDbContext _db;
@@ -28,7 +28,7 @@ public sealed class LoginService
     public DateTime TokenExpirationTime
         => DateTime.UtcNow.AddDays(7);
 
-    public LoginService(MiauDbContext db, IConfiguration config)
+    public AuthenticationService(MiauDbContext db, IConfiguration config)
     {
         _db = db;
         _config = config;
@@ -39,8 +39,15 @@ public sealed class LoginService
     /// </summary>
     /// <param name="request">The controller request.</param>
     /// <returns>The result of the operation.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Occurs when <paramref name="request"/> or <see cref="UserAuthenticationRequest.Password"/>
+    /// are <see langword="null"/>.
+    /// </exception>
     public async Task<ActionResult<OneOf<UserAuthenticationResponse, ErrorResponse>>> LoginUserAsync(UserAuthenticationRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+        ArgumentNullException.ThrowIfNull(request.Password, nameof(request.Password));
+
         var expireAt = TokenExpirationTime;
         var user = await _db.Users
             .Where(x => x.Cpf == request.Cpf || x.Email == request.Email)
@@ -90,9 +97,9 @@ public sealed class LoginService
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Username cannot be null or whitespace.", nameof(name));
-        else if (string.IsNullOrWhiteSpace(email))
+        if (string.IsNullOrWhiteSpace(email))
             throw new ArgumentException("User e-mail cannot be null or whitespace.", nameof(email));
-        else if (expiresAt <= DateTime.UtcNow)
+        if (expiresAt <= DateTime.UtcNow)
             throw new ArgumentException("Token must expire in the future.", nameof(expiresAt));
 
         // Generate the claims (for authorization)
@@ -103,7 +110,7 @@ public sealed class LoginService
         };
 
         // Make it so each UserPermissions the user has is a role claim
-        foreach (var permission in permissions.ToValues().When(x => x.Count() != 1, x => x.Where(y => y is not UserPermissions.Blocked)))
+        foreach (var permission in permissions.ToValues().When(x => x.Count() is not 1, x => x.Where(y => y is not UserPermissions.Blocked)))
             claims.Add(new Claim(ClaimTypes.Role, permission.ToString()));
 
         // Generate the token

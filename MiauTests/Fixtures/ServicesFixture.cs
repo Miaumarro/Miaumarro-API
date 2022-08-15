@@ -1,7 +1,6 @@
 using LinqToDB.EntityFrameworkCore;
 using MiauAPI.Extensions;
 using MiauDatabase.Extensions;
-using MiauTests.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
 
