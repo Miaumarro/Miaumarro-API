@@ -3,6 +3,7 @@ using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Services;
+using MiauDatabase.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
@@ -68,4 +69,10 @@ public sealed class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateUserRequest user)
         => await _service.UpdateUserByIdAsync(user);
+
+    [HttpPut("updatePassword")]
+    [ProducesResponseType(typeof(UpdateResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdatePasswordAsync([FromBody] UpdateUserPasswordRequest user)
+        => await _service.UpdateUserPasswordAsync(user);
 }
