@@ -1,6 +1,5 @@
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
-using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -15,13 +14,9 @@ namespace MiauAPI.Services;
 public sealed class ProductReviewService
 {
     private readonly MiauDbContext _db;
-    private readonly IRequestValidator<CreatedProductReviewRequest> _validator;
 
-    public ProductReviewService(MiauDbContext db, IRequestValidator<CreatedProductReviewRequest> validator)
-    {
-        _db = db;
-        _validator = validator;
-    }
+    public ProductReviewService(MiauDbContext db)
+        => _db = db;
 
     /// <summary>
     /// Creates a new product review.
@@ -35,15 +30,11 @@ public sealed class ProductReviewService
         if (string.IsNullOrWhiteSpace(location))
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));
 
-        // Check if request contains valid data
-        if (!_validator.IsRequestValid(request, out var errorMessages))
-            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
-
         // Create the database product review
         var dbProductReview = new ProductReviewEntity()
         {
-            User = _db.Users.First(x => x.Id == request.UserId),
-            Product = _db.Products.First(x => x.Id == request.ProductId),
+            User = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId),
+            Product = await _db.Products.FirstAsync(x => x.Id == request.ProductId),
             Description = request.Description,
             Score = request.Score
         };
@@ -51,7 +42,6 @@ public sealed class ProductReviewService
         _db.ProductReviews.Add(dbProductReview);
         await _db.SaveChangesAsync();
 
-        // TODO: handle authentication properly
-        return new CreatedResult(location, new CreatedPetResponse(dbProductReview.Id));
+        return new CreatedResult(location, new CreatedProductReviewResponse(dbProductReview.Id));
     }
 }

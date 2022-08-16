@@ -1,6 +1,5 @@
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
-using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -15,13 +14,9 @@ namespace MiauAPI.Services;
 public sealed class PurchaseService
 {
     private readonly MiauDbContext _db;
-    private readonly IRequestValidator<CreatedPurchaseRequest> _validator;
 
-    public PurchaseService(MiauDbContext db, IRequestValidator<CreatedPurchaseRequest> validator)
-    {
-        _db = db;
-        _validator = validator;
-    }
+    public PurchaseService(MiauDbContext db)
+        => _db = db;
 
     /// <summary>
     /// Creates a new purchase.
@@ -34,10 +29,6 @@ public sealed class PurchaseService
     {
         if (string.IsNullOrWhiteSpace(location))
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));
-
-        // Check if request contains valid data
-        if (!_validator.IsRequestValid(request, out var errorMessages))
-            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
         // Create the database purchase
         var dbPurchaseTemp = new PurchaseEntity()

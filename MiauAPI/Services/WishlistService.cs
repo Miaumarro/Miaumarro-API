@@ -1,6 +1,5 @@
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
-using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -15,13 +14,9 @@ namespace MiauAPI.Services;
 public sealed class WishlistService
 {
     private readonly MiauDbContext _db;
-    private readonly IRequestValidator<CreatedWishlistItemRequest> _validator;
 
-    public WishlistService(MiauDbContext db, IRequestValidator<CreatedWishlistItemRequest> validator)
-    {
-        _db = db;
-        _validator = validator;
-    }
+    public WishlistService(MiauDbContext db)
+        => _db = db;
 
     /// <summary>
     /// Creates a new wishlist item.
@@ -35,21 +30,16 @@ public sealed class WishlistService
         if (string.IsNullOrWhiteSpace(location))
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));
 
-        // Check if request contains valid data
-        if (!_validator.IsRequestValid(request, out var errorMessages))
-            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
-
         // Create the database wishlist item
         var dbWishlistItem = new WishlistEntity()
         {
-            User = _db.Users.First(x => x.Id == request.UserId),
-            Product = _db.Products.First(x => x.Id == request.ProductId)
+            User = await _db.Users.FirstAsync(x => x.Id == request.UserId),
+            Product = await _db.Products.FirstAsync(x => x.Id == request.ProductId)
         };
 
         _db.Wishlist.Add(dbWishlistItem);
         await _db.SaveChangesAsync();
 
-        // TODO: handle authentication properly
         return new CreatedResult(location, new CreatedPetResponse(dbWishlistItem.Id));
     }
 }
