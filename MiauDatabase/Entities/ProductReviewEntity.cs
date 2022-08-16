@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 namespace MiauDatabase.Entities;
 
 /// <summary>
-/// Represents a database product image.
+/// Represents a database product review.
 /// </summary>
 /// <value></value>
-[Comment("Represents a product image.")]
+[Comment("Represents a product review.")]
 public sealed record ProductReviewEntity : MiauDbEntity
 {
     private int _score;
