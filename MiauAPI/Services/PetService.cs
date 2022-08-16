@@ -88,7 +88,6 @@ public sealed class PetService
         _db.Pets.Update(dbPet);
         await _db.SaveChangesAsync();
 
-        // TODO: handle authentication properly
         return new CreatedResult(location, new CreatedPetResponse(dbPet.Id));
     }
 

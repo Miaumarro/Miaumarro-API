@@ -42,13 +42,6 @@ public sealed class UpdateUserRequestValidator : IRequestValidator<UpdateUserReq
             errorMessages = errorMessages.Append(phoneError);
         }
 
-        // Check password
-        if (Validate.IsNull(request.Password, nameof(request.Password), out var passwordError)
-            || !Validate.IsTextInRange(request.Password, 100, nameof(request.Password), out passwordError))
-        {
-            errorMessages = errorMessages.Append(passwordError);
-        }
-
         return !errorMessages.Any();
     }
 }

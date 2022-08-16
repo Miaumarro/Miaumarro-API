@@ -19,14 +19,18 @@ namespace MiauAPI.Services;
 public sealed class UserService
 {
     private readonly MiauDbContext _db;
+    private readonly AuthenticationService _loginService;
     private readonly IRequestValidator<CreatedUserRequest> _validator;
     private readonly IRequestValidator<UpdateUserRequest> _validatorUpdate;
+    private readonly IRequestValidator<UpdateUserPasswordRequest> _validatorUpdatePassword;
 
-    public UserService(MiauDbContext db, IRequestValidator<CreatedUserRequest> validator, IRequestValidator<UpdateUserRequest> validatorUpdate)
+    public UserService(MiauDbContext db, AuthenticationService loginService, IRequestValidator<CreatedUserRequest> validator, IRequestValidator<UpdateUserRequest> validatorUpdate, IRequestValidator<UpdateUserPasswordRequest> validatorUpdatePassword)
     {
         _db = db;
+        _loginService = loginService;
         _validator = validator;
         _validatorUpdate = validatorUpdate;
+        _validatorUpdatePassword = validatorUpdatePassword;
     }
 
     /// <summary>
@@ -37,7 +41,7 @@ public sealed class UserService
     /// <remarks>If the request contains invalid data or the CPF/e-mail are already registered, the operation fails.</remarks>
     /// <returns>The result of the operation.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
-    public async Task<ActionResult<OneOf<CreatedUserResponse, ErrorResponse>>> CreateUserAsync(CreatedUserRequest request, string location)
+    public async Task<ActionResult<OneOf<UserAuthenticationResponse, ErrorResponse>>> RegisterUserAsync(CreatedUserRequest request, string location)
     {
         if (string.IsNullOrWhiteSpace(location))
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));
@@ -64,8 +68,9 @@ public sealed class UserService
         _db.Users.Add(dbUser);
         await _db.SaveChangesAsync();
 
-        // TODO: handle authentication properly
-        return new CreatedResult(location, new CreatedUserResponse(dbUser.Id, "placeholder_token"));
+        var expireAt = _loginService.TokenExpirationTime;
+
+        return new CreatedResult(location, new UserAuthenticationResponse(dbUser.Id, _loginService.GenerateSessionToken(dbUser, expireAt), expireAt));
     }
 
     /// <summary>
@@ -82,8 +87,7 @@ public sealed class UserService
             Name = p.Name,
             Surname = p.Surname,
             Email = p.Email,
-            Phone = p.Phone,
-            Password = p.HashedPassword
+            Phone = p.Phone
         });
 
         if (userParameters.Cpf != null)
@@ -117,8 +121,7 @@ public sealed class UserService
                                                 Name = p.Name,
                                                 Surname = p.Surname,
                                                 Email = p.Email,
-                                                Phone = p.Phone,
-                                                Password = p.HashedPassword
+                                                Phone = p.Phone
                                             })
                                             .FirstOrDefaultAsync();
 
@@ -165,7 +168,7 @@ public sealed class UserService
             Surname = request.Surname,
             Email = request.Email,
             Phone = request.Phone,
-            HashedPassword = Encrypt.HashPassword(request.Password)
+            HashedPassword = dbUser.HashedPassword
         };
 
         _db.Users.Update(dbUser);
@@ -173,6 +176,41 @@ public sealed class UserService
         await _db.SaveChangesAsync();
 
         return new OkObjectResult(new UpdateResponse($"Successful update user with the Id = {request.Id}"));
+    }
 
+    /// <summary>
+    /// Updates an user password.
+    /// </summary>
+    /// <param name="request">The controller request.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateUserPasswordAsync(UpdateUserPasswordRequest request)
+    {
+        // Check if request contains valid data
+        if (!_validatorUpdatePassword.IsRequestValid(request, out var errorMessages))
+            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
+
+        var dbUser = await _db.Users.FindAsync(request.Id);
+
+        if (dbUser == null)
+        {
+            return new NotFoundObjectResult(new ErrorResponse($"No user with the Id = {request.Id} was found"));
+        }
+
+        dbUser = new UserEntity()
+        {
+            Id = request.Id,
+            Cpf = dbUser.Cpf,
+            Name = dbUser.Name,
+            Surname = dbUser.Surname,
+            Email = dbUser.Email,
+            Phone = dbUser.Phone,
+            HashedPassword = Encrypt.HashPassword(request.Password)
+        };
+
+        _db.Users.Update(dbUser);
+
+        await _db.SaveChangesAsync();
+
+        return new OkObjectResult(new UpdateResponse($"Successful password update from the user with the Id = {request.Id}"));
     }
 }
