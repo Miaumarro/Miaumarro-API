@@ -50,11 +50,14 @@ public sealed class AuthenticationServiceTest : BaseApiServiceTest
     [InlineData(typeof(OkObjectResult), _defaultCpf, _defaultEmail, _defaultPassword)]
     [InlineData(typeof(OkObjectResult), _defaultCpf, null, _defaultPassword)]
     [InlineData(typeof(OkObjectResult), null, _defaultEmail, _defaultPassword)]
+    [InlineData(typeof(NotFoundObjectResult), "11111111111", "doesnt@exist.com", _defaultPassword)]
+    [InlineData(typeof(NotFoundObjectResult), _defaultCpf, _defaultEmail, "banana")]
+    [InlineData(typeof(NotFoundObjectResult), _defaultCpf, null, "banana")]
+    [InlineData(typeof(NotFoundObjectResult), null, _defaultEmail, "banana")]
     [InlineData(typeof(BadRequestObjectResult), null, null, _defaultPassword)]
-    [InlineData(typeof(BadRequestObjectResult), _defaultCpf, _defaultEmail, "banana")]
-    [InlineData(typeof(BadRequestObjectResult), _defaultCpf, null, "banana")]
-    [InlineData(typeof(BadRequestObjectResult), null, _defaultEmail, "banana")]
     [InlineData(typeof(BadRequestObjectResult), null, null, "banana")]
+    [InlineData(typeof(BadRequestObjectResult), _defaultCpf, _defaultEmail, "")]
+    [InlineData(typeof(BadRequestObjectResult), _defaultCpf, _defaultEmail, null)]
     internal async Task LoginUserTestAsync(Type expectedType, string? cpf, string? email, string password)
     {
         // Use the service
@@ -62,13 +65,6 @@ public sealed class AuthenticationServiceTest : BaseApiServiceTest
 
         // Test the result
         Assert.IsType(expectedType, actionResult.Result);
-    }
-
-    [Fact]
-    internal async Task LoginUserTestFailAsync()
-    {
-        await Assert.ThrowsAsync<ArgumentNullException>(() => _service.LoginUserAsync(null!));
-        await Assert.ThrowsAsync<ArgumentNullException>(() => _service.LoginUserAsync(new(_defaultCpf, _defaultEmail, null!)));
     }
 
     [Fact]

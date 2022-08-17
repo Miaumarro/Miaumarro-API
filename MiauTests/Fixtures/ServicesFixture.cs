@@ -1,5 +1,8 @@
 using LinqToDB.EntityFrameworkCore;
 using MiauAPI.Extensions;
+using MiauAPI.Models.Requests;
+using MiauAPI.Validators;
+using MiauAPI.Validators.Abstractions;
 using MiauDatabase.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
@@ -35,6 +38,7 @@ public sealed class ServicesFixture : IDisposable
             .AddLogging(x => x.ClearProviders())                        // Supress service logging, if any is being used
             .AddMiauServices()                                          // Add Miau services
             .AddMiauDb("Data Source=file::memory:?cache=shared;", true) // Initialize an in-memory SQLite database
+            .AddSingleton<IRequestValidator<UserAuthenticationRequest>, UserAuthenticationRequestValidator>()
             .BuildServiceProvider();
 
         ServiceProvider = _serviceProvider;
