@@ -110,6 +110,17 @@ public sealed class ValidateTests
         CheckNullability(!expected, errorMessage);
     }
 
+    [Theory]
+    [InlineData(true, null)]
+    [InlineData(true, "")]
+    [InlineData(true, "   ")]
+    [InlineData(false, "-")]
+    internal void IsNullOrWhiteSpace(bool expected, string? input)
+    {
+        Assert.Equal(expected, Validate.IsNullOrWhiteSpace(input, nameof(input), out var errorMessage));
+        CheckNullability(!expected, errorMessage);
+    }
+
     /// <summary>
     /// Checks if <paramref name="errorMessage"/> is <see langword="null"/> if <paramref name="expected"/> is <see langword="true"/>
     /// or not <see langword="null"/> if <paramref name="expected"/> is false.

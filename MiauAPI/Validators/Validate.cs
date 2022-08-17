@@ -101,7 +101,6 @@ public static class Validate
         return value is null;
     }
 
-
     /// <summary>
     /// Checks if <paramref name="value"/> is <see langword="null"/> or composed only by white spaces.
     /// </summary>
@@ -110,18 +109,14 @@ public static class Validate
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="true"/>, <see langword="null"/> otherwise.</param>
     /// <typeparam name="T">The type of the object.</typeparam>
     /// <returns><see langword="true"/> if <paramref name="value"/> is <see langword="null"/>, <see langword="false"/> otherwise.</returns>
-    public static bool IsNullOrWhiteSpace(string value, string paramName, [MaybeNullWhen(true)] out string errorMessage)
+    public static bool IsNullOrWhiteSpace(string? value, string paramName, [MaybeNullWhen(false)] out string errorMessage)
     {
+        errorMessage = (string.IsNullOrWhiteSpace(value))
+            ? $"{paramName} cannot be null or composed only of white space."
+            : null;
 
-        if(!string.IsNullOrWhiteSpace(value))
-        {
-            errorMessage = null;
-            return true;
-        }
-        errorMessage = $"{paramName} cannot be null or composed only by white spaces.";
-        return false;
+        return errorMessage is not null;
     }
-
 
     /// <summary>
     /// Checks if <paramref name="text"/> only contains digits.

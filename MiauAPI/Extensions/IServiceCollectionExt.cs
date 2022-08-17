@@ -84,6 +84,7 @@ public static class IServiceCollectionExt
         }
 
         serviceCollection
+            .AddSingleton<IRequestValidator<UserAuthenticationRequest>, UserAuthenticationRequestValidator>()
             .AddAuthorization(x =>
             {
                 // Require all users to be authenticated

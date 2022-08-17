@@ -1,6 +1,7 @@
 using Kotz.Extensions;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
+using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using MiauDatabase.Enums;
@@ -19,8 +20,9 @@ namespace MiauAPI.Services;
 /// </summary>
 public sealed class AuthenticationService
 {
-    private readonly IConfiguration _config;
     private readonly MiauDbContext _db;
+    private readonly IConfiguration _config;
+    private readonly IRequestValidator<UserAuthenticationRequest> _validator;
 
     /// <summary>
     /// Gets the expiration time for a new session token.
@@ -28,10 +30,11 @@ public sealed class AuthenticationService
     public DateTime TokenExpirationTime
         => DateTime.UtcNow.AddDays(7);
 
-    public AuthenticationService(MiauDbContext db, IConfiguration config)
+    public AuthenticationService(MiauDbContext db, IConfiguration config, IRequestValidator<UserAuthenticationRequest> validator)
     {
         _db = db;
         _config = config;
+        _validator = validator;
     }
 
     /// <summary>
@@ -39,14 +42,11 @@ public sealed class AuthenticationService
     /// </summary>
     /// <param name="request">The controller request.</param>
     /// <returns>The result of the operation.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// Occurs when <paramref name="request"/> or <see cref="UserAuthenticationRequest.Password"/>
-    /// are <see langword="null"/>.
-    /// </exception>
+    /// <exception cref="ArgumentNullException">Occurs when <paramref name="request"/> is <see langword="null"/>.</exception>
     public async Task<ActionResult<OneOf<UserAuthenticationResponse, ErrorResponse>>> LoginUserAsync(UserAuthenticationRequest request)
     {
-        ArgumentNullException.ThrowIfNull(request, nameof(request));
-        ArgumentNullException.ThrowIfNull(request.Password, nameof(request.Password));
+        if (!_validator.IsRequestValid(request, out var errorMessages))
+            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
         var expireAt = TokenExpirationTime;
         var user = await _db.Users
@@ -65,7 +65,7 @@ public sealed class AuthenticationService
 
         return (user is not null && Encrypt.Verify(request.Password, user.HashedPassword))
             ? new OkObjectResult(new UserAuthenticationResponse(user.Id, GenerateSessionToken(user, expireAt), expireAt))
-            : new BadRequestObjectResult(new ErrorResponse("CPF or e-mail were not found, or password is invalid."));
+            : new NotFoundObjectResult(new ErrorResponse("CPF or e-mail were not found, or password is invalid."));
     }
 
     /// <summary>
