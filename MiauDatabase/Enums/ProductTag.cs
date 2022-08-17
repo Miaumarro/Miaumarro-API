@@ -54,5 +54,30 @@ public enum ProductTag
     /// <summary>
     /// The product is an accessory (clothing pieces, leashes, etc).
     /// </summary>
-    Accessory = 1 << 8
+    Accessory = 1 << 8,
+
+    /// <summary>
+    /// The product is meant for dogs.
+    /// </summary>
+    Dog = 1 << 9,
+
+    /// <summary>
+    /// The product is meant for cats.
+    /// </summary>
+    Cat = 1 << 10,
+
+    /// <summary>
+    /// The product is meant for birds.
+    /// </summary>
+    Bird = 1 << 11,
+
+    /// <summary>
+    /// The product is meant for fishes.
+    /// </summary>
+    Fish = 1 << 12,
+
+    /// <summary>
+    /// The product is meant for other kinds of pets.
+    /// </summary>
+    OtherPet = 1 << 13
 }
