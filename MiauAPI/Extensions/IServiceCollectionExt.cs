@@ -36,6 +36,8 @@ public static class IServiceCollectionExt
             .AddSingleton<IRequestValidator<UpdateUserPasswordRequest>, UpdateUserPasswordRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
             .AddSingleton<IRequestValidator<UpdateProductRequest>, UpdateProductRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedProductReviewRequest>, CreatedProductReviewRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdateProductReviewRequest>, UpdateProductReviewRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
             .AddSingleton<IRequestValidator<UpdatePetRequest>, UpdatePetRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>() 

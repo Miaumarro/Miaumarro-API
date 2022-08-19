@@ -1,5 +1,6 @@
 using MiauDatabase.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace MiauDatabase.Entities;
 
@@ -7,7 +8,7 @@ namespace MiauDatabase.Entities;
 /// Represents a database product image.
 /// </summary>
 /// <value></value>
-[Comment("Represents a product image.")]
+[Comment("Represents a product review.")]
 public sealed record ProductReviewEntity : MiauDbEntity
 {
     private int _score;
@@ -15,7 +16,7 @@ public sealed record ProductReviewEntity : MiauDbEntity
     /// <summary>
     /// The user this product review is associated with.
     /// </summary>
-    public UserEntity? User { get; init; }
+    public UserEntity User { get; init; } = null!;
 
     /// <summary>
     /// The product this product review is associated with.
@@ -25,6 +26,7 @@ public sealed record ProductReviewEntity : MiauDbEntity
     /// <summary>
     /// The review of the product.
     /// </summary>
+   [MaxLength(500)]
     public string Description { get; init; } = null!;
 
     /// <summary>

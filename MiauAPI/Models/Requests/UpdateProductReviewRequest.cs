@@ -1,20 +1,13 @@
 using MiauDatabase.Enums;
 
-namespace MiauAPI.Models.QueryObjects;
+namespace MiauAPI.Models.Requests;
 
 /// <summary>
-/// Represents the object in a product review query.
+/// Represents a request for update a review by a given Id.
 /// </summary>
 /// <param name="Id">The id of the user review.</param>
 /// <param name="UserId">The id of the user.</param>
 /// <param name="ProductId">The id of the product.</param>
 /// <param name="Description">Description of the review.</param>
 /// <param name="Score">The product score.</param>
-public sealed record ProductReviewObject
-{
-    public int Id { get; set; }
-    public int UserId { get; set; }
-    public int ProductId { get; set; }
-    public string? Description { get; set; }
-    public int Score { get; set; }
-} 
+public sealed record UpdateProductReviewRequest(int Id, int UserId, int ProductId, string Description, int Score);
