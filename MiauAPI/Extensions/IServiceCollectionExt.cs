@@ -1,3 +1,4 @@
+using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Services;
 using MiauAPI.Validators;
@@ -24,28 +25,29 @@ public static class IServiceCollectionExt
     public static IServiceCollection AddMiauServices(this IServiceCollection serviceCollection)
     {
         return serviceCollection
-            .AddScoped<UserService>()
-            .AddScoped<ProductService>()
-            .AddScoped<ProductImageService>()
-            .AddScoped<PetService>()
             .AddScoped<AddressService>()
-            .AddScoped<ProductReviewService>()
-            .AddScoped<WishlistService>()
             .AddScoped<AppointmentService>()
-            .AddScoped<PurchaseService>()
             .AddScoped<AuthenticationService>()
-            .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
-            .AddSingleton<IRequestValidator<UpdateUserRequest>, UpdateUserRequestValidator>()
-            .AddSingleton<IRequestValidator<UpdateUserPasswordRequest>, UpdateUserPasswordRequestValidator>()
-            .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
-            .AddSingleton<IRequestValidator<UpdateProductRequest>, UpdateProductRequestValidator>()
-            .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
+            .AddScoped<PetService>()
+            .AddScoped<ProductImageService>()
+            .AddScoped<ProductReviewService>()
+            .AddScoped<ProductService>()
+            .AddScoped<PurchaseService>()
+            .AddScoped<UserService>()
+            .AddScoped<WishlistService>()
             .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>()
-            .AddSingleton<IRequestValidator<UpdatePetRequest>, UpdatePetRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>()
-            .AddSingleton<IRequestValidator<UpdateAddressRequest>, UpdateAddressRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedAppointmentRequest>, CreatedAppointmentRequestValidator>()
-            .AddSingleton<IRequestValidator<UpdateAppointmentRequest>, UpdateAppointmentRequestValidator>();
+            .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
+            .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdateAddressRequest>, UpdateAddressRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdateAppointmentRequest>, UpdateAppointmentRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdatePetRequest>, UpdatePetRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdateProductRequest>, UpdateProductRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdateUserPasswordRequest>, UpdateUserPasswordRequestValidator>()
+            .AddSingleton<IRequestValidator<UpdateUserRequest>, UpdateUserRequestValidator>()
+            .AddSingleton<IRequestValidator<UserParameters>, UserParametersValidator>(); ;
     }
 
     /// <summary>
@@ -59,7 +61,8 @@ public static class IServiceCollectionExt
     {
         if (addSwaggerAuth)
         {
-            serviceCollection.AddSwaggerGen(x => // Add Swagger authentication button
+            // Add Swagger authentication button
+            serviceCollection.AddSwaggerGen(x =>
             {
                 var apiSecurityScheme = new OpenApiSecurityScheme()
                 {

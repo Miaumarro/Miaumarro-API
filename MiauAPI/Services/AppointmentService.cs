@@ -12,6 +12,7 @@ using LinqToDB;
 using MiauDatabase.Enums;
 using MiauAPI.Enums;
 using MiauAPI.Models.QueryObjects;
+using MiauAPI.Extensions;
 
 namespace MiauAPI.Services;
 
@@ -103,8 +104,7 @@ public sealed class AppointmentService
             return new NotFoundObjectResult("No appointments with the given paramenters were found.");
         }
 
-        var dbAppointmentsPaged = PagedList<AppointmentObject>.ToPagedList(
-                        dbAppointmentsList,
+        var dbAppointmentsPaged = dbAppointmentsList.ToPagedList(
                         appointmentParameters.PageNumber,
                         appointmentParameters.PageSize);
 

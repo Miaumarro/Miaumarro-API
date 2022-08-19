@@ -92,7 +92,7 @@ public static class Validate
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="true"/>, <see langword="null"/> otherwise.</param>
     /// <typeparam name="T">The type of the object.</typeparam>
     /// <returns><see langword="true"/> if <paramref name="value"/> is <see langword="null"/>, <see langword="false"/> otherwise.</returns>
-    public static bool IsNull<T>(T value, string paramName, [MaybeNullWhen(false)] out string errorMessage)
+    public static bool IsNull<T>(T? value, string paramName, [MaybeNullWhen(false)] out string errorMessage)
     {
         errorMessage = (value is null)
             ? $"{paramName} cannot be null."

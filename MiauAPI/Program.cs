@@ -1,3 +1,4 @@
+using LinqToDB.Data;
 using LinqToDB.EntityFrameworkCore;
 using MiauAPI.Extensions;
 using MiauDatabase.Extensions;
@@ -8,9 +9,6 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // Enable LinqToDb extensions
-        LinqToDBForEFTools.Initialize();
-
         // Build web api
         var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +25,12 @@ public class Program
             .AddMiauAuth(builder.Configuration.GetValue<byte[]>("Jwt:Key"));
 
         var app = builder.Build();
+
+        // Enable LinqToDb extensions and enable its logging
+        LinqToDBForEFTools.Initialize();
+        DataConnection.TurnTraceSwitchOn();
+        DataConnection.WriteTraceLine = (message, displayName, traceLevel)
+            => app.Logger.Log(traceLevel.ToLogLevel(), new(10403, displayName), message ?? string.Empty, null, (state, ex) => state);
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using LinqToDB;
 using MiauAPI.Models.QueryObjects;
+using MiauAPI.Extensions;
 
 namespace MiauAPI.Services;
 
@@ -98,8 +99,7 @@ public sealed class ProductImageService
             return new NotFoundObjectResult("No product images with the given paramenters were found.");
         }
 
-        var dbProductImagesPaged = PagedList<ProductImageObject>.ToPagedList(
-                        dbProductImagesList,
+        var dbProductImagesPaged = dbProductImagesList.ToPagedList(
                         productImageParameters.PageNumber,
                         productImageParameters.PageSize);
 

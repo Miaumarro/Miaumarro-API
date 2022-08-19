@@ -1,6 +1,6 @@
 using MiauAPI.Validators;
 
-namespace MiauTests.Validators;
+namespace MiauTests.ValidatorTests;
 
 public sealed class ValidateTests
 {

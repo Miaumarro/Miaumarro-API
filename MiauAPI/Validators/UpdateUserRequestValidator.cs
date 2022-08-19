@@ -13,21 +13,21 @@ public sealed class UpdateUserRequestValidator : IRequestValidator<UpdateUserReq
         errorMessages = Enumerable.Empty<string>();
 
         // Check name
-        if (Validate.IsNull(request.Name, nameof(request.Name), out var nameError)
+        if (Validate.IsNullOrWhiteSpace(request.Name, nameof(request.Name), out var nameError)
             || !Validate.IsTextInRange(request.Name, 30, nameof(request.Name), out nameError))
         {
             errorMessages = errorMessages.Append(nameError);
         }
 
         // Check surname
-        if (Validate.IsNull(request.Surname, nameof(request.Surname), out var surnameError)
+        if (Validate.IsNullOrWhiteSpace(request.Surname, nameof(request.Surname), out var surnameError)
             || !Validate.IsTextInRange(request.Surname, 60, nameof(request.Surname), out surnameError))
         {
             errorMessages = errorMessages.Append(surnameError);
         }
 
         // Check e-mail
-        if (Validate.IsNull(request.Email, nameof(request.Email), out var emailError)
+        if (Validate.IsNullOrWhiteSpace(request.Email, nameof(request.Email), out var emailError)
             || !Validate.IsTextInRange(request.Email, 60, nameof(request.Email), out emailError)
             || !Validate.IsEmail(request.Email, out emailError))
         {

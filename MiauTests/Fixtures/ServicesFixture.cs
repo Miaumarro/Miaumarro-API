@@ -1,10 +1,9 @@
 using LinqToDB.EntityFrameworkCore;
 using MiauAPI.Extensions;
-using MiauAPI.Models.Requests;
-using MiauAPI.Validators;
-using MiauAPI.Validators.Abstractions;
+using MiauDatabase;
 using MiauDatabase.Extensions;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace MiauTests.Fixtures;
@@ -33,20 +32,39 @@ public sealed class ServicesFixture : IDisposable
         // Enable LinqToDb extensions
         LinqToDBForEFTools.Initialize();
 
-        _serviceProvider = WebApplication.CreateBuilder()               // Add the default services some Miau services may depend on
-            .Services
+        var builder = WebApplication.CreateBuilder();
+
+        _serviceProvider = builder.Services                             // Add the default services some Miau services may depend on
             .AddLogging(x => x.ClearProviders())                        // Supress service logging, if any is being used
             .AddMiauServices()                                          // Add Miau services
             .AddMiauDb("Data Source=file::memory:?cache=shared;", true) // Initialize an in-memory SQLite database
-            .AddSingleton<IRequestValidator<UserAuthenticationRequest>, UserAuthenticationRequestValidator>()
+            .AddMiauAuth(builder.Configuration.GetValue<byte[]>("Jwt:Key"), false)  // Add Miau authentication and authorization services
             .BuildServiceProvider();
 
         ServiceProvider = _serviceProvider;
+
+        // Add one default user that can
+        // be used on unit tests.
+        AddDefaultUser(ServiceProvider);
     }
 
     public void Dispose()
     {
         _serviceProvider.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Adds a <see cref="DefaultDbUser.Instance"/> user to the test database
+    /// before the tests are run.
+    /// </summary>
+    /// <param name="services">The IoC container.</param>
+    private static void AddDefaultUser(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MiauDbContext>();
+
+        db.Users.Add(DefaultDbUser.Instance);
+        db.SaveChanges();
     }
 }

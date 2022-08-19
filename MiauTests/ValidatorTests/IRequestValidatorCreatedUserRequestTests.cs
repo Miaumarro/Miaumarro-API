@@ -1,7 +1,7 @@
 using MiauAPI.Models.Requests;
 using MiauAPI.Validators.Abstractions;
 
-namespace MiauTests.Validators;
+namespace MiauTests.ValidatorTests;
 
 public sealed class IRequestValidatorCreatedUserRequestTests : BaseApiServiceTest
 {

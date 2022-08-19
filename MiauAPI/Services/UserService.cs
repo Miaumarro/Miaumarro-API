@@ -1,14 +1,15 @@
 using LinqToDB;
+using MiauAPI.Extensions;
 using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
-using MiauAPI.Pagination;
 using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
+using OneOf.Types;
 using Encrypt = BCrypt.Net.BCrypt;
 
 namespace MiauAPI.Services;
@@ -21,14 +22,16 @@ public sealed class UserService
     private readonly MiauDbContext _db;
     private readonly AuthenticationService _loginService;
     private readonly IRequestValidator<CreatedUserRequest> _validator;
+    private readonly IRequestValidator<UserParameters> _userParamValidator;
     private readonly IRequestValidator<UpdateUserRequest> _validatorUpdate;
     private readonly IRequestValidator<UpdateUserPasswordRequest> _validatorUpdatePassword;
 
-    public UserService(MiauDbContext db, AuthenticationService loginService, IRequestValidator<CreatedUserRequest> validator, IRequestValidator<UpdateUserRequest> validatorUpdate, IRequestValidator<UpdateUserPasswordRequest> validatorUpdatePassword)
+    public UserService(MiauDbContext db, AuthenticationService loginService, IRequestValidator<CreatedUserRequest> validator, IRequestValidator<UserParameters> userParamValidator, IRequestValidator<UpdateUserRequest> validatorUpdate, IRequestValidator<UpdateUserPasswordRequest> validatorUpdatePassword)
     {
         _db = db;
         _loginService = loginService;
         _validator = validator;
+        _userParamValidator = userParamValidator;
         _validatorUpdate = validatorUpdate;
         _validatorUpdatePassword = validatorUpdatePassword;
     }
@@ -74,72 +77,51 @@ public sealed class UserService
     }
 
     /// <summary>
-    /// Returns a list of users.
+    /// Returns a collection of users that meet the specified criteria.
     /// </summary>
+    /// <param name="userParameters">The criteria to search for.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<GetUserResponse, ErrorResponse>>> GetUserAsync(UserParameters userParameters)
+    public async Task<ActionResult<OneOf<PagedResponse<UserObject[]>, ErrorResponse>>> GetUsersAsync(UserParameters userParameters)
     {
+        if (!_userParamValidator.IsRequestValid(userParameters, out var errorMessages))
+            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        var dbUsers = _db.Users.Select(p => new UserObject
-        {
-            Id = p.Id,
-            Cpf = p.Cpf,
-            Name = p.Name,
-            Surname = p.Surname,
-            Email = p.Email,
-            Phone = p.Phone
-        });
+        var dbUsers = await _db.Users
+            .Where(x => userParameters.Ids.Contains(x.Id) || userParameters.Cpfs.Contains(x.Cpf) || userParameters.Emails.Contains(x.Email))
+            .OrderBy(x => x.Id)
+            .Select(x => new UserObject(x.Id, x.Cpf, x.Name, x.Surname, x.Email, x.Phone))
+            .PageRange(userParameters.PageNumber, userParameters.PageSize)
+            .ToArrayAsync();
 
-        if (userParameters.Cpf != null)
-        {
-            dbUsers = dbUsers.Where(p => p.Cpf.Contains(userParameters.Cpf));
-        }
+        if (dbUsers.Length is 0)
+            return new NotFoundObjectResult(new ErrorResponse($"No users with the given parameters were found."));
 
-        var dbUsersList = await dbUsers.ToListAsync();
+        var remainingResultIds = await _db.Users
+            .Where(x => !dbUsers.Select(y => y.Id).Contains(x.Id) && (userParameters.Ids.Contains(x.Id) || userParameters.Cpfs.Contains(x.Cpf) || userParameters.Emails.Contains(x.Email)))
+            .Select(x => x.Id)
+            .ToArrayAsync();
 
-        return (dbUsersList.Count is 0)
-            ? new NotFoundObjectResult(new ErrorResponse($"No users with the given parameters were found."))
-            : new OkObjectResult(new GetUserResponse(PagedList<UserObject>.ToPagedList(
-                                                        dbUsersList,
-                                                        userParameters.PageNumber,
-                                                        userParameters.PageSize)));
+        var previousAmount = remainingResultIds.Count(x => x < dbUsers.Min(y => y.Id));
+        var nextAmount = remainingResultIds.Count(x => x > dbUsers.Max(y => y.Id));
+
+        return new OkObjectResult(PagedResponse.Create(userParameters.PageNumber, userParameters.PageSize, previousAmount, nextAmount, dbUsers.Length, dbUsers));
     }
 
     /// <summary>
-    /// Return the user with the given Id.
+    /// Deletes users that meet the specified criteria.
     /// </summary>
-    /// <param name="id">The id of the user to be searched.</param>
+    /// <param name="id">The criteria to search for.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<GetUserByIdResponse, ErrorResponse>>> GetUserByIdAsync(int id)
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteUsersAsync(UserParameters userParameters)
     {
+        if (!_userParamValidator.IsRequestValid(userParameters, out var errorMessages))
+            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        var dbUser = await _db.Users.Where(p => p.Id == id)
-                                            .Select(p => new UserObject
-                                            {
-                                                Id = p.Id,
-                                                Cpf = p.Cpf,
-                                                Name = p.Name,
-                                                Surname = p.Surname,
-                                                Email = p.Email,
-                                                Phone = p.Phone
-                                            })
-                                            .FirstOrDefaultAsync();
+        var result = await _db.Users.DeleteAsync(x => userParameters.Ids.Contains(x.Id) || userParameters.Cpfs.Contains(x.Cpf) || userParameters.Emails.Contains(x.Email));
 
-        return dbUser == null
-                ? new NotFoundObjectResult(new ErrorResponse($"No user with the Id = {id} was found"))
-                : new OkObjectResult(new GetUserByIdResponse(dbUser));
-    }
-
-    /// <summary>
-    /// Deletes the user with the given Id.
-    /// </summary>
-    /// <param name="id">The Id of the user to be deleted.</param>
-    /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteUserByIdAsync(int id)
-    {
-        return ((await _db.Users.DeleteAsync(p => p.Id == id)) is 0)
-            ? new NotFoundObjectResult(new ErrorResponse($"No user with the Id = {id} was found"))
-            : new OkObjectResult(new DeleteResponse($"Successful delete user with the Id = {id}"));
+        return (result is 0)
+            ? new NotFoundObjectResult(new ErrorResponse($"No user with the specified criteria was found."))
+            : new OkObjectResult(new DeleteResponse($"Successfully deleted {result} users."));
     }
 
     /// <summary>
@@ -147,39 +129,29 @@ public sealed class UserService
     /// </summary>
     /// <param name="request">The controller request.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateUserByIdAsync(UpdateUserRequest request)
+    public async Task<ActionResult<OneOf<None, ErrorResponse>>> UpdateUserAsync(UpdateUserRequest request)
     {
         // Check if request contains valid data
         if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        var dbUser = await _db.Users.FindAsync(request.Id);
+        var result = await _db.Users
+            .Where(x => x.Id == request.Id)
+            .UpdateAsync(x => new UserEntity()
+            {
+                Name = request.Name,
+                Surname = request.Surname,
+                Email = request.Email,
+                Phone = request.Phone
+            });
 
-        if (dbUser == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No user with the Id = {request.Id} was found"));
-        }
-
-        dbUser = new UserEntity()
-        {
-            Id = request.Id,
-            Cpf = dbUser.Cpf,
-            Name = request.Name,
-            Surname = request.Surname,
-            Email = request.Email,
-            Phone = request.Phone,
-            HashedPassword = dbUser.HashedPassword
-        };
-
-        _db.Users.Update(dbUser);
-
-        await _db.SaveChangesAsync();
-
-        return new OkObjectResult(new UpdateResponse($"Successful update user with the Id = {request.Id}"));
+        return (result is 0)
+            ? new NotFoundResult()
+            : new OkResult();
     }
 
     /// <summary>
-    /// Updates an user password.
+    /// Updates a user's password.
     /// </summary>
     /// <param name="request">The controller request.</param>
     /// <returns>The result of the operation.</returns>
@@ -189,28 +161,25 @@ public sealed class UserService
         if (!_validatorUpdatePassword.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        var dbUser = await _db.Users.FindAsync(request.Id);
+        // Get user and check if their old password match with the current one
+        // If it doesn't, return a failed request
+        var userHashedPassword = await _db.Users
+            .Where(x => x.Id == request.Id)
+            .Select(x => x.HashedPassword)
+            .FirstOrDefaultAsync();
 
-        if (dbUser == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No user with the Id = {request.Id} was found"));
-        }
+        if (userHashedPassword is null)
+            return new NotFoundObjectResult(new ErrorResponse($"No user with Id {request.Id} was found."));
 
-        dbUser = new UserEntity()
-        {
-            Id = request.Id,
-            Cpf = dbUser.Cpf,
-            Name = dbUser.Name,
-            Surname = dbUser.Surname,
-            Email = dbUser.Email,
-            Phone = dbUser.Phone,
-            HashedPassword = Encrypt.HashPassword(request.Password)
-        };
+        if (!Encrypt.Verify(request.OldPassword, userHashedPassword))
+            return new BadRequestObjectResult(new ErrorResponse("Old password does not match the current password."));
 
-        _db.Users.Update(dbUser);
+        // Update the user's password
+        await _db.Users
+            .Where(x => x.Id == request.Id)
+            .UpdateAsync(x => new UserEntity() { HashedPassword = Encrypt.HashPassword(request.NewPassword) });
 
-        await _db.SaveChangesAsync();
-
-        return new OkObjectResult(new UpdateResponse($"Successful password update from the user with the Id = {request.Id}"));
+        // TODO: expire the current session token and return a new session token here
+        return new OkResult();
     }
 }

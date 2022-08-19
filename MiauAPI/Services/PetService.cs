@@ -12,7 +12,7 @@ using LinqToDB;
 using MiauDatabase.Enums;
 using MiauAPI.Enums;
 using MiauAPI.Models.QueryObjects;
-
+using MiauAPI.Extensions;
 
 namespace MiauAPI.Services;
 
@@ -122,8 +122,7 @@ public sealed class PetService
             return new NotFoundObjectResult("No pets with the given paramenters were found.");
         }
 
-        var dbPetsPaged = PagedList<PetObject>.ToPagedList(
-                        dbPetsList,
+        var dbPetsPaged = dbPetsList.ToPagedList(
                         petParameters.PageNumber,
                         petParameters.PageSize);
 

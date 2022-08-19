@@ -12,6 +12,7 @@ using LinqToDB;
 using MiauDatabase.Enums;
 using MiauAPI.Enums;
 using MiauAPI.Models.QueryObjects;
+using MiauAPI.Extensions;
 
 namespace MiauAPI.Services;
 
@@ -88,8 +89,7 @@ public sealed class ProductService
             return new NotFoundObjectResult("No products with the given paramenters were found.");
         }
 
-        var dbProductsPaged = PagedList<ProductObject>.ToPagedList(
-                        dbProductsList,
+        var dbProductsPaged = dbProductsList.ToPagedList(
                         productParameters.PageNumber,
                         productParameters.PageSize);
 

@@ -1,4 +1,5 @@
 using LinqToDB;
+using MiauAPI.Extensions;
 using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
@@ -108,8 +109,7 @@ public sealed class AddressService
             return new NotFoundObjectResult("No addresses with the given paramenters were found.");
         }
 
-        var dbAddressesPaged = PagedList<AddressObject>.ToPagedList(
-                        dbAddressesList,
+        var dbAddressesPaged = dbAddressesList.ToPagedList(
                         addressParameters.PageNumber,
                         addressParameters.PageSize);
 

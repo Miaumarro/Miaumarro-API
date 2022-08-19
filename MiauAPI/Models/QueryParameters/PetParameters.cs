@@ -4,9 +4,4 @@ namespace MiauAPI.Models.QueryParameters;
 /// Set relevant parameters for a pet search.
 /// </summary>
 /// <param name="UserId">The id of the user related to the pet.</param>
-public sealed class PetParameters : QueryStringParameters
-{
-    public int UserId { get; init; }
-
-}
-
+public sealed record PetParameters(int UserId) : QueryStringParameters;
