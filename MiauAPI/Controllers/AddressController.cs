@@ -9,8 +9,7 @@ using System.Text.Json;
 
 namespace MiauAPI.Controllers;
 
-[ApiController]
-[Route(ApiConstants.MainEndpoint)]
+[ApiController, Route(ApiConstants.MainEndpoint)]
 public sealed class AddressController : ControllerBase
 {
     private readonly AddressService _service;

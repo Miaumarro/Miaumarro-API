@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MiauTests.ServiceTests;
 
-public sealed class AuthenticationServiceTest : BaseApiServiceTest
+public sealed class AuthenticationServiceTests : BaseApiServiceTest
 {
     private readonly AuthenticationService _service;
 
-    public AuthenticationServiceTest(ServicesFixture fixture) : base(fixture)
+    public AuthenticationServiceTests(ServicesFixture fixture) : base(fixture)
         => _service = base.Scope.ServiceProvider.GetRequiredService<AuthenticationService>();
 
     [Theory]

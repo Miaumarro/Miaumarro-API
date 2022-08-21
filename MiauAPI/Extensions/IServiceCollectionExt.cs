@@ -41,6 +41,7 @@ public static class IServiceCollectionExt
             .AddSingleton<IRequestValidator<CreatedPetRequest>, CreatedPetRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedProductRequest>, CreatedProductRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
+            .AddSingleton<IRequestValidator<ProductParameters>, ProductParametersValidator>()
             .AddSingleton<IRequestValidator<UpdateAddressRequest>, UpdateAddressRequestValidator>()
             .AddSingleton<IRequestValidator<UpdateAppointmentRequest>, UpdateAppointmentRequestValidator>()
             .AddSingleton<IRequestValidator<UpdatePetRequest>, UpdatePetRequestValidator>()

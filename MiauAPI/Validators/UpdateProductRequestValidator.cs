@@ -33,9 +33,9 @@ public sealed class UpdateProductRequestValidator : IRequestValidator<UpdateProd
         }
 
         // Check Amount
-        if (!Validate.IsPositive(request.Amount, nameof(request.Amount), out var amountError))
+        if (request.Amount < 0)
         {
-            errorMessages = errorMessages.Append(amountError);
+            errorMessages = errorMessages.Append($"{nameof(request.Amount)} must be equal or higher than 0.");
         }
 
         // Check Discount
@@ -45,12 +45,11 @@ public sealed class UpdateProductRequestValidator : IRequestValidator<UpdateProd
         }
 
         // Check Brand
-        if (!Validate.IsTextInRange(request.Brand, 30, nameof(request.Brand), out var brandError))
+        if (request.Brand is not null && !Validate.IsTextInRange(request.Brand, 30, nameof(request.Brand), out var brandError))
         {
             errorMessages = errorMessages.Append(brandError);
         }
 
         return !errorMessages.Any();
-
     }
 }

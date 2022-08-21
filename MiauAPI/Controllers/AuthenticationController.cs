@@ -8,8 +8,7 @@ using OneOf;
 
 namespace MiauAPI.Controllers;
 
-[ApiController]
-[Route(ApiConstants.MainEndpoint)]
+[ApiController, Route(ApiConstants.MainEndpoint)]
 public sealed class AuthenticationController : ControllerBase
 {
     private readonly AuthenticationService _service;

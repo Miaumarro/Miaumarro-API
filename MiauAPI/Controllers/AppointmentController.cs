@@ -11,8 +11,7 @@ using System.Text.Json;
 
 namespace MiauAPI.Controllers;
 
-[ApiController]
-[Route(ApiConstants.MainEndpoint)]
+[ApiController, Route(ApiConstants.MainEndpoint)]
 public sealed class AppointmentController : ControllerBase
 {
     private readonly AppointmentService _service;

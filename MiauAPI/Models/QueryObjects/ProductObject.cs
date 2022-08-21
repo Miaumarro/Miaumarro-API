@@ -14,16 +14,4 @@ namespace MiauAPI.Models.QueryObjects;
 /// <param name="Tags">The product's store tags.</param>
 /// <param name="Brand">The product's brand.</param>
 /// <param name="Discount">The password entered by the user.</param>
-public sealed record ProductObject
-{
-    public int Id { get; set; }
-    public string Name { get; set; } = null!;
-    public string Description { get; set; } = null!;
-    public string? Brand { get; set; }
-    public decimal Price { get; set; }
-    public bool IsActive { get; set; }
-    public int Amount { get; set; }
-    public ProductTag Tags { get; set; }
-    public decimal Discount { get; set; }
-
-} 
+public sealed record ProductObject(int Id, string Name, string Description, string? Brand, decimal Price, bool IsActive, int Amount, ProductTag Tags, decimal Discount);

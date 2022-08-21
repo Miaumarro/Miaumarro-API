@@ -144,12 +144,12 @@ public static class Validate
     /// <param name="paramName">The name of the string parameter.</param>
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
     /// <returns><see langword="true"/> if <paramref name="text"/> the date is valid, <see langword="false"/> otherwise.</returns>
-    /// <exception cref="ArgumentNullException">Occurs when <paramref name="text"/> is <see langword="null"/>.</exception>
     public static bool IsDateValid(DateTime date, string paramName, [MaybeNullWhen(true)] out string errorMessage)
     {
         errorMessage = (date >= DateTime.UtcNow)
            ? $"{paramName} must be a valid date."
            : null;
+
         return errorMessage is null;
     }
 
@@ -160,12 +160,12 @@ public static class Validate
     /// <param name="paramName">The name of the string parameter.</param>
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
     /// <returns><see langword="true"/> if <paramref name="text"/> the date is valid, <see langword="false"/> otherwise.</returns>
-    /// <exception cref="ArgumentNullException">Occurs when <paramref name="text"/> is <see langword="null"/>.</exception>
     public static bool IsFutureDate(DateTime date, string paramName, [MaybeNullWhen(true)] out string errorMessage)
     {
         errorMessage = (date <= DateTime.UtcNow)
            ? $"{paramName} must be a future date."
            : null;
+
         return errorMessage is null;
     }
 
@@ -183,6 +183,7 @@ public static class Validate
             errorMessage = null;
             return true;
         }
+
         errorMessage = $"'{paramName}' must be a positive number.";
         return false;
     }
@@ -197,7 +198,6 @@ public static class Validate
     /// <returns><see langword="true"/> if <paramref name="value"/> is within the specified range, <see langword="false"/> otherwise.</returns>
     public static bool IsWithinRange(decimal value, decimal minValue, decimal maxValue, string paranName, [MaybeNullWhen(true)] out string errorMessage)
     {
-
         errorMessage = (value < minValue || value > maxValue)
             ? $"{paranName} must be between {minValue} and {maxValue}. Value: {value}."
             : null;
@@ -215,16 +215,16 @@ public static class Validate
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
     /// <typeparam name="T">The type of the object.</typeparam>
     /// <returns><see langword="true"/> if <paramref name="maxValue"/> is greather or equals to <paramref name="minValue"/>, <see langword="false"/> otherwise.</returns>
-    public static bool IsValidRange<T>(T minValue, T maxValue, string paranNameMin, string paranNameMax, [MaybeNullWhen(true)] out string errorMessage)  where T : IComparable<T>
+    public static bool IsValidRange<T>(T minValue, T maxValue, string paranNameMin, string paranNameMax, [MaybeNullWhen(true)] out string errorMessage) where T : IComparable<T>
     {
-
         var comparisonResult = Comparer<T>.Default.Compare(maxValue, minValue);
 
-        if (comparisonResult >=0)
+        if (comparisonResult >= 0)
         {
             errorMessage = null;
             return true;
         }
+
         errorMessage = $" {paranNameMax} must be greater than {paranNameMin}. {paranNameMin}: {minValue}, {paranNameMax}: {maxValue}";
         return false;
     }

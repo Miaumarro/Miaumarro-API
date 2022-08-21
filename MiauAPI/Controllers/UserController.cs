@@ -14,8 +14,7 @@ using System.Text.Json;
 
 namespace MiauAPI.Controllers;
 
-[ApiController]
-[Route(ApiConstants.MainEndpoint)]
+[ApiController, Route(ApiConstants.MainEndpoint)]
 public sealed class UserController : ControllerBase
 {
     private readonly UserService _service;

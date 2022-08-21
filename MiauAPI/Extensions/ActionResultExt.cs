@@ -9,7 +9,7 @@ namespace MiauAPI.Extensions;
 public static class ActionResultExt
 {
     /// <summary>
-    /// Attempts to extract the response of the specified type from this <see cref="ActionResult"/>.
+    /// Attempts to extract a response of type <typeparamref name="T"/> from this <see cref="ActionResult"/>.
     /// </summary>
     /// <typeparam name="T">The expected type of the response.</typeparam>
     /// <returns><see langword="true"/> is the response was unwrapped successfully, <see langword="false"/> otherwise.</returns>

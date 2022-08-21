@@ -39,7 +39,7 @@ public sealed class ServicesFixture : IDisposable
             .AddMiauServices()                                          // Add Miau services
             .AddMiauDb("Data Source=file::memory:?cache=shared;", true) // Initialize an in-memory SQLite database
             .AddMiauAuth(builder.Configuration.GetValue<byte[]>("Jwt:Key"), false)  // Add Miau authentication and authorization services
-            .BuildServiceProvider();
+            .BuildServiceProvider(true);
 
         ServiceProvider = _serviceProvider;
 

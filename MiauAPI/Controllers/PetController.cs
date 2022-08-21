@@ -9,8 +9,7 @@ using System.Text.Json;
 
 namespace MiauAPI.Controllers;
 
-[ApiController]
-[Route(ApiConstants.MainEndpoint)]
+[ApiController, Route(ApiConstants.MainEndpoint)]
 public sealed class PetController : ControllerBase
 {
     private readonly PetService _service;

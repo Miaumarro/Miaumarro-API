@@ -11,9 +11,8 @@ using System.Text.Json;
 
 namespace MiauAPI.Controllers;
 
-[ApiController]
+[ApiController, Route(ApiConstants.MainEndpoint)]
 [Authorize(Roles = $"{nameof(UserPermissions.Administrator)},{nameof(UserPermissions.Clerk)}")]
-[Route(ApiConstants.MainEndpoint)]
 public sealed class ProductImageController : ControllerBase
 {
     private readonly ProductImageService _service;

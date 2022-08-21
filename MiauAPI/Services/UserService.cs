@@ -79,32 +79,32 @@ public sealed class UserService
     /// <summary>
     /// Returns a collection of users that meet the specified criteria.
     /// </summary>
-    /// <param name="userParameters">The criteria to search for.</param>
+    /// <param name="request">The criteria to search for.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<PagedResponse<UserObject[]>, ErrorResponse>>> GetUsersAsync(UserParameters userParameters)
+    public async Task<ActionResult<OneOf<PagedResponse<UserObject[]>, ErrorResponse>>> GetUsersAsync(UserParameters request)
     {
-        if (!_userParamValidator.IsRequestValid(userParameters, out var errorMessages))
+        if (!_userParamValidator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
         var dbUsers = await _db.Users
-            .Where(x => userParameters.Ids.Contains(x.Id) || userParameters.Cpfs.Contains(x.Cpf) || userParameters.Emails.Contains(x.Email))
+            .Where(x => request.Ids.Contains(x.Id) || request.Cpfs.Contains(x.Cpf) || request.Emails.Contains(x.Email))
             .OrderBy(x => x.Id)
             .Select(x => new UserObject(x.Id, x.Cpf, x.Name, x.Surname, x.Email, x.Phone))
-            .PageRange(userParameters.PageNumber, userParameters.PageSize)
+            .PageRange(request.PageNumber, request.PageSize)
             .ToArrayAsync();
 
         if (dbUsers.Length is 0)
             return new NotFoundObjectResult(new ErrorResponse($"No users with the given parameters were found."));
 
         var remainingResultIds = await _db.Users
-            .Where(x => !dbUsers.Select(y => y.Id).Contains(x.Id) && (userParameters.Ids.Contains(x.Id) || userParameters.Cpfs.Contains(x.Cpf) || userParameters.Emails.Contains(x.Email)))
+            .Where(x => !dbUsers.Select(y => y.Id).Contains(x.Id) && (request.Ids.Contains(x.Id) || request.Cpfs.Contains(x.Cpf) || request.Emails.Contains(x.Email)))
             .Select(x => x.Id)
             .ToArrayAsync();
 
-        var previousAmount = remainingResultIds.Count(x => x < dbUsers.Min(y => y.Id));
-        var nextAmount = remainingResultIds.Count(x => x > dbUsers.Max(y => y.Id));
+        var previousAmount = remainingResultIds.Count(x => x < dbUsers[0].Id);
+        var nextAmount = remainingResultIds.Count(x => x > dbUsers[^1].Id);
 
-        return new OkObjectResult(PagedResponse.Create(userParameters.PageNumber, userParameters.PageSize, previousAmount, nextAmount, dbUsers.Length, dbUsers));
+        return new OkObjectResult(PagedResponse.Create(request.PageNumber, request.PageSize, previousAmount, nextAmount, dbUsers.Length, dbUsers));
     }
 
     /// <summary>
