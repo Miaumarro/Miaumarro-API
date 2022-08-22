@@ -6,5 +6,5 @@ namespace MiauAPI.Models.Responses;
 /// <summary>
 /// Represents the response given when a product query is successfully executed.
 /// </summary>
-/// <param name="Products">The resulted list of products.</param>
+/// <param name="ProductImages">The resulted list of products.</param>
 public sealed record GetProductImageResponse(PagedList<ProductImageObject> ProductImages);

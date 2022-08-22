@@ -34,7 +34,7 @@ public sealed record UserEntity : MiauDbEntity
     /// <summary>
     /// The wishlist items associated with this user.
     /// </summary>
-    public List<WishlistEntity> Wishlist { get; init; } = new();
+    public List<WishListEntity> Wishlist { get; init; } = new();
 
     /// <summary>
     /// This user's CPF.

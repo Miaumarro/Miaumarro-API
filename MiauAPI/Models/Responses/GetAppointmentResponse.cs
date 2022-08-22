@@ -6,5 +6,5 @@ namespace MiauAPI.Models.Responses;
 /// <summary>
 /// Represents the response given when aan appointment query is successfully executed.
 /// </summary>
-/// <param name="Products">The resulted list of appointments.</param>
+/// <param name="Appointments">The resulted list of appointments.</param>
 public sealed record GetAppointmentResponse(PagedList<AppointmentObject> Appointments);
