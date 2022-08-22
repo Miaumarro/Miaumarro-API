@@ -1,11 +1,10 @@
 namespace MiauAPI.Models.Requests;
 
 /// <summary>
-/// Represents a request for update an user by a given Id.
+/// Represents a request for creation of a new product review.
 /// </summary>
-/// <param name="Id">The id of the user review.</param>
-/// <param name="UserId">The id of the user.</param>
-/// <param name="ProductId">The id of the product.</param>
-/// <param name="Description">Description of the review.</param>
-/// <param name="Score">The product score.</param>
-public sealed record CreatedProductReviewRequest(int Id, int UserId, int ProductId, string Description, int Score);
+/// <param name="UserId">The user this product review is associated with.</param>
+/// <param name="ProductId">The product this product review is associated with.</param>
+/// <param name="Description">The review of the product.</param>
+/// <param name="Score">The review score given to the reviewed product.</param>
+public sealed record CreatedProductReviewRequest(int? UserId, int ProductId, string Description, int Score);

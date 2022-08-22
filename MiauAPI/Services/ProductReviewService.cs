@@ -6,6 +6,7 @@ using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OneOf;
 using MiauAPI.Validators;
 using LinqToDB;

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace MiauDatabase.Entities;
 
 /// <summary>
-/// Represents a database product image.
+/// Represents a database product review.
 /// </summary>
 /// <value></value>
 [Comment("Represents a product review.")]
