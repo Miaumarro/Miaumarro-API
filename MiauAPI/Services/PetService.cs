@@ -1,16 +1,12 @@
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
-using MiauAPI.Pagination;
 using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
-using MiauAPI.Validators;
 using LinqToDB;
-using MiauDatabase.Enums;
-using MiauAPI.Enums;
 using MiauAPI.Models.QueryObjects;
 using MiauAPI.Extensions;
 
@@ -48,9 +44,6 @@ public sealed class PetService
         if (!_validator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        // Checks the UserId
-        if(request.UserId == 0)
-            return new BadRequestObjectResult(new ErrorResponse($"The pet must be related to a user. 'UserId = {request.UserId}'"));
         var dbUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
         if (dbUser == null)
         {
@@ -60,16 +53,16 @@ public sealed class PetService
         string? imagePath = null;
 
         //Create the path for the Pet Image
-        if (request.ImagePath != null)
+        if (request.Image != null)
         {
             var path = $"Data/{request.UserId}/pets";
             if ((!Directory.Exists(path)))
             {
                 Directory.CreateDirectory(path);
             }
-            var filename = request.ImagePath.FileName!;
+            var filename = request.Image.FileName!;
             using var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create);
-            await request.ImagePath.CopyToAsync(fileStream);
+            await request.Image.CopyToAsync(fileStream);
             imagePath = $"Data/{request.UserId}/pets" + filename;
         }
 

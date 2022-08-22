@@ -77,7 +77,7 @@ public sealed class ProductService
             .ToArrayAsync();
 
         // Get how many products exist before and after the page selection
-        var previousAmount = excludedProductIds.AsSpan()[0..excludedProductIds.IndexOf(dbProducts[0].Id)].Length;
+        var previousAmount = excludedProductIds.AsSpan()[..excludedProductIds.IndexOf(dbProducts[0].Id)].Length;
         var nextAmount = excludedProductIds.AsSpan()[(excludedProductIds.IndexOf(dbProducts[^1].Id) + 1)..].Length;
 
         return new OkObjectResult(PagedResponse.Create(request.PageNumber, request.PageSize, previousAmount, nextAmount, dbProducts.Length, dbProducts));

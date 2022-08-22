@@ -13,6 +13,12 @@ public sealed class CreatedPetRequestValidator : IRequestValidator<CreatedPetReq
     {
         errorMessages = Enumerable.Empty<string>();
 
+        // Check Id
+        if (!Validate.IsPositive(request.UserId, nameof(request.UserId), out var idError))
+        {
+            errorMessages = errorMessages.Append(idError);
+        }
+
         // Check name
         if (Validate.IsNull(request.Name, nameof(request.Name), out var nameError)
             || !Validate.IsTextInRange(request.Name, 30, nameof(request.Name), out nameError))

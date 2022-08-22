@@ -14,7 +14,7 @@ namespace MiauAPI.Models.Responses;
 public abstract record PagedResponse(int PageNumber, int PageSize, int PreviousCount, int NextCount, int Amount)
 {
     /// <summary>
-    /// Creates a <see cref="PagedResponse"/> according to the type of <paramref name="response"/>.
+    /// Creates a <see cref="PagedResponse{T}"/> according to the type of <paramref name="response"/>.
     /// </summary>
     /// <param name="pageNumber">The number of the current page.</param>
     /// <param name="pageSize">The amount of results to be returned for each page.</param>
@@ -23,7 +23,7 @@ public abstract record PagedResponse(int PageNumber, int PageSize, int PreviousC
     /// <param name="amount">The amount of results in the current response.</param>
     /// <param name="response">A collection with the results of the operation.</param>
     /// <typeparam name="T">The type of the returned collection.</typeparam>
-    /// <returns>A <see cref="PagedResponse"/> with results in a <typeparamref name="T"/>.</returns>
+    /// <returns>A <see cref="PagedResponse{T}"/> with results in a <typeparamref name="T"/>.</returns>
     public static PagedResponse<T> Create<T>(int pageNumber, int pageSize, int previousCount, int nextCount, int amount, T response) where T : ICollection
         => new(pageNumber, pageSize, previousCount, nextCount, amount, response);
 }
