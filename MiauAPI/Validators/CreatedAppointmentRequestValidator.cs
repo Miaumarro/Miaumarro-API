@@ -12,6 +12,12 @@ public sealed class CreatedAppointmentRequestValidator : IRequestValidator<Creat
     {
         errorMessages = Enumerable.Empty<string>();
 
+        // Check id
+        if (request.PetId <= 0)
+        {
+            errorMessages = errorMessages.Append($"{nameof(request.PetId)} must be valid.");
+        }
+
         // Check Price
         if (!Validate.IsPositive(request.Price, nameof(request.Price), out var priceError))
         {
@@ -25,6 +31,5 @@ public sealed class CreatedAppointmentRequestValidator : IRequestValidator<Creat
         }
 
         return !errorMessages.Any();
-
     }
 }

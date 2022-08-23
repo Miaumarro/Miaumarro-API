@@ -1,4 +1,6 @@
 using MiauAPI.Common;
+using MiauAPI.Extensions;
+using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
@@ -7,6 +9,7 @@ using MiauDatabase.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
+using OneOf.Types;
 using System.Text.Json;
 
 namespace MiauAPI.Controllers;
@@ -20,22 +23,21 @@ public sealed class AppointmentController : ControllerBase
         => _service = service;
 
     [HttpGet]
-    [ProducesResponseType(typeof(GetAppointmentResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<GetAppointmentResponse, ErrorResponse>>> GetAsync([FromQuery] AppointmentParameters appointmentsParameters)
+    [ProducesResponseType(typeof(PagedResponse<AppointmentObject[]>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OneOf<PagedResponse<AppointmentObject[]>, None>>> GetAsync([FromQuery] AppointmentParameters appointmentsParameters)
     {
-        var appointmentsPaged = await _service.GetAppointmentAsync(appointmentsParameters);
+        var appointmentsPaged = await _service.GetAppointmentsAsync(appointmentsParameters);
 
-        if (appointmentsPaged.Result is OkObjectResult response && response.Value is GetAppointmentResponse appointmentResponse)
+        if (appointmentsPaged.Result.TryUnwrap<PagedResponse>(out var response))
         {
             var metadata = new
             {
-                appointmentResponse.Appointments.TotalCount,
-                appointmentResponse.Appointments.PageSize,
-                appointmentResponse.Appointments.CurrentPage,
-                appointmentResponse.Appointments.TotalPages,
-                appointmentResponse.Appointments.HasNext,
-                appointmentResponse.Appointments.HasPrevious
+                response.PageNumber,
+                response.PageSize,
+                response.PreviousCount,
+                response.NextCount,
+                response.Amount
             };
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
@@ -44,28 +46,24 @@ public sealed class AppointmentController : ControllerBase
         return appointmentsPaged;
     }
 
-    [HttpGet("detail")]
-    [ProducesResponseType(typeof(GetAppointmentByIdResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<GetAppointmentByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)
-    => await _service.GetAppointmentByIdAsync(id);
-
     [HttpPost("create")]
-    [Authorize(Roles = $"{nameof(UserPermissions.Customer)}")]
+    [Authorize(Roles = nameof(UserPermissions.Customer))]
     [ProducesResponseType(typeof(CreatedAppointmentResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<OneOf<CreatedAppointmentResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedAppointmentRequest appointment)
         => await _service.CreateAppointmentAsync(appointment, base.Request.Path.Value!);
 
     [HttpDelete("delete")]
-    [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
-        => await _service.DeleteAppointmentByIdAsync(id);
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> DeleteByIdAsync([FromQuery] int id)
+        => await _service.DeleteAppointmentAsync(id);
 
     [HttpPut("update")]
-    [ProducesResponseType(typeof(UpdateResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateAppointmentRequest appointment)
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OneOf<None, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateAppointmentRequest appointment)
         => await _service.UpdateAppointmentByIdAsync(appointment);
 }
