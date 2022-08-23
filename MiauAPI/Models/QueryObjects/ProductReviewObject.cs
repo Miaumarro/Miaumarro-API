@@ -10,6 +10,7 @@ namespace MiauAPI.Models.QueryObjects;
 /// <param name="ProductId">The id of the product.</param>
 /// <param name="Description">Description of the review.</param>
 /// <param name="Score">The product score.</param>
+///  <param name="DateAdded">The date of added review.</param>
 public sealed record ProductReviewObject
 {
     public int Id { get; set; }
@@ -17,4 +18,6 @@ public sealed record ProductReviewObject
     public int ProductId { get; set; }
     public string? Description { get; set; }
     public int Score { get; set; }
-} 
+    public DateTime DateAdded { get; set; }
+
+}

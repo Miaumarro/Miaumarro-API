@@ -1,18 +1,30 @@
+//using MiauAPI.Models.QueryParameters;
+//using MiauAPI.Models.Requests;
+//using MiauAPI.Models.Responses;
+//using MiauAPI.Pagination;
+//using MiauAPI.Validators.Abstractions;
+//using MiauDatabase;
+//using MiauDatabase.Entities;
+//using Microsoft.AspNetCore.Mvc;
+//using OneOf;
+//using MiauAPI.Validators;
+//using LinqToDB;
+//using MiauDatabase.Enums;
+//using MiauAPI.Enums;
+//using MiauAPI.Models.QueryObjects;
+
+//namespace MiauAPI.Services;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Pagination;
-using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using OneOf;
-using MiauAPI.Validators;
 using LinqToDB;
-using MiauDatabase.Enums;
-using MiauAPI.Enums;
 using MiauAPI.Models.QueryObjects;
+using MiauAPI.Validators.Abstractions;
 
 namespace MiauAPI.Services;
 
@@ -51,7 +63,7 @@ public sealed class ProductReviewService
         // Checks the UserId
         if (request.UserId == 0)
             return new BadRequestObjectResult(new ErrorResponse($"The review must be related to a user. 'UserId = {request.UserId}'"));
-       
+
         var dbUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
         if (dbUser == null)
         {
@@ -92,11 +104,11 @@ public sealed class ProductReviewService
         var dbProductReview = _db.ProductReviews.Select(p => new ProductReviewObject
         {
 
-        Id = p.Id,
-        UserId = p.User.Id,
-        ProductId = p.Product.Id,
-        Description = p.Description,
-        Score = p.Score
+            Id = p.Id,
+            UserId = p.User.Id,
+            ProductId = p.Product.Id,
+            Description = p.Description,
+            Score = p.Score
 
         });
 
@@ -153,7 +165,7 @@ public sealed class ProductReviewService
     {
         return ((await _db.ProductReviews.DeleteAsync(p => p.Id == productReviewId)) is 0)
             ? new NotFoundObjectResult(new ErrorResponse($"No productr review with the Id = {productReviewId} was found"))
-            : new OkObjectResult(new DeleteResponse($"Successful delete review with the Id = {productReviewId}"));  
+            : new OkObjectResult(new DeleteResponse($"Successful delete review with the Id = {productReviewId}"));
     }
 
     /// <summary>
@@ -177,7 +189,7 @@ public sealed class ProductReviewService
         // Checks the UserId
         if (request.UserId == 0)
             return new BadRequestObjectResult(new ErrorResponse($"The product review must be related to a user. 'UserId = {request.UserId}'"));
-       
+
         var dbUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
         if (dbUser == null)
         {
