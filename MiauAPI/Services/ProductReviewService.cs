@@ -1,19 +1,3 @@
-//using MiauAPI.Models.QueryParameters;
-//using MiauAPI.Models.Requests;
-//using MiauAPI.Models.Responses;
-//using MiauAPI.Pagination;
-//using MiauAPI.Validators.Abstractions;
-//using MiauDatabase;
-//using MiauDatabase.Entities;
-//using Microsoft.AspNetCore.Mvc;
-//using OneOf;
-//using MiauAPI.Validators;
-//using LinqToDB;
-//using MiauDatabase.Enums;
-//using MiauAPI.Enums;
-//using MiauAPI.Models.QueryObjects;
-
-//namespace MiauAPI.Services;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
