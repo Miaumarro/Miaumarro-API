@@ -22,7 +22,14 @@ public class Program
             .AddRouting()
             .AddMiauServices()
             .AddMiauDb()
-            .AddMiauAuth(builder.Configuration.GetValue<byte[]>("Jwt:Key"));
+            .AddMiauAuth(builder.Configuration.GetValue<byte[]>("Jwt:Key"))
+            .AddCors(options =>
+                options.AddPolicy("CorsApi",
+                    builder => builder.WithOrigins("http://localhost:4200", "http://mywebsite.com")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                )
+            );
 
         var app = builder.Build();
 
@@ -39,14 +46,13 @@ public class Program
             app.UseSwaggerUI();
         }
 
-        app.UseCors(x =>
+        app.UseHttpsRedirection()
+            .UseRouting()
+            .UseCors(x =>
             x.AllowAnyHeader()
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
-        );
-
-        app.UseHttpsRedirection()
-            .UseRouting()
+            )
             .UseAuthentication()
             .UseAuthorization();
 
