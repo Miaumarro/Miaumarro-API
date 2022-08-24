@@ -30,7 +30,7 @@ public static class IServiceCollectionExt
             .AddScoped<PetService>()
             .AddScoped<AddressService>()
             .AddScoped<ProductReviewService>()
-            //.AddScoped<WishListService>()
+            .AddScoped<WishListService>()
             .AddScoped<AppointmentService>()
             //.AddScoped<PurchaseService>()
             .AddScoped<AuthenticationService>()
