@@ -43,7 +43,6 @@ public class Program
             x.AllowAnyHeader()
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
-                .AllowCredentials()
         );
 
         app.UseHttpsRedirection()
