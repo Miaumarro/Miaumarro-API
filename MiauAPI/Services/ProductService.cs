@@ -46,7 +46,7 @@ public sealed class ProductService
         var productsQuery = _db.Products.AsQueryable();
 
         if (request.SearchedTerm is not null)
-            productsQuery = productsQuery.Where(x => x.Name.Contains(request.SearchedTerm));
+            productsQuery = productsQuery.Where(x => x.Name.ToLower().Contains(request.SearchedTerm.ToLower()));
 
         if (request.Brand is not null)
             productsQuery = productsQuery.Where(x => request.Brand == x.Brand);
