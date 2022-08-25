@@ -11,17 +11,6 @@ namespace MiauAPI.Models.QueryObjects;
 /// <param name="Type">The type of the pet.</param>
 /// <param name="Gender">The gender of the pet.</param>
 /// <param name="Breed">The breed of the pet.</param>
-/// <param name="ImagePath">The image path to the pet's image.</param>
+/// <param name="Image">The content of the pet's image.</param>
 /// <param name="DateOfBirth">The date of birth of the pet.</param>
-public sealed record PetObject
-{
-    public int Id { get; init; }
-    public int UserId { get; init; }
-    public string Name { get; set; } = null!;
-    public PetType Type { get; set; }
-    public PetGender Gender { get; set; }
-    public string Breed { get; set; } = null!;
-    public string ImagePath { get; set; } = null!;
-    public DateTime DateOfBirth { get; set; }
-
-}
+public sealed record PetObject(int Id, int UserId, string Name, PetType Type, PetGender Gender, DateTime DateOfBirth, string? Breed, byte[]? Image);

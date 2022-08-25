@@ -72,5 +72,5 @@ public sealed class ProductController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UpdateByIdAsync([FromBody] UpdateProductRequest product)
-        => await _service.UpdateProductByIdAsync(product);
+        => await _service.UpdateProductAsync(product);
 }

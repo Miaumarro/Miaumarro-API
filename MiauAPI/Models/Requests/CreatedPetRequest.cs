@@ -12,4 +12,4 @@ namespace MiauAPI.Models.Requests;
 /// <param name="Breed">The breed of the pet.</param>
 /// <param name="Image">An image of the pet.</param>
 /// <param name="DateOfBirth">This pet's date of birth.</param>
-public sealed record CreatedPetRequest(int UserId, string Name, PetType Type, PetGender Gender, string? Breed, IFormFile? Image, DateTime DateOfBirth);
+public sealed record CreatedPetRequest(int UserId, string Name, PetType Type, PetGender Gender, string? Breed, byte[]? Image, DateTime DateOfBirth);

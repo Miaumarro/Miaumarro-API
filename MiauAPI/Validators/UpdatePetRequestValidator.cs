@@ -32,6 +32,12 @@ public sealed class UpdatePetRequestValidator : IRequestValidator<UpdatePetReque
             errorMessages = errorMessages.Append(dateOfBirthError);
         }
 
+        // Check image
+        if (request.Image is not null && request.Image.Length > 2000000)
+        {
+            errorMessages = errorMessages.Append($"{nameof(request.Image)} cannot be greater than 2 MB.");
+        }
+
         return !errorMessages.Any();
     }
 }

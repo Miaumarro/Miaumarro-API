@@ -9,6 +9,10 @@ using OneOf;
 using LinqToDB;
 using MiauAPI.Models.QueryObjects;
 using MiauAPI.Extensions;
+using Microsoft.EntityFrameworkCore;
+using LinqToDB.EntityFrameworkCore;
+using OneOf.Types;
+using Kotz.Extensions;
 
 namespace MiauAPI.Services;
 
@@ -18,12 +22,14 @@ namespace MiauAPI.Services;
 public sealed class PetService
 {
     private readonly MiauDbContext _db;
+    private readonly ImageService _imageService;
     private readonly IRequestValidator<CreatedPetRequest> _validator;
     private readonly IRequestValidator<UpdatePetRequest> _validatorUpdate;
 
-    public PetService(MiauDbContext db, IRequestValidator<CreatedPetRequest> validator, IRequestValidator<UpdatePetRequest> validatorUpdate)
+    public PetService(MiauDbContext db, ImageService imageService, IRequestValidator<CreatedPetRequest> validator, IRequestValidator<UpdatePetRequest> validatorUpdate)
     {
         _db = db;
+        _imageService = imageService;
         _validator = validator;
         _validatorUpdate = validatorUpdate;
     }
@@ -44,27 +50,16 @@ public sealed class PetService
         if (!_validator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        var dbUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
-        if (dbUser == null)
-        {
+        var dbUser = await _db.Users
+            .AsTracking()
+            .FirstOrDefaultAsyncEF(x => x.Id == request.UserId);
+
+        if (dbUser is null)
             return new NotFoundObjectResult(new ErrorResponse($"No User with the Id = {request.UserId} was found"));
-        }
 
-        string? imagePath = null;
-
-        //Create the path for the Pet Image
-        if (request.Image != null)
-        {
-            var path = $"Data/{request.UserId}/pets";
-            if ((!Directory.Exists(path)))
-            {
-                Directory.CreateDirectory(path);
-            }
-            var filename = request.Image.FileName!;
-            using var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create);
-            await request.Image.CopyToAsync(fileStream);
-            imagePath = $"Data/{request.UserId}/pets" + filename;
-        }
+        var imagePath = (request.Image is not null)
+            ? await _imageService.SaveImageAsync(request.Image, Path.Combine(request.UserId.ToString(), "pets"), request.Name)
+            : null;
 
         // Create the database pet
         var dbPet = new PetEntity()
@@ -78,7 +73,7 @@ public sealed class PetService
             DateOfBirth = request.DateOfBirth
         };
 
-        _db.Pets.Update(dbPet);
+        _db.Pets.Add(dbPet);
         await _db.SaveChangesAsync();
 
         return new CreatedResult(location, new CreatedPetResponse(dbPet.Id));
@@ -88,38 +83,38 @@ public sealed class PetService
     /// Returns a list of pets.
     /// </summary>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<GetPetResponse, ErrorResponse>>> GetPetAsync(PetParameters petParameters)
+    public async Task<ActionResult<OneOf<PagedResponse<PetObject[]>, None>>> GetPetsAsync(PetParameters request)
     {
+        var dbImagePathsAndPets = await _db.Pets
+            .Include(x => x.User)
+            .Where(x => x.User.Id == request.UserId)
+            .OrderBy(x => x.Id)
+            .PageRange(request.PageNumber, request.PageSize)
+            .Select(x => new
+            {
+                x.ImagePath,
+                Pet = new PetObject(x.Id, x.User.Id, x.Name, x.Type, x.Gender, x.DateOfBirth, x.Breed, null)
+            })
+            .ToArrayAsyncEF();
 
-        var dbPets = _db.Pets.Select(p => new PetObject
-        {
-            UserId = p.User.Id,
-            Id = p.Id,
-            Name = p.Name,
-            Type = p.Type,
-            Gender = p.Gender,
-            Breed = p.Breed!,
-            ImagePath = p.ImagePath!,
-            DateOfBirth = p.DateOfBirth
-        });
+        if (dbImagePathsAndPets.Length is 0)
+            return new NotFoundResult();
 
-        if (petParameters.UserId != 0)
-        {
-            dbPets = dbPets.Where(p => p.UserId == petParameters.UserId);
-        }
+        var petResponses = await dbImagePathsAndPets
+            .Where(x => !string.IsNullOrWhiteSpace(x.ImagePath))
+            .Select(async x => x.Pet with { Image = await _imageService.ReadImageAsync(x.ImagePath!) })
+            .WhenAllAsync();
 
-        var dbPetsList = await dbPets.ToListAsync();
+        var remainingResultIds = await _db.Pets
+            .Include(x => x.User)
+            .Where(x => !petResponses.Select(y => y.Id).Contains(x.Id) && x.User.Id == request.UserId)
+            .Select(x => x.Id)
+            .ToArrayAsyncEF();
 
-        if (dbPetsList.Count == 0)
-        {
-            return new NotFoundObjectResult("No pets with the given paramenters were found.");
-        }
+        var previousAmount = remainingResultIds.Count(x => x < petResponses[0].Id);
+        var nextAmount = remainingResultIds.Count(x => x > petResponses[^1].Id);
 
-        var dbPetsPaged = dbPetsList.ToPagedList(
-                        petParameters.PageNumber,
-                        petParameters.PageSize);
-
-        return new OkObjectResult(new GetPetResponse(dbPetsPaged));
+        return new OkObjectResult(PagedResponse.Create(request.PageNumber, request.PageSize, previousAmount, nextAmount, petResponses.Length, petResponses));
     }
 
     /// <summary>
@@ -127,26 +122,26 @@ public sealed class PetService
     /// </summary>
     /// <param name="petId">The Id of the pet to be searched.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<GetPetByIdResponse, ErrorResponse>>> GetPetByIdAsync(int petId)
+    public async Task<ActionResult<OneOf<PetObject, None>>> GetPetByIdAsync(int petId)
     {
+        var dbImagePathAndPet = await _db.Pets
+            .Include(x => x.User)
+            .Where(x => x.Id == petId)
+            .Select(x => new
+            {
+                x.ImagePath,
+                Pet = new PetObject(x.Id, x.User.Id, x.Name, x.Type, x.Gender, x.DateOfBirth, x.Breed, null)
+            })
+            .FirstOrDefaultAsyncEF();
 
-        var dbPet = await _db.Pets.Where(p => p.Id == petId)
-                                            .Select(p => new PetObject
-                                            {
-                                                Id = p.Id,
-                                                UserId = p.User.Id,
-                                                Name = p.Name,
-                                                Type = p.Type,
-                                                Gender = p.Gender,
-                                                Breed = p.Breed!,
-                                                ImagePath = p.ImagePath!,
-                                                DateOfBirth = p.DateOfBirth
-                                            })
-                                            .FirstOrDefaultAsync();
+        if (dbImagePathAndPet is null)
+            return new NotFoundResult();
 
-        return dbPet == null
-                ? new NotFoundObjectResult(new ErrorResponse($"No pet with the Id = {petId} was found"))
-                : new OkObjectResult(new GetPetByIdResponse(dbPet));
+        var result = (string.IsNullOrWhiteSpace(dbImagePathAndPet.ImagePath))
+            ? dbImagePathAndPet.Pet
+            : dbImagePathAndPet.Pet with { Image = await _imageService.ReadImageAsync(dbImagePathAndPet.ImagePath) };
+        
+        return new OkObjectResult(result);
     }
 
     /// <summary>
@@ -154,11 +149,11 @@ public sealed class PetService
     /// </summary>
     /// <param name="petId">The Id of the pet to be deleted.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeletePetByIdAsync(int petId)
+    public async Task<ActionResult> DeletePetByIdAsync(int petId)
     {
-        return ((await _db.Pets.DeleteAsync(p => p.Id == petId)) is 0)
-            ? new NotFoundObjectResult(new ErrorResponse($"No pet with the Id = {petId} was found"))
-            : new OkObjectResult(new DeleteResponse($"Successful delete pet with the Id = {petId}"));
+        return ((await _db.Pets.DeleteAsync(x => x.Id == petId)) is 0)
+            ? new NotFoundResult()
+            : new OkResult();
     }
 
     /// <summary>
@@ -166,62 +161,35 @@ public sealed class PetService
     /// </summary>
     /// <param name="request">The controller request.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdatePetByIdAsync(UpdatePetRequest request)
+    public async Task<ActionResult> UpdatePetAsync(UpdatePetRequest request)
     {
         // Check if request contains valid data
         if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        var dbPet = await _db.Pets.FindAsync(request.Id);
+        var dbPet = await _db.Pets
+            .Include(x => x.User)
+            .AnyAsyncEF(x => x.User.Id == request.UserId && x.Id == request.Id);
 
-        if (dbPet == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No pet with the Id = {request.Id} was found"));
-        }
+        if (!dbPet)
+            return new NotFoundResult();
 
-        // Checks the UserId
-        if (request.UserId == 0)
-            return new BadRequestObjectResult(new ErrorResponse($"The pet must be related to a user. 'UserId = {request.UserId}'"));
-        var dbUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
-        if (dbUser == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No User with the Id = {request.UserId} was found"));
-        }
+        var imagePath = (request.Image is not null)
+            ? await _imageService.SaveImageAsync(request.Image, Path.Combine(request.UserId.ToString(), "pets"), request.Name)
+            : null;
 
-        string? imagePath = null;
-
-        //Create the path for the Pet Image
-        if (request.ImagePath != null)
-        {
-            var path = $"Data/{request.UserId}/pets";
-            if ((!Directory.Exists(path)))
+        await _db.Pets
+            .Where(x => x.Id == request.Id)
+            .UpdateAsync(x => new PetEntity()
             {
-                Directory.CreateDirectory(path);
-            }
-            var filename = request.ImagePath.FileName!;
-            using var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create);
-            await request.ImagePath.CopyToAsync(fileStream);
-            imagePath = $"Data/{request.UserId}/pets" + filename;
-        }
+                Name = request.Name,
+                Type = request.Type,
+                Gender = request.Gender,
+                Breed = request.Breed,
+                ImagePath = (x.ImagePath != imagePath) ? imagePath : x.ImagePath,
+                DateOfBirth = request.DateOfBirth,
+            });
 
-        dbPet = new PetEntity()
-        {
-            Id = request.Id,
-            User = dbUser,
-            Name = request.Name,
-            Type = request.Type,
-            Gender = request.Gender,
-            Breed = request.Breed,
-            ImagePath = imagePath,
-            DateOfBirth = request.DateOfBirth
-        };
-
-        _db.Pets.Update(dbPet);
-
-        await _db.SaveChangesAsync();
-
-        return new OkObjectResult(new UpdateResponse($"Successful update pet with the Id = {request.Id}"));
-
+        return new OkResult();
     }
-
 }

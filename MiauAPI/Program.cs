@@ -24,8 +24,8 @@ public class Program
             .AddMiauDb()
             .AddMiauAuth(builder.Configuration.GetValue<byte[]>("Jwt:Key"))
             .AddCors(options =>
-                options.AddPolicy("CorsApi",
-                    builder => builder.WithOrigins("http://localhost:4200", "http://mywebsite.com")
+                options.AddPolicy("CorsApi", builder =>
+                    builder.AllowAnyOrigin()
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                 )

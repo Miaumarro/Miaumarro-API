@@ -153,7 +153,7 @@ public sealed class ProductService
     /// <param name="id">The Id of the product to be updated.</param>
     /// <param name="product">The product object with the parameters to be updated.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult> UpdateProductByIdAsync(UpdateProductRequest request)
+    public async Task<ActionResult> UpdateProductAsync(UpdateProductRequest request)
     {
         // Check if request contains valid data
         if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))

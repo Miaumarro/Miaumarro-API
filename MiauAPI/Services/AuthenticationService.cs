@@ -110,15 +110,15 @@ public sealed class AuthenticationService
         };
 
         // Make it so each UserPermissions the user has is a role claim
-        foreach (var permission in permissions.ToValues().When(x => x.Count() is not 1, x => x.Where(y => y is not UserPermissions.Blocked)))
+        foreach (var permission in permissions.ToValues().Where(x => x is not UserPermissions.Blocked))
             claims.Add(new Claim(ClaimTypes.Role, permission.ToString()));
 
         // Generate the token
-        var tokenDescriptor = new SecurityTokenDescriptor
+        var tokenDescriptor = new SecurityTokenDescriptor()
         {
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(_config.GetValue<byte[]>("Jwt:Key")), SecurityAlgorithms.HmacSha256Signature),
+            SigningCredentials = new(new SymmetricSecurityKey(_config.GetValue<byte[]>("Jwt:Key")), SecurityAlgorithms.HmacSha256Signature),
             Expires = expiresAt,
-            Subject = new ClaimsIdentity(claims)
+            Subject = new(claims)
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
