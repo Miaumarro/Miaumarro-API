@@ -161,21 +161,35 @@ public sealed class PetService
     /// </summary>
     /// <param name="request">The controller request.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult> UpdatePetAsync(UpdatePetRequest request)
+    public async Task<ActionResult<OneOf<None, ErrorResponse>>> UpdatePetAsync(UpdatePetRequest request)
     {
         // Check if request contains valid data
         if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        var dbPet = await _db.Pets
+        var currentDbPet = await _db.Pets
             .Include(x => x.User)
-            .AnyAsyncEF(x => x.User.Id == request.UserId && x.Id == request.Id);
+            .FirstOrDefaultAsyncEF(x => x.User.Id == request.UserId && x.Id == request.Id);
 
-        if (!dbPet)
+        if (currentDbPet is null)
             return new NotFoundResult();
 
+        var subDirectoryName = Path.Combine(request.UserId.ToString(), "pets");
+
+        // If new image doesn't exist, delete the old image
+        if (request.Image is null && _imageService.ImageExists(subDirectoryName, request.Name))
+            _imageService.DeleteImage(subDirectoryName, request.Name);
+
+        // If new image exists and old image with a different name also exists, delete the old image
+        if (request.Image is not null
+            && currentDbPet.ImagePath is not null
+            && !currentDbPet.Name.Equals(request.Name, StringComparison.Ordinal))
+        {
+            File.Delete(currentDbPet.ImagePath);
+        }
+
         var imagePath = (request.Image is not null)
-            ? await _imageService.SaveImageAsync(request.Image, Path.Combine(request.UserId.ToString(), "pets"), request.Name)
+            ? await _imageService.SaveImageAsync(request.Image, subDirectoryName, request.Name)
             : null;
 
         await _db.Pets

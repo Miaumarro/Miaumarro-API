@@ -65,7 +65,8 @@ public sealed class PetController : ControllerBase
 
     [HttpPut("update")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> UpdateByIdAsync([FromBody] UpdatePetRequest pet)
+    public async Task<ActionResult<OneOf<None, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdatePetRequest pet)
         => await _service.UpdatePetAsync(pet);
 }

@@ -14,26 +14,27 @@ public sealed class CreatedPetRequestValidator : IRequestValidator<CreatedPetReq
         errorMessages = Enumerable.Empty<string>();
 
         // Check Id
-        if (!Validate.IsPositive(request.UserId, nameof(request.UserId), out var idError))
+        if (request.UserId <= 0)
         {
-            errorMessages = errorMessages.Append(idError);
+            errorMessages = errorMessages.Append($"{nameof(request.UserId)} must be valid.");
         }
 
         // Check name
-        if (Validate.IsNull(request.Name, nameof(request.Name), out var nameError)
+        if (Validate.IsNullOrWhiteSpace(request.Name, nameof(request.Name), out var nameError)
             || !Validate.IsTextInRange(request.Name, 30, nameof(request.Name), out nameError))
         {
             errorMessages = errorMessages.Append(nameError);
         }
 
         // Check breed
-        if (!Validate.IsTextInRange(request.Breed, 30, nameof(request.Breed), out var breedError))
+        if (request.Breed is not null
+            && !Validate.IsTextInRange(request.Breed, 30, nameof(request.Breed), out var breedError))
         {
             errorMessages = errorMessages.Append(breedError);
         }
 
         // Check DateOfBirth
-        if (!Validate.IsDateValid(request.DateOfBirth, nameof(request.DateOfBirth), out var dateOfBirthError))
+        if (!Validate.IsDateInFuture(request.DateOfBirth, nameof(request.DateOfBirth), out var dateOfBirthError))
         {
             errorMessages = errorMessages.Append(dateOfBirthError);
         }

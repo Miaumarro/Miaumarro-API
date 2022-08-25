@@ -46,12 +46,27 @@ public sealed class ImageService
     /// Reads and returns the content of the specified file image.
     /// </summary>
     /// <param name="imagePath">The location of the image in the file system.</param>
+    /// <param name="cToken">The cancellation token.</param>
     /// <returns>The content of the image.</returns>
     /// <exception cref="FileNotFoundException">Occurs when the file does not exist at the <paramref name="imagePath"/> location.</exception>
-    public async Task<byte[]> ReadImageAsync(string imagePath)
+    public async Task<byte[]> ReadImageAsync(string imagePath, CancellationToken cToken = default)
     {
         return (File.Exists(imagePath))
-            ? await File.ReadAllBytesAsync(imagePath)
+            ? await File.ReadAllBytesAsync(imagePath, cToken)
             : throw new FileNotFoundException($"Could not find the specified file at {imagePath}");
+    }
+
+    public bool ImageExists(string subdirectoryName, string imageName)
+        => File.Exists(Path.Combine(_appDataPath, subdirectoryName, imageName));
+
+    public bool DeleteImage(string subdirectoryName, string imageName)
+    {
+        var path = Path.Combine(_appDataPath, subdirectoryName, imageName);
+        var exists = File.Exists(path);
+
+        if (exists)
+            File.Delete(path);
+
+        return exists;
     }
 }

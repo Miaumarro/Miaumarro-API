@@ -138,13 +138,13 @@ public static class Validate
     }
 
     /// <summary>
-    /// Checks if <paramref name="date"/> is valid.
+    /// Checks if <paramref name="date"/> is in the future.
     /// </summary>
     /// <param name="date">The date to be checked.</param>
     /// <param name="paramName">The name of the string parameter.</param>
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
-    /// <returns><see langword="true"/> if <paramref name="text"/> the date is valid, <see langword="false"/> otherwise.</returns>
-    public static bool IsDateValid(DateTime date, string paramName, [MaybeNullWhen(true)] out string errorMessage)
+    /// <returns><see langword="true"/> if <paramref name="text"/> the date is in the future, <see langword="false"/> otherwise.</returns>
+    public static bool IsDateInFuture(DateTime date, string paramName, [MaybeNullWhen(true)] out string errorMessage)
     {
         errorMessage = (date >= DateTime.UtcNow)
            ? $"{paramName} must be a valid date."
