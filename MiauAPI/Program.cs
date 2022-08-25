@@ -22,14 +22,7 @@ public class Program
             .AddRouting()
             .AddMiauServices()
             .AddMiauDb()
-            .AddMiauAuth(builder.Configuration.GetValue<byte[]>("Jwt:Key"))
-            .AddCors(options =>
-                options.AddPolicy("CorsApi", builder =>
-                    builder.AllowAnyOrigin()
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                )
-            );
+            .AddMiauAuth(builder.Configuration.GetValue<byte[]>("Jwt:Key"));
 
         var app = builder.Build();
 

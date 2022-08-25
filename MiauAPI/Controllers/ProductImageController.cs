@@ -7,6 +7,7 @@ using MiauDatabase.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
+using OneOf.Types;
 using System.Text.Json;
 
 namespace MiauAPI.Controllers;
@@ -23,38 +24,19 @@ public sealed class ProductImageController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(GetProductImageResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<GetProductImageResponse, ErrorResponse>>> GetAsync([FromQuery] ProductImageParameters productImageParameters)
-    {
-        var productImagesPaged = await _service.GetProductImageAsync(productImageParameters);
-
-        if (productImagesPaged.Result is OkObjectResult response && response.Value is GetProductImageResponse productImageResponse)
-        {
-            var metadata = new
-            {
-                productImageResponse.ProductImages.TotalCount,
-                productImageResponse.ProductImages.PageSize,
-                productImageResponse.ProductImages.CurrentPage,
-                productImageResponse.ProductImages.TotalPages,
-                productImageResponse.ProductImages.HasNext,
-                productImageResponse.ProductImages.HasPrevious
-            };
-
-            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
-        }
-
-        return productImagesPaged;
-    }
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OneOf<GetProductImageResponse, None>>> GetAsync([FromQuery] ProductImageParameters productImageParameters)
+        => await _service.GetProductImagesAsync(productImageParameters);
 
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedProductImageResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<CreatedProductImageResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedProductImageRequest productImage)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OneOf<CreatedProductImageResponse, None>>> RegisterAsync([FromBody] CreatedProductImageRequest productImage)
         => await _service.CreatedProductImageAsync(productImage, base.Request.Path.Value!);
 
     [HttpDelete("delete")]
-    [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> DeleteByIdAsync([FromQuery] int id)
         => await _service.DeleteProductImageByIdAsync(id);
 }

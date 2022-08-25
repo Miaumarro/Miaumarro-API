@@ -21,15 +21,17 @@ namespace MiauAPI.Services;
 /// </summary>
 public sealed class PetService
 {
+    private const string _imageDirName = "pets";
     private readonly MiauDbContext _db;
-    private readonly ImageService _imageService;
+    private readonly FileService _fileService;
     private readonly IRequestValidator<CreatedPetRequest> _validator;
     private readonly IRequestValidator<UpdatePetRequest> _validatorUpdate;
 
-    public PetService(MiauDbContext db, ImageService imageService, IRequestValidator<CreatedPetRequest> validator, IRequestValidator<UpdatePetRequest> validatorUpdate)
+    // TODO: perhaps only the path to the image should be returned, instead of its binary data
+    public PetService(MiauDbContext db, FileService fileService, IRequestValidator<CreatedPetRequest> validator, IRequestValidator<UpdatePetRequest> validatorUpdate)
     {
         _db = db;
-        _imageService = imageService;
+        _fileService = fileService;
         _validator = validator;
         _validatorUpdate = validatorUpdate;
     }
@@ -58,7 +60,7 @@ public sealed class PetService
             return new NotFoundObjectResult(new ErrorResponse($"No User with the Id = {request.UserId} was found"));
 
         var imagePath = (request.Image is not null)
-            ? await _imageService.SaveImageAsync(request.Image, Path.Combine(request.UserId.ToString(), "pets"), request.Name)
+            ? await _fileService.SaveFileAsync(request.Image, Path.Combine(_imageDirName, request.UserId.ToString()), request.Name)
             : null;
 
         // Create the database pet
@@ -102,7 +104,7 @@ public sealed class PetService
 
         var petResponses = await dbImagePathsAndPets
             .Where(x => !string.IsNullOrWhiteSpace(x.ImagePath))
-            .Select(async x => x.Pet with { Image = await _imageService.ReadImageAsync(x.ImagePath!) })
+            .Select(async x => x.Pet with { Image = await _fileService.ReadFileAsync(x.ImagePath!) })
             .WhenAllAsync();
 
         var remainingResultIds = await _db.Pets
@@ -139,7 +141,7 @@ public sealed class PetService
 
         var result = (string.IsNullOrWhiteSpace(dbImagePathAndPet.ImagePath))
             ? dbImagePathAndPet.Pet
-            : dbImagePathAndPet.Pet with { Image = await _imageService.ReadImageAsync(dbImagePathAndPet.ImagePath) };
+            : dbImagePathAndPet.Pet with { Image = await _fileService.ReadFileAsync(dbImagePathAndPet.ImagePath) };
         
         return new OkObjectResult(result);
     }
@@ -174,11 +176,11 @@ public sealed class PetService
         if (currentDbPet is null)
             return new NotFoundResult();
 
-        var subDirectoryName = Path.Combine(request.UserId.ToString(), "pets");
+        var subDirectoryName = Path.Combine(_imageDirName, request.UserId.ToString());
 
         // If new image doesn't exist, delete the old image
-        if (request.Image is null && _imageService.ImageExists(subDirectoryName, request.Name))
-            _imageService.DeleteImage(subDirectoryName, request.Name);
+        if (request.Image is null && _fileService.FileExists(subDirectoryName, request.Name))
+            _fileService.DeleteFile(subDirectoryName, request.Name);
 
         // If new image exists and old image with a different name also exists, delete the old image
         if (request.Image is not null
@@ -189,7 +191,7 @@ public sealed class PetService
         }
 
         var imagePath = (request.Image is not null)
-            ? await _imageService.SaveImageAsync(request.Image, subDirectoryName, request.Name)
+            ? await _fileService.SaveFileAsync(request.Image, subDirectoryName, request.Name)
             : null;
 
         await _db.Pets

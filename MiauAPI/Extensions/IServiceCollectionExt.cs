@@ -35,7 +35,7 @@ public static class IServiceCollectionExt
             .AddScoped<PurchaseService>()
             .AddScoped<UserService>()
             .AddScoped<WishlistService>()
-            .AddSingleton<ImageService>()
+            .AddSingleton<FileService>()
             .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedAddressRequest>, CreatedAddressRequestValidator>()
             .AddSingleton<IRequestValidator<CreatedAppointmentRequest>, CreatedAppointmentRequestValidator>()
@@ -49,7 +49,14 @@ public static class IServiceCollectionExt
             .AddSingleton<IRequestValidator<UpdateProductRequest>, UpdateProductRequestValidator>()
             .AddSingleton<IRequestValidator<UpdateUserPasswordRequest>, UpdateUserPasswordRequestValidator>()
             .AddSingleton<IRequestValidator<UpdateUserRequest>, UpdateUserRequestValidator>()
-            .AddSingleton<IRequestValidator<UserParameters>, UserParametersValidator>(); ;
+            .AddSingleton<IRequestValidator<UserParameters>, UserParametersValidator>()
+            .AddCors(options =>
+                options.AddPolicy("CorsApi", builder =>
+                    builder.AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                )
+            );
     }
 
     /// <summary>

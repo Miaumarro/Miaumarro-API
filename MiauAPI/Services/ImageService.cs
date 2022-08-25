@@ -6,7 +6,7 @@ namespace MiauAPI.Services;
 /// <summary>
 /// Contains methods to easily read and write images to the file system.
 /// </summary>
-public sealed class ImageService
+public sealed class FileService
 {
     /// <summary>
     /// The absolute path of the API's Data folder.
@@ -14,54 +14,66 @@ public sealed class ImageService
     private static readonly string _appDataPath = Path.Combine(Directory.GetParent(Assembly.GetExecutingAssembly().Location)?.FullName ?? string.Empty, "Data");
 
     /// <summary>
+    /// Checks if a file exists in the API's Data folder.
+    /// </summary>
+    /// <param name="subdirectoryName">The name of the subdirectory.</param>
+    /// <param name="fileName">The name of the file.</param>
+    /// <returns><see langword="true"/> if the file exists, <see langword="false"/> otherwise.</returns>
+    public bool FileExists(string subdirectoryName, string fileName)
+        => File.Exists(Path.Combine(_appDataPath, subdirectoryName, fileName));
+
+    /// <summary>
     /// Saves an image to the API's Data folder.
     /// </summary>
-    /// <param name="imageData">The content of the image.</param>
+    /// <param name="fileData">The content of the file.</param>
     /// <param name="subdirectoryName">The name of the subdirectory.</param>
-    /// <param name="imageName">The name of the image.</param>
+    /// <param name="fileName">The name of the file.</param>
     /// <param name="cToken">The cancellation token.</param>
     /// <returns>The absolute path to the new image file.</returns>
-    /// <exception cref="ArgumentException">Occurs when <paramref name="imageData"/> is empty.</exception>
-    public async Task<string> SaveImageAsync(ReadOnlyMemory<byte> imageData, string subdirectoryName, string imageName, CancellationToken cToken = default)
+    /// <exception cref="ArgumentException">Occurs when <paramref name="fileData"/> is empty.</exception>
+    public async Task<string> SaveFileAsync(ReadOnlyMemory<byte> fileData, string subdirectoryName, string fileName, CancellationToken cToken = default)
     {
-        if (imageData.Length is 0)
-            throw new ArgumentException($"Image's content cannot be empty.", nameof(imageData));
+        if (fileData.Length is 0)
+            throw new ArgumentException($"Image's content cannot be empty.", nameof(fileData));
 
         var directoryPath = Path.Combine(_appDataPath, subdirectoryName);
 
         if (!Directory.Exists(directoryPath))
             Directory.CreateDirectory(directoryPath);
 
-        var imagePath = Path.Combine(directoryPath, imageName);
+        var imagePath = Path.Combine(directoryPath, fileName);
 
         await using var fileStream = new FileStream(imagePath, FileMode.Create, FileAccess.Write);
         fileStream.Position = 0;
 
-        await fileStream.WriteAsync(imageData, cToken);
+        await fileStream.WriteAsync(fileData, cToken);
 
         return imagePath;
     }
 
     /// <summary>
-    /// Reads and returns the content of the specified file image.
+    /// Reads and returns the content of the specified file.
     /// </summary>
-    /// <param name="imagePath">The location of the image in the file system.</param>
+    /// <param name="filePath">The location of the file in the file system.</param>
     /// <param name="cToken">The cancellation token.</param>
-    /// <returns>The content of the image.</returns>
-    /// <exception cref="FileNotFoundException">Occurs when the file does not exist at the <paramref name="imagePath"/> location.</exception>
-    public async Task<byte[]> ReadImageAsync(string imagePath, CancellationToken cToken = default)
+    /// <returns>The content of the file.</returns>
+    /// <exception cref="FileNotFoundException">Occurs when the file does not exist at the <paramref name="filePath"/> location.</exception>
+    public async Task<byte[]> ReadFileAsync(string filePath, CancellationToken cToken = default)
     {
-        return (File.Exists(imagePath))
-            ? await File.ReadAllBytesAsync(imagePath, cToken)
-            : throw new FileNotFoundException($"Could not find the specified file at {imagePath}");
+        return (File.Exists(filePath))
+            ? await File.ReadAllBytesAsync(filePath, cToken)
+            : throw new FileNotFoundException($"Could not find the specified file at {filePath}");
     }
 
-    public bool ImageExists(string subdirectoryName, string imageName)
-        => File.Exists(Path.Combine(_appDataPath, subdirectoryName, imageName));
-
-    public bool DeleteImage(string subdirectoryName, string imageName)
+    /// <summary>
+    /// Deletes a file from the file system.
+    /// </summary>
+    /// <param name="subdirectoryName">The name of the subdirectory.</param>
+    /// <param name="fileName">The name of the file.</param>
+    /// <returns><see langword="true"/> if the file was successfully deleted, <see langword="false"/> otherwise.</returns>
+    public bool DeleteFile(string subdirectoryName, string fileName)
     {
-        var path = Path.Combine(_appDataPath, subdirectoryName, imageName);
+        var path = Path.Combine(_appDataPath, subdirectoryName, fileName);
         var exists = File.Exists(path);
 
         if (exists)
