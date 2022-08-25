@@ -31,7 +31,7 @@ public sealed class PurchaseService
     /// <param name="location">The URL of the new resource or the content of the Location header.</param>
     /// <returns>The result of the operation.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
-    public async Task<ActionResult<OneOf<CreatedPurchaseResponse, ErrorResponse>>> CreatePurchaseAsync(CreatedPurchaseRequest request, string location)
+    public async Task<ActionResult<CreatedPurchaseResponse>> CreatePurchaseAsync(CreatedPurchaseRequest request, string location)
     {
         if (string.IsNullOrWhiteSpace(location))
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));

@@ -44,6 +44,11 @@ public class PurchaseController : ControllerBase
         return actionResult;
     }
 
+    [HttpPost("create")]
+    [ProducesResponseType(typeof(CreatedPurchaseResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CreatedPurchaseResponse>> CreateAsync([FromBody] CreatedPurchaseRequest request)
+        => await _service.CreatePurchaseAsync(request, base.Request.Path.Value!);
+
     [HttpPut("update")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
