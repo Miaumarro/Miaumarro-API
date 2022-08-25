@@ -77,7 +77,7 @@ public sealed class ProductImageService
         var dbProductImages = await _db.ProductImages
             .Include(x => x.Product)
             .Where(x => x.Product.Id == productImageParameters.ProductId)
-            .Select(x => new ProductImageObject
+            .Select(x => new ProductImageObject()
             {
                 Id = x.Id,
                 ProductId = x.Product.Id,

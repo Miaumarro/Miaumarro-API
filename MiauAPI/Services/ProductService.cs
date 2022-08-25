@@ -95,7 +95,7 @@ public sealed class ProductService
             .Select(x => new ProductObject(x.Id, x.Name, x.Description, x.Brand, x.Price, x.IsActive, x.Amount, x.Tags, x.Discount))
             .FirstOrDefaultAsync();
 
-        return (dbProduct == null)
+        return (dbProduct is null)
             ? new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {productId} was found"))
             : new OkObjectResult(dbProduct);
     }
