@@ -27,7 +27,6 @@ public sealed class PetService
     private readonly IRequestValidator<CreatedPetRequest> _validator;
     private readonly IRequestValidator<UpdatePetRequest> _validatorUpdate;
 
-    // TODO: perhaps only the path to the image should be returned, instead of its binary data
     public PetService(MiauDbContext db, FileService fileService, IRequestValidator<CreatedPetRequest> validator, IRequestValidator<UpdatePetRequest> validatorUpdate)
     {
         _db = db;
@@ -87,36 +86,27 @@ public sealed class PetService
     /// <returns>The result of the operation.</returns>
     public async Task<ActionResult<OneOf<PagedResponse<PetObject[]>, None>>> GetPetsAsync(PetParameters request)
     {
-        var dbImagePathsAndPets = await _db.Pets
+        var dbPets = await _db.Pets
             .Include(x => x.User)
             .Where(x => x.User.Id == request.UserId)
             .OrderBy(x => x.Id)
             .PageRange(request.PageNumber, request.PageSize)
-            .Select(x => new
-            {
-                x.ImagePath,
-                Pet = new PetObject(x.Id, x.User.Id, x.Name, x.Type, x.Gender, x.DateOfBirth, x.Breed, null)
-            })
+            .Select(x => new PetObject(x.Id, x.User.Id, x.Name, x.Type, x.Gender, x.DateOfBirth, x.Breed, x.ImagePath))
             .ToArrayAsyncEF();
 
-        if (dbImagePathsAndPets.Length is 0)
+        if (dbPets.Length is 0)
             return new NotFoundResult();
-
-        var petResponses = await dbImagePathsAndPets
-            .Where(x => !string.IsNullOrWhiteSpace(x.ImagePath))
-            .Select(async x => x.Pet with { Image = await _fileService.ReadFileAsync(x.ImagePath!) })
-            .WhenAllAsync();
 
         var remainingResultIds = await _db.Pets
             .Include(x => x.User)
-            .Where(x => !petResponses.Select(y => y.Id).Contains(x.Id) && x.User.Id == request.UserId)
+            .Where(x => !dbPets.Select(y => y.Id).Contains(x.Id) && x.User.Id == request.UserId)
             .Select(x => x.Id)
             .ToArrayAsyncEF();
 
-        var previousAmount = remainingResultIds.Count(x => x < petResponses[0].Id);
-        var nextAmount = remainingResultIds.Count(x => x > petResponses[^1].Id);
+        var previousAmount = remainingResultIds.Count(x => x < dbPets[0].Id);
+        var nextAmount = remainingResultIds.Count(x => x > dbPets[^1].Id);
 
-        return new OkObjectResult(PagedResponse.Create(request.PageNumber, request.PageSize, previousAmount, nextAmount, petResponses.Length, petResponses));
+        return new OkObjectResult(PagedResponse.Create(request.PageNumber, request.PageSize, previousAmount, nextAmount, dbPets.Length, dbPets));
     }
 
     /// <summary>
@@ -126,24 +116,15 @@ public sealed class PetService
     /// <returns>The result of the operation.</returns>
     public async Task<ActionResult<OneOf<PetObject, None>>> GetPetByIdAsync(int petId)
     {
-        var dbImagePathAndPet = await _db.Pets
+        var dbPet = await _db.Pets
             .Include(x => x.User)
             .Where(x => x.Id == petId)
-            .Select(x => new
-            {
-                x.ImagePath,
-                Pet = new PetObject(x.Id, x.User.Id, x.Name, x.Type, x.Gender, x.DateOfBirth, x.Breed, null)
-            })
+            .Select(x => new PetObject(x.Id, x.User.Id, x.Name, x.Type, x.Gender, x.DateOfBirth, x.Breed, x.ImagePath))
             .FirstOrDefaultAsyncEF();
 
-        if (dbImagePathAndPet is null)
-            return new NotFoundResult();
-
-        var result = (string.IsNullOrWhiteSpace(dbImagePathAndPet.ImagePath))
-            ? dbImagePathAndPet.Pet
-            : dbImagePathAndPet.Pet with { Image = await _fileService.ReadFileAsync(dbImagePathAndPet.ImagePath) };
-        
-        return new OkObjectResult(result);
+        return (dbPet is null)
+            ? new NotFoundResult()
+            : new OkObjectResult(dbPet);
     }
 
     /// <summary>
