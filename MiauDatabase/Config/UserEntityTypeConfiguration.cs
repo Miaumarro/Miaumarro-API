@@ -47,7 +47,7 @@ internal sealed class UserEntityTypeConfiguration : IEntityTypeConfiguration<Use
             .HasPrincipalKey(x => x.Id)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Users -> Wishlist
+        // Users -> WishList
         builder.HasMany(x => x.WishList)
             .WithOne(x => x.User)
             .HasForeignKey(x => x.User.Id)

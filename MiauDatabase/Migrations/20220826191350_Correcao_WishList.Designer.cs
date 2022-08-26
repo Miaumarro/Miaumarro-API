@@ -3,6 +3,7 @@ using System;
 using MiauDatabase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MiauDatabase.Migrations
 {
     [DbContext(typeof(MiauDbContext))]
-    partial class MiauDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220826191350_Correcao_WishList")]
+    partial class Correcao_WishList
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.8");

@@ -13,7 +13,7 @@ public sealed record WishListObject
 {
     public int Id { get; init; }
     public int UserId { get; init; }
-    public int ProductId { get; set; }
+    public int ProductId { get; init; }
  
 
 }

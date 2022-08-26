@@ -12,9 +12,9 @@ namespace MiauAPI.Models.QueryObjects;
 /// <param name="Score">The product score.</param>
 public sealed record ProductReviewObject
 {
-    public int Id { get; set; }
-    public int UserId { get; set; }
-    public int ProductId { get; set; }
-    public string? Description { get; set; }
-    public int Score { get; set; }
+    public int Id { get; init; }
+    public int UserId { get; init; }
+    public int ProductId { get; init; }
+    public string? Description { get; init; }
+    public int Score { get; init; }
 }
