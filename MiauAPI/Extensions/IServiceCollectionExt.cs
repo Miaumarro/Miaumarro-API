@@ -26,6 +26,8 @@ public static class IServiceCollectionExt
     {
         return serviceCollection
             .AddScoped<AddressService>()
+            .AddScoped<ProductReviewService>()
+            .AddScoped<WishListService>()
             .AddScoped<AppointmentService>()
             .AddScoped<AuthenticationService>()
             .AddScoped<PetService>()

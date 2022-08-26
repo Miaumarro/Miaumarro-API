@@ -1,6 +1,7 @@
 using MiauAPI.Common;
 using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
+using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -43,6 +44,12 @@ public class PurchaseController : ControllerBase
 
         return actionResult;
     }
+
+    [HttpGet("detail")]
+    [ProducesResponseType(typeof(GetPurchaseByIdResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<GetPurchasedProductByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)
+    => await _service.GetPurchasedProductByIdAsync(id);
 
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedPurchaseResponse), StatusCodes.Status200OK)]

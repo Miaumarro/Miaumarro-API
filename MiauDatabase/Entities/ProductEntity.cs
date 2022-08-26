@@ -32,7 +32,7 @@ public sealed record ProductEntity : MiauDbEntity
     /// <summary>
     /// The wishlist items associated with this product.
     /// </summary>
-    public List<WishlistEntity> Wishlist { get; init; } = new();
+    public List<WishListEntity> WishList { get; init; } = new();
 
     /// <summary>
     /// This product's name.
