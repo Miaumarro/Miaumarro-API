@@ -93,7 +93,7 @@ public sealed class ProductReviewService
         {
 
             Id = p.Id,
-            UserId = p.User.Id,
+            //UserId = p.User.Id,
             ProductId = p.Product.Id,
             Description = p.Description,
             Score = p.Score
@@ -131,7 +131,7 @@ public sealed class ProductReviewService
                                             .Select(p => new ProductReviewObject
                                             {
                                                 Id = p.Id,
-                                                UserId = p.User.Id,
+                                                //UserId = p.User.Id,
                                                 ProductId = p.Product.Id,
                                                 Description = p.Description,
                                                 Score = p.Score
