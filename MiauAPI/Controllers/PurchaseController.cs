@@ -46,8 +46,15 @@ public class PurchaseController : ControllerBase
 
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedPurchaseResponse), StatusCodes.Status200OK)]
-    public async Task<ActionResult<CreatedPurchaseResponse>> CreateAsync([FromBody] CreatedPurchaseRequest request)
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<OneOf<CreatedPurchaseResponse, ErrorResponse>>> CreateAsync([FromBody] CreatedPurchaseRequest request)
         => await _service.CreatePurchaseAsync(request, base.Request.Path.Value!);
+
+    [HttpDelete("delete")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> DeleteAsync([FromBody] int purchaseId)
+        => await _service.DeletePurchaseByIdAsync(purchaseId);
 
     [HttpPut("update")]
     [ProducesResponseType(StatusCodes.Status200OK)]
