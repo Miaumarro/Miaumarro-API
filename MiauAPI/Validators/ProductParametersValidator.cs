@@ -15,11 +15,11 @@ public sealed class ProductParametersValidator : IRequestValidator<ProductParame
         if (request.Brand == string.Empty)
             errorMessages = errorMessages.Append("Brand cannot be empty.");
 
-        if (!Validate.IsPositive(request.MinPrice, nameof(request.MinPrice), out var minError))
-            errorMessages = errorMessages.Append(minError);
+        if (request.MinPrice < 0)
+            errorMessages = errorMessages.Append($"{nameof(request.MinPrice)} cannot be negative.");
 
-        if (!Validate.IsPositive(request.MaxPrice, nameof(request.MaxPrice), out var maxError))
-            errorMessages = errorMessages.Append(maxError);
+        if (request.MaxPrice < 0)
+            errorMessages = errorMessages.Append($"{nameof(request.MaxPrice)} cannot be negative.");
 
         if (request.MinPrice > request.MaxPrice)
             errorMessages = errorMessages.Append($"{nameof(request.MinPrice)} must be lower or equal to {nameof(request.MaxPrice)}");
