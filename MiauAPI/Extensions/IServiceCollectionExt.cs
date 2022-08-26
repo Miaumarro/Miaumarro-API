@@ -32,7 +32,7 @@ public static class IServiceCollectionExt
             .AddScoped<ProductReviewService>()
             .AddScoped<WishListService>()
             .AddScoped<AppointmentService>()
-            //.AddScoped<PurchaseService>()
+            .AddScoped<ProductService>()
             .AddScoped<AuthenticationService>()
             .AddSingleton<IRequestValidator<CreatedUserRequest>, CreatedUserRequestValidator>()
             .AddSingleton<IRequestValidator<UpdateUserRequest>, UpdateUserRequestValidator>()
