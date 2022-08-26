@@ -7,7 +7,7 @@ namespace MiauDatabase.Entities;
 /// Represents a database wishlist item.
 /// </summary>
 [Comment("Represents a wishlist item.")]
-public sealed record WishListEntity : MiauDbEntity
+public sealed record WishlistEntity : MiauDbEntity
 {
     /// <summary>
     /// The user this wishlist item is associated with.

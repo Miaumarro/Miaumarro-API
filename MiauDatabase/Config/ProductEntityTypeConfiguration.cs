@@ -33,7 +33,7 @@ internal sealed class ProductEntityTypeConfiguration : IEntityTypeConfiguration<
             .OnDelete(DeleteBehavior.Restrict); // Should we restrict deletion on purchased products?
 
         // Products -> Product Reviews
-        builder.HasMany(x => x.WishList)
+        builder.HasMany(x => x.Wishlist)
             .WithOne(x => x.Product)
             .HasForeignKey(x => x.Product.Id)
             .HasPrincipalKey(x => x.Id)

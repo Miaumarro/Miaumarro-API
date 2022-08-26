@@ -11,30 +11,30 @@ namespace MiauAPI.Controllers;
 
 [ApiController]
 [Route(ApiConstants.MainEndpoint)]
-public sealed class WishListController : ControllerBase
+public sealed class WishlistController : ControllerBase
 {
     private readonly WishlistService _service;
 
-    public WishListController(WishlistService service)
+    public WishlistController(WishlistService service)
         => _service = service;
 
     [HttpGet]
-    [ProducesResponseType(typeof(GetWishListResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GetWishlistResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<GetWishListResponse, ErrorResponse>>> GetAsync([FromQuery] WishListParameters wishListParameters)
+    public async Task<ActionResult<OneOf<GetWishlistResponse, ErrorResponse>>> GetAsync([FromQuery] WishlistParameters wishListParameters)
     {
-        var wishListsPaged = await _service.GetWishListAsync(wishListParameters);
+        var wishListsPaged = await _service.GetWishlistAsync(wishListParameters);
 
-        if (wishListsPaged.Result is OkObjectResult response && response.Value is GetWishListResponse wishListResponse)
+        if (wishListsPaged.Result is OkObjectResult response && response.Value is GetWishlistResponse wishListResponse)
         {
             var metadata = new
             {
-                wishListResponse.WishList.TotalCount,
-                wishListResponse.WishList.PageSize,
-                wishListResponse.WishList.CurrentPage,
-                wishListResponse.WishList.TotalPages,
-                wishListResponse.WishList.HasNext,
-                wishListResponse.WishList.HasPrevious
+                wishListResponse.Wishlist.TotalCount,
+                wishListResponse.Wishlist.PageSize,
+                wishListResponse.Wishlist.CurrentPage,
+                wishListResponse.Wishlist.TotalPages,
+                wishListResponse.Wishlist.HasNext,
+                wishListResponse.Wishlist.HasPrevious
             };
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
@@ -44,15 +44,15 @@ public sealed class WishListController : ControllerBase
     }
 
     [HttpPost("create")]
-    [ProducesResponseType(typeof(CreatedWishListResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreatedWishlistResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<CreatedWishListResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedWishListRequest wishList)
-        => await _service.CreateWishListAsync(wishList, base.Request.Path.Value!);
+    public async Task<ActionResult<OneOf<CreatedWishlistResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedWishlistRequest wishList)
+        => await _service.CreateWishlistAsync(wishList, base.Request.Path.Value!);
 
     [HttpDelete("delete")]
     [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
-        => await _service.DeleteWishListByIdAsync(id);
+        => await _service.DeleteWishlistByIdAsync(id);
 
 }

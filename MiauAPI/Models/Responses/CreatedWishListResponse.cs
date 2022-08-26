@@ -4,4 +4,4 @@ namespace MiauAPI.Models.Responses;
 /// Represents the response given when a item is successfully added in the wishlist.
 /// </summary>
 /// <param name="Id">The database ID of the wish list.</param>
-public sealed record CreatedWishListResponse(int Id);
+public sealed record CreatedWishlistResponse(int Id);

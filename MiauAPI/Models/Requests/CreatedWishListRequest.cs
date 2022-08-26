@@ -8,4 +8,4 @@ namespace MiauAPI.Models.Requests;
 /// <param name="UserId">The id of the user.</param>
 /// <param name="ProductId">The id of the product.</param>
 
-public sealed record CreatedWishListRequest(int UserId, int ProductId);
+public sealed record CreatedWishlistRequest(int UserId, int ProductId);

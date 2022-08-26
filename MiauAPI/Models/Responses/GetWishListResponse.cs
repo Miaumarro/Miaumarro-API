@@ -6,5 +6,5 @@ namespace MiauAPI.Models.Responses;
 /// <summary>
 /// Represents the response given when a wish list query is successfully executed.
 /// </summary>
-/// <param name="WishList">The resulted list of wish products.</param>
-public sealed record GetWishListResponse(PagedList<WishListObject> WishList);
+/// <param name="Wishlist">The resulted list of wish products.</param>
+public sealed record GetWishlistResponse(PagedList<WishlistObject> Wishlist);

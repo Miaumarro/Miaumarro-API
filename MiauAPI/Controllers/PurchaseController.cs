@@ -44,7 +44,7 @@ public class PurchaseController : ControllerBase
         return actionResult;
     }
 
-    //[HttpGet("detail")]
+    //[HttpGet("details")]
     //[ProducesResponseType(typeof(GetPurchaseByIdResponse), StatusCodes.Status200OK)]
     //[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     //public async Task<ActionResult<OneOf<GetPurchasedProductByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)

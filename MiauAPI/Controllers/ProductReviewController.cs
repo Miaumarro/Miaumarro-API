@@ -45,7 +45,7 @@ public sealed class ProductReviewController : ControllerBase
         return productReviewPaged;
     }
 
-    [HttpGet("detail")]
+    [HttpGet("details")]
     [ProducesResponseType(typeof(GetProductReviewByIdResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OneOf<GetProductReviewByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)

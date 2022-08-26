@@ -15,7 +15,7 @@ public sealed record ProductReviewEntity : MiauDbEntity
     /// <summary>
     /// The user this product review is associated with.
     /// </summary>
-    public UserEntity User { get; init; } = null!;
+    public UserEntity? User { get; init; } = null!;
 
     /// <summary>
     /// The product this product review is associated with.

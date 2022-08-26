@@ -108,6 +108,23 @@ public sealed class UserService
     }
 
     /// <summary>
+    /// Returns the user with the specified Id.
+    /// </summary>
+    /// <param name="userId">The Id of the user.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<UserObject, None>>> GetUserByIdAsync(int userId)
+    {
+        var dbUser = await _db.Users
+            .Where(x => x.Id == userId)
+            .Select(x => new UserObject(x.Id, x.Cpf, x.Name, x.Surname, x.Email, x.Phone))
+            .FirstOrDefaultAsync();
+
+        return (dbUser is null)
+            ? new NotFoundResult()
+            : new OkObjectResult(dbUser);
+    }
+
+    /// <summary>
     /// Deletes users that meet the specified criteria.
     /// </summary>
     /// <param name="id">The criteria to search for.</param>

@@ -48,6 +48,12 @@ public sealed class UserController : ControllerBase
         return actionResult;
     }
 
+    [HttpGet("details")]
+    [ProducesResponseType(typeof(UserObject), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OneOf<UserObject, None>>> GetUserAsync(int userId)
+        => await _service.GetUserByIdAsync(userId);
+
     [HttpPost("create")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(UserAuthenticationResponse), StatusCodes.Status201Created)]

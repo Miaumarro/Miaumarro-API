@@ -35,7 +35,7 @@ public sealed class WishlistService
     /// <param name="location">The URL of the new resource or the content of the Location header.</param>
     /// <returns>The result of the operation.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
-    public async Task<ActionResult<OneOf<CreatedWishListResponse, ErrorResponse>>> CreateWishListAsync(CreatedWishListRequest request, string location)
+    public async Task<ActionResult<OneOf<CreatedWishlistResponse, ErrorResponse>>> CreateWishlistAsync(CreatedWishlistRequest request, string location)
     {
         if (string.IsNullOrWhiteSpace(location))
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));
@@ -55,26 +55,26 @@ public sealed class WishlistService
         }
 
         // Create the database wish product
-        var dbWishList = new WishListEntity()
+        var dbWishList = new WishlistEntity()
         {
             User = dbUser,
             Product = dbProduct
         };
 
-        _db.WishLists.Update(dbWishList);
+        _db.Wishlists.Update(dbWishList);
         await _db.SaveChangesAsync();
 
-        return new CreatedResult(location, new CreatedWishListResponse(dbWishList.Id));
+        return new CreatedResult(location, new CreatedWishlistResponse(dbWishList.Id));
     }
 
     /// <summary>
     /// Returns a list of wish products.
     /// </summary>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<GetWishListResponse, ErrorResponse>>> GetWishListAsync(WishListParameters wishListParameters)
+    public async Task<ActionResult<OneOf<GetWishlistResponse, ErrorResponse>>> GetWishlistAsync(WishlistParameters wishListParameters)
     {
         var errorMessages = Enumerable.Empty<string>();
-        var dbWishLists = _db.WishLists.Select(p => new WishListObject
+        var dbWishLists = _db.Wishlists.Select(p => new WishlistObject
         {
             Id = p.Id,
             UserId = p.User.Id,
@@ -103,7 +103,7 @@ public sealed class WishlistService
                         wishListParameters.PageNumber,
                         wishListParameters.PageSize);
 
-        return new OkObjectResult(new GetWishListResponse(dbWishListsPaged));
+        return new OkObjectResult(new GetWishlistResponse(dbWishListsPaged));
     }
 
 
@@ -112,9 +112,9 @@ public sealed class WishlistService
     /// </summary>
     /// <param name="wishListId">The Id of the wish product to be deleted.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteWishListByIdAsync(int wishListId)
+    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteWishlistByIdAsync(int wishListId)
     {
-        return ((await _db.WishLists.DeleteAsync(p => p.Id == wishListId)) is 0)
+        return ((await _db.Wishlists.DeleteAsync(p => p.Id == wishListId)) is 0)
             ? new NotFoundObjectResult(new ErrorResponse($"No wish product with the Id = {wishListId} was found"))
             : new OkObjectResult(new DeleteResponse($"Successful delete wish product with the Id = {wishListId}"));
     }

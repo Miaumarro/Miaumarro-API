@@ -9,7 +9,7 @@ namespace MiauAPI.Models.QueryObjects;
 /// <param name="UserId">The id of the user the WishList is related to.</param>
 /// <param name="ProductId">The id of the product the WishList is related to.</param>
 
-public sealed record WishListObject
+public sealed record WishlistObject
 {
     public int Id { get; init; }
     public int UserId { get; init; }

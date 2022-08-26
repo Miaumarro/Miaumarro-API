@@ -44,7 +44,7 @@ public sealed class PetController : ControllerBase
         return actionResult;
     }
 
-    [HttpGet("detail")]
+    [HttpGet("details")]
     [ProducesResponseType(typeof(PetObject), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<OneOf<PetObject, None>>> GetByIdAsync([FromQuery] int id)

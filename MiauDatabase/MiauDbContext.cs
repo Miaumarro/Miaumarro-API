@@ -18,7 +18,7 @@ public sealed class MiauDbContext : DbContext
     public DbSet<PurchasedProductEntity> PurchasedProducts { get; init; } = null!;
     public DbSet<PurchaseEntity> Purchases { get; init; } = null!;
     public DbSet<UserEntity> Users { get; init; } = null!;
-    public DbSet<WishListEntity> WishLists { get; init; } = null!;
+    public DbSet<WishlistEntity> Wishlists { get; init; } = null!;
 
     /// <summary>
     /// Initializes a <see cref="MiauDbContext"/>.

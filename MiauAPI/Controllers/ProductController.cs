@@ -49,7 +49,7 @@ public sealed class ProductController : ControllerBase
         return productsPaged;
     }
 
-    [HttpGet("detail")]
+    [HttpGet("details")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ProductObject), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
