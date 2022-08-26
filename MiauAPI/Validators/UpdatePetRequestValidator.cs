@@ -14,9 +14,10 @@ public sealed class UpdatePetRequestValidator : IRequestValidator<UpdatePetReque
         errorMessages = Enumerable.Empty<string>();
 
         // Check ids
-        if (request.Id <= 0 || request.UserId <= 0)
+        if (!Validate.IsPositive(request.Id, nameof(request.Id), out var idError)
+            || !Validate.IsPositive(request.UserId, nameof(request.UserId), out idError))
         {
-            errorMessages = errorMessages.Append($"{nameof(request.Id)} and {nameof(request.UserId)} must be valid.");
+            errorMessages = errorMessages.Append(idError);
         }
 
         // Check name
@@ -34,7 +35,7 @@ public sealed class UpdatePetRequestValidator : IRequestValidator<UpdatePetReque
         }
 
         // Check DateOfBirth
-        if (!Validate.IsDateInFuture(request.DateOfBirth, nameof(request.DateOfBirth), out var dateOfBirthError))
+        if (!Validate.IsPast(request.DateOfBirth, nameof(request.DateOfBirth), out var dateOfBirthError))
         {
             errorMessages = errorMessages.Append(dateOfBirthError);
         }

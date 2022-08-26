@@ -65,7 +65,7 @@ public sealed class PurchaseService
         // Save the purchased products
         var purchasedProducts = (await _db.Products
             .AsTracking()
-            .Where(x => request.ProductsId.Contains(x.Id))
+            .Where(x => request.ProductIds.Contains(x.Id))
             .ToArrayAsyncEF())
             .Select(x => new PurchasedProductEntity()
             {

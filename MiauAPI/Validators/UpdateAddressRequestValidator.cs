@@ -13,9 +13,10 @@ public sealed class UpdateAddressRequestValidator : IRequestValidator<UpdateAddr
         errorMessages = Enumerable.Empty<string>();
 
         // Check Ids
-        if (request.Id <= 0 || request.UserId <= 0)
+        if (!Validate.IsPositive(request.Id, nameof(request.Id), out var idError)
+            || !Validate.IsPositive(request.UserId, nameof(request.UserId), out idError))
         {
-            errorMessages = errorMessages.Append($"{nameof(request.Id)} and {request.UserId} must be greater than zero.");
+            errorMessages = errorMessages.Append(idError);
         }
 
         // Check address
@@ -26,7 +27,7 @@ public sealed class UpdateAddressRequestValidator : IRequestValidator<UpdateAddr
         }
 
         // Check number
-        if (!Validate.IsPositive(request.AddressNumber, nameof(request.AddressNumber), out var numberError))
+        if (!Validate.IsPositiveOrNeutral(request.AddressNumber, nameof(request.AddressNumber), out var numberError))
         {
             errorMessages = errorMessages.Append(numberError);
         }

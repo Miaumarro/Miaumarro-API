@@ -7,4 +7,4 @@ namespace MiauAPI.Models.Requests;
 /// <param name="UserId">The user this purchase is associated with.</param>
 /// <param name="ProductsId">The Id of the purchased products this purchase is associated with.</param>
 /// <param name="CouponId">The discount coupon used for this purchase.</param>
-public sealed record CreatedPurchaseRequest(int UserId, int[] ProductsId, int? CouponId);
+public sealed record CreatedPurchaseRequest(int UserId, int[] ProductIds, int? CouponId);

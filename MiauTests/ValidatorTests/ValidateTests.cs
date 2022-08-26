@@ -115,10 +115,71 @@ public sealed class ValidateTests
     [InlineData(true, "")]
     [InlineData(true, "   ")]
     [InlineData(false, "-")]
-    internal void IsNullOrWhiteSpace(bool expected, string? input)
+    internal void IsNullOrWhiteSpaceTest(bool expected, string? input)
     {
         Assert.Equal(expected, Validate.IsNullOrWhiteSpace(input, nameof(input), out var errorMessage));
         CheckNullability(!expected, errorMessage);
+    }
+
+    [Theory]
+    [InlineData(true, 1)]
+    [InlineData(true, 0.1)]
+    [InlineData(true, 0)]
+    [InlineData(false, -0.1)]
+    [InlineData(false, -1)]
+    internal void IsPositiveOrNeutralTest(bool expected, decimal value)
+    {
+        Assert.Equal(expected, Validate.IsPositiveOrNeutral(value, nameof(value), out var errorMessage));
+        CheckNullability(expected, errorMessage);
+    }
+
+    [Theory]
+    [InlineData(true, -1)]
+    [InlineData(true, -0.1)]
+    [InlineData(false, 0.1)]
+    [InlineData(false, 1)]
+    internal void IsPastTest(bool expected, double secondsToAdd)
+    {
+        Assert.Equal(expected, Validate.IsPast(DateTime.UtcNow.AddSeconds(secondsToAdd), "Past", out var errorMessage));
+        CheckNullability(expected, errorMessage);
+    }
+
+    [Theory]
+    [InlineData(true, 1)]
+    [InlineData(true, 0.1)]
+    [InlineData(false, -0.1)]
+    [InlineData(false, -1)]
+    internal void IsFutureTest(bool expected, double secondsToAdd)
+    {
+        Assert.Equal(expected, Validate.IsFuture(DateTime.UtcNow.AddSeconds(secondsToAdd), "Future", out var errorMessage));
+        CheckNullability(expected, errorMessage);
+    }
+
+    [Theory]
+    [InlineData(true, 1)]
+    [InlineData(true, 0.1)]
+    [InlineData(false, 0)]
+    [InlineData(false, -0.1)]
+    [InlineData(false, -1)]
+    internal void IsPositiveTest(bool expected, decimal value)
+    {
+        Assert.Equal(expected, Validate.IsPositive(value, nameof(value), out var errorMessage));
+        CheckNullability(expected, errorMessage);
+    }
+
+    [Theory]
+    [InlineData(true, 0.01, 0, 1)]
+    [InlineData(true, 0.9, 0, 1)]
+    [InlineData(true, 0, 0, 1)]
+    [InlineData(true, 1, 0, 1)]
+    [InlineData(false, -0.01, 0, 1)]
+    [InlineData(false, -1, 0, 1)]
+    [InlineData(false, 1.1, 0, 1)]
+    [InlineData(false, 2, 0, 1)]
+    internal void IsWithinRangeTest(bool expected, decimal value, decimal min, decimal max)
+    {
+        Assert.Equal(expected, Validate.IsWithinRange(value, min, max, nameof(value), out var errorMessage));
+        CheckNullability(expected, errorMessage);
     }
 
     /// <summary>

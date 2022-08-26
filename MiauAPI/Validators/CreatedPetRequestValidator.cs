@@ -14,9 +14,9 @@ public sealed class CreatedPetRequestValidator : IRequestValidator<CreatedPetReq
         errorMessages = Enumerable.Empty<string>();
 
         // Check Id
-        if (request.UserId <= 0)
+        if (!Validate.IsPositive(request.UserId, nameof(request.UserId), out var userIdError))
         {
-            errorMessages = errorMessages.Append($"{nameof(request.UserId)} must be valid.");
+            errorMessages = errorMessages.Append(userIdError);
         }
 
         // Check name
@@ -34,7 +34,7 @@ public sealed class CreatedPetRequestValidator : IRequestValidator<CreatedPetReq
         }
 
         // Check DateOfBirth
-        if (!Validate.IsDateInFuture(request.DateOfBirth, nameof(request.DateOfBirth), out var dateOfBirthError))
+        if (!Validate.IsPast(request.DateOfBirth, nameof(request.DateOfBirth), out var dateOfBirthError))
         {
             errorMessages = errorMessages.Append(dateOfBirthError);
         }

@@ -13,19 +13,19 @@ public sealed class CreatedAppointmentRequestValidator : IRequestValidator<Creat
         errorMessages = Enumerable.Empty<string>();
 
         // Check id
-        if (request.PetId <= 0)
+        if (!Validate.IsPositive(request.PetId, nameof(request.PetId), out var petIdError))
         {
-            errorMessages = errorMessages.Append($"{nameof(request.PetId)} must be valid.");
+            errorMessages = errorMessages.Append(petIdError);
         }
 
         // Check Price
-        if (!Validate.IsPositive(request.Price, nameof(request.Price), out var priceError))
+        if (!Validate.IsPositiveOrNeutral(request.Price, nameof(request.Price), out var priceError))
         {
             errorMessages = errorMessages.Append(priceError);
         }
 
         // Check ScheduledTime
-        if (!Validate.IsFutureDate(request.ScheduledTime, nameof(request.ScheduledTime), out var scheduledTimeError))
+        if (!Validate.IsFuture(request.ScheduledTime, nameof(request.ScheduledTime), out var scheduledTimeError))
         {
             errorMessages = errorMessages.Append(scheduledTimeError);
         }

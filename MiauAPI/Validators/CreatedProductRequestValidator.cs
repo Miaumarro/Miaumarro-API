@@ -27,15 +27,15 @@ public sealed class CreatedProductRequestValidator : IRequestValidator<CreatedPr
         }
 
         // Check Price
-        if (!Validate.IsPositive(request.Price, nameof(request.Price), out var priceError))
+        if (!Validate.IsPositiveOrNeutral(request.Price, nameof(request.Price), out var priceError))
         {
             errorMessages = errorMessages.Append(priceError);
         }
 
         // Check Amount
-        if (request.Amount < 0)
+        if (!Validate.IsPositiveOrNeutral(request.Amount, nameof(request.Amount), out var amountError))
         {
-            errorMessages = errorMessages.Append($"{nameof(request.Amount)} must be equal or higher than 0.");
+            errorMessages = errorMessages.Append(amountError);
         }
 
         // Check Discount

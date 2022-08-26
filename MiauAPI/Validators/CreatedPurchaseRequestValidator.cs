@@ -12,14 +12,16 @@ public class CreatedPurchaseRequestValidator : IRequestValidator<CreatedPurchase
     {
         errorMessages = Enumerable.Empty<string>();
 
-        if (request.UserId <= 0 || request.CouponId <= 0 || request.ProductsId.Any(x => x <= 0))
+        if (!Validate.IsPositive(request.UserId, nameof(request.UserId), out var idError)
+            || !Validate.IsPositive(request.CouponId ?? 1, nameof(request.CouponId), out idError)
+            || request.ProductIds.Any(x => x <= 0))
         {
-            errorMessages = errorMessages.Append($"Ids must be higher than zero.");
+            errorMessages = errorMessages.Append(idError ?? $"All {nameof(request.ProductIds)} must be higher than zero.");
         }
 
-        if (request.ProductsId.Length is 0)
+        if (request.ProductIds.Length is 0)
         {
-            errorMessages = errorMessages.Append($"{nameof(request.ProductsId)} must not be empty.");
+            errorMessages = errorMessages.Append($"{nameof(request.ProductIds)} must not be empty.");
         }
 
         return !errorMessages.Any();

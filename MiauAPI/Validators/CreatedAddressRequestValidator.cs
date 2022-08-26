@@ -13,7 +13,7 @@ public sealed class CreatedAddressRequestValidator : IRequestValidator<CreatedAd
         errorMessages = Enumerable.Empty<string>();
 
         // Check Id
-        if (!Validate.IsPositive(request.UserId, nameof(request.UserId), out var idError))
+        if (!Validate.IsPositiveOrNeutral(request.UserId, nameof(request.UserId), out var idError))
         {
             errorMessages = errorMessages.Append(idError);
         }
@@ -26,9 +26,9 @@ public sealed class CreatedAddressRequestValidator : IRequestValidator<CreatedAd
         }
 
         // Check number
-        if (request.AddressNumber < 0)
+        if (!Validate.IsPositive(request.AddressNumber, nameof(request.AddressNumber), out var addressNumError))
         {
-            errorMessages = errorMessages.Append($"{nameof(request.AddressNumber)} must be valid.");
+            errorMessages = errorMessages.Append(addressNumError);
         }
 
         // Check reference
