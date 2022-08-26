@@ -51,8 +51,11 @@ public sealed class ProductService
         if (request.Brand is not null)
             productsQuery = productsQuery.Where(x => request.Brand == x.Brand);
 
-        if (request.MaxPrice is not 0 || request.MinPrice is not 0)
-            productsQuery = productsQuery.Where(x => ((x.Price * (1 - x.Discount)) >= request.MinPrice) && ((x.Price * (1 - x.Discount)) <= request.MaxPrice));
+        if (request.MinPrice is not 0)
+            productsQuery = productsQuery.Where(x => (x.Price * (1 - x.Discount)) >= request.MinPrice);
+
+        if (request.MaxPrice is not 0)
+            productsQuery = productsQuery.Where(x => (x.Price * (1 - x.Discount)) <= request.MaxPrice);
 
         if (request.ActiveDiscount)
             productsQuery = productsQuery.Where(x => x.Discount > 0);

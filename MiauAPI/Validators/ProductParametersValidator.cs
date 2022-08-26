@@ -21,7 +21,7 @@ public sealed class ProductParametersValidator : IRequestValidator<ProductParame
         if (request.MaxPrice < 0)
             errorMessages = errorMessages.Append($"{nameof(request.MaxPrice)} cannot be negative.");
 
-        if (request.MinPrice > request.MaxPrice)
+        if (request.MaxPrice is not 0 && request.MinPrice > request.MaxPrice)
             errorMessages = errorMessages.Append($"{nameof(request.MinPrice)} must be lower or equal to {nameof(request.MaxPrice)}");
 
         return !errorMessages.Any();

@@ -13,12 +13,12 @@ public sealed record ProductParameters : QueryStringParameters
     /// <summary>
     /// The minimum price for a product.
     /// </summary>
-    public decimal? MinPrice { get; init; }
+    public decimal MinPrice { get; init; }
 
     /// <summary>
     /// The maximum price for a product.
     /// </summary>
-    public decimal? MaxPrice { get; init; }
+    public decimal MaxPrice { get; init; }
 
     /// <summary>
     /// The term to be searched in the product's description.
