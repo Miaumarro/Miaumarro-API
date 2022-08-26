@@ -13,9 +13,9 @@ namespace MiauAPI.Controllers;
 [Route(ApiConstants.MainEndpoint)]
 public sealed class WishListController : ControllerBase
 {
-    private readonly WishListService _service;
+    private readonly WishlistService _service;
 
-    public WishListController(WishListService service)
+    public WishListController(WishlistService service)
         => _service = service;
 
     [HttpGet]

@@ -14,7 +14,7 @@ public sealed class CreatedProductReviewRequestValidator : IRequestValidator<Cre
         errorMessages = Enumerable.Empty<string>();
 
         // Check Description
-        if (!Validate.IsNullOrWhiteSpace(request.Description, nameof(request.Description), out var descriptionError)
+        if (Validate.IsNullOrWhiteSpace(request.Description, nameof(request.Description), out var descriptionError)
             || !Validate.IsTextInRange(request.Description, 500, nameof(request.Description), out descriptionError))
         {
             errorMessages = errorMessages.Append(descriptionError);

@@ -3,11 +3,6 @@ namespace MiauAPI.Models.QueryParameters;
 /// <summary>
 /// Set relevant parameters for an WishList search.
 /// </summary>
-/// <param name="UserId">The id of the user related to the wish list.</param>
-public sealed class WishListParameters : QueryStringParameters
-{
-    public int UserId { get; init; }
-    public int ProductId { get; init; }
-
-}
-
+/// <param name="UserId">The Id of the user related to the wish list.</param>
+/// <param name="ProductId">The Id of the product.</param>
+public sealed record WishListParameters(int UserId, int ProductId) : QueryStringParameters;

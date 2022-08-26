@@ -12,18 +12,18 @@ using LinqToDB;
 using MiauDatabase.Enums;
 using MiauAPI.Enums;
 using MiauAPI.Models.QueryObjects;
-
+using MiauAPI.Extensions;
 
 namespace MiauAPI.Services;
 
 /// <summary>
 /// Handles requests pertaining to wish ist.
 /// </summary>
-public sealed class WishListService
+public sealed class WishlistService
 {
     private readonly MiauDbContext _db;
 
-    public WishListService(MiauDbContext db)
+    public WishlistService(MiauDbContext db)
     {
         _db = db;
     }
@@ -99,8 +99,7 @@ public sealed class WishListService
             return new NotFoundObjectResult("No wish product with the given paramenters were found.");
         }
 
-        var dbWishListsPaged = PagedList<WishListObject>.ToPagedList(
-                        dbWishListsList,
+        var dbWishListsPaged = dbWishListsList.ToPagedList(
                         wishListParameters.PageNumber,
                         wishListParameters.PageSize);
 

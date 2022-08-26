@@ -3,6 +3,7 @@ using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Pagination;
 using MiauAPI.Validators.Abstractions;
+using MiauAPI.Extensions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -111,8 +112,7 @@ public sealed class ProductReviewService
             return new NotFoundObjectResult("No review with the given paramenters were found.");
         }
 
-        var dbProductReviewPaged = PagedList<ProductReviewObject>.ToPagedList(
-                        dbProductReviewList,
+        var dbProductReviewPaged = dbProductReviewList.ToPagedList(
                         productReviewParameters.PageNumber,
                         productReviewParameters.PageSize);
 

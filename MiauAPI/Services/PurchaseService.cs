@@ -10,6 +10,7 @@ using MiauDatabase;
 using MiauDatabase.Entities;
 using MiauDatabase.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OneOf;
 using OneOf.Types;
 
