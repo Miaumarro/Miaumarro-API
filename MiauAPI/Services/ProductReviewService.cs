@@ -15,6 +15,7 @@ using MiauAPI.Enums;
 using MiauAPI.Models.QueryObjects;
 using Microsoft.EntityFrameworkCore;
 using LinqToDB.EntityFrameworkCore;
+using OneOf.Types;
 
 namespace MiauAPI.Services;
 
@@ -25,13 +26,11 @@ public sealed class ProductReviewService
 {
     private readonly MiauDbContext _db;
     private readonly IRequestValidator<CreatedProductReviewRequest> _validator;
-    private readonly IRequestValidator<UpdateProductReviewRequest> _validatorUpdate;
 
-    public ProductReviewService(MiauDbContext db, IRequestValidator<CreatedProductReviewRequest> validator, IRequestValidator<UpdateProductReviewRequest> validatorUpdate)
+    public ProductReviewService(MiauDbContext db, IRequestValidator<CreatedProductReviewRequest> validator)
     {
         _db = db;
         _validator = validator;
-        _validatorUpdate = validatorUpdate;
     }
 
     /// <summary>
@@ -50,23 +49,24 @@ public sealed class ProductReviewService
         if (!_validator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        // Checks the UserId
-        if (request.UserId == 0)
-            return new BadRequestObjectResult(new ErrorResponse($"The review must be related to a user. 'UserId = {request.UserId}'"));
+        var reviewAlreadyExists = await _db.ProductReviews
+            .Include(x => x.Product)
+            .Include(x => x.User)
+            .AnyAsyncEF(x => x.User != null && x.User.Id == request.UserId && x.Product.Id == request.ProductId);
 
-        var dbUser = await _db.Users.FirstOrDefaultAsyncEF(x => x.Id == request.UserId);
-        if (dbUser == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No User with the Id = {request.UserId} was found"));
-        }
+        if (reviewAlreadyExists)
+            return new BadRequestObjectResult(new ErrorResponse("There already is a review for this product by this user."));
 
-        // Checks the ProductId
-        var dbProduct = await _db.Products.FirstOrDefaultAsyncEF(x => x.Id == request.ProductId);
-        if (dbProduct == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {request.ProductId} was found"));
-        }
+        var dbUser = await _db.Users
+            .AsTracking()
+            .FirstOrDefaultAsyncEF(x => x.Id == request.UserId);
 
+        var dbProduct = await _db.Products
+            .AsTracking()
+            .FirstOrDefaultAsyncEF(x => x.Id == request.ProductId);
+
+        if (dbProduct is null)
+            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id {request.ProductId} was found"));
 
         // Create the database review
         var dbProductReview = new ProductReviewEntity()
@@ -75,10 +75,9 @@ public sealed class ProductReviewService
             Product = dbProduct,
             Description = request.Description,
             Score = request.Score
-
         };
 
-        _db.ProductReviews.Update(dbProductReview);
+        _db.ProductReviews.Add(dbProductReview);
         await _db.SaveChangesAsync();
 
         return new CreatedResult(location, new CreatedProductReviewResponse(dbProductReview.Id));
@@ -88,31 +87,31 @@ public sealed class ProductReviewService
     /// Returns a list of Review.
     /// </summary>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<GetProductReviewResponse, ErrorResponse>>> GetProductReviewAsync(ProductReviewParameters productReviewParameters)
+    public async Task<ActionResult<OneOf<PagedResponse<ProductReviewObject[]>, None>>> GetProductReviewsAsync(ProductReviewParameters request)
     {
-
-        var dbProductReview = _db.ProductReviews
+        var dbProductReviews = await _db.ProductReviews
             .Include(x => x.User)
             .Include(x => x.Product)
-            .Select(p => new ProductReviewObject(p.Id, p.Product.Id, (p.User == null) ? null : p.Id, p.Description, p.Score));
+            .Where(x => x.Product.Id == request.ProductId)
+            .OrderBy(x => x.Id)
+            .Select(x => new ProductReviewObject(x.Id, x.Product.Id, (x.User == null) ? null : x.Id, x.Description, x.Score))
+            .ToArrayAsyncEF();
 
-        if (productReviewParameters.UserId != 0)
-        {
-            dbProductReview = dbProductReview.Where(p => p.UserId == productReviewParameters.UserId);
-        }
+        if (dbProductReviews.Length is 0)
+            return new NotFoundResult();
 
-        var dbProductReviewList = await dbProductReview.ToListAsyncEF();
+        var remainingResultIds = await _db.ProductReviews
+            .Include(x => x.User)
+            .Include(x => x.Product)
+            .Where(x => !dbProductReviews.Select(y => y.Id).Contains(x.Id) && x.Product.Id == request.ProductId)
+            .OrderBy(x => x.Id)
+            .Select(x => x.Id)
+            .ToArrayAsyncEF();
 
-        if (dbProductReviewList.Count == 0)
-        {
-            return new NotFoundObjectResult("No review with the given paramenters were found.");
-        }
+        var previousAmount = remainingResultIds.Count(x => x < dbProductReviews[0].Id);
+        var nextAmount = remainingResultIds.Count(x => x > dbProductReviews[^1].Id);
 
-        var dbProductReviewPaged = dbProductReviewList.ToPagedList(
-                        productReviewParameters.PageNumber,
-                        productReviewParameters.PageSize);
-
-        return new OkObjectResult(new GetProductReviewResponse(dbProductReviewPaged));
+        return new OkObjectResult(PagedResponse.Create(request.PageNumber, request.PageSize, previousAmount, nextAmount, dbProductReviews.Length, dbProductReviews));
     }
 
     /// <summary>
@@ -120,19 +119,18 @@ public sealed class ProductReviewService
     /// </summary>
     /// <param name="productReview">The Id of the product review to be searched.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<GetProductReviewByIdResponse, ErrorResponse>>> GetProductReviewByIdAsync(int productReviewId)
+    public async Task<ActionResult<OneOf<ProductReviewObject, None>>> GetProductReviewByIdAsync(GetProductReviewRequest request)
     {
-
         var dbProductReview = await _db.ProductReviews
             .Include(x => x.User)
             .Include(x => x.Product)
-            .Where(p => p.Id == productReviewId)
-            .Select(p => new ProductReviewObject(p.Id, p.Product.Id, (p.User == null) ? null : p.Id, p.Description, p.Score))
+            .Where(x => x.Product.Id == request.ProductId && ((x.User == null) ? null : x.User.Id) == request.UserId)
+            .Select(x => new ProductReviewObject(x.Id, x.Product.Id, (x.User == null) ? null : x.Id, x.Description, x.Score))
             .FirstOrDefaultAsyncEF();
 
-        return dbProductReview == null
-                ? new NotFoundObjectResult(new ErrorResponse($"No product review with the Id = {productReviewId} was found"))
-                : new OkObjectResult(new GetProductReviewByIdResponse(dbProductReview));
+        return (dbProductReview is null)
+            ? new NotFoundResult()
+            : new OkObjectResult(dbProductReview);
     }
 
     /// <summary>
@@ -140,11 +138,11 @@ public sealed class ProductReviewService
     /// </summary>
     /// <param name="productReviewId">The Id of the product review to be deleted.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteProductReviewByIdAsync(int productReviewId)
+    public async Task<ActionResult> DeleteProductReviewByIdAsync(int productReviewId)
     {
-        return ((await _db.ProductReviews.DeleteAsync(p => p.Id == productReviewId)) is 0)
-            ? new NotFoundObjectResult(new ErrorResponse($"No productr review with the Id = {productReviewId} was found"))
-            : new OkObjectResult(new DeleteResponse($"Successful delete review with the Id = {productReviewId}"));
+        return ((await _db.ProductReviews.DeleteAsync(x => x.Id == productReviewId)) is 0)
+            ? new NotFoundResult()
+            : new OkResult();
     }
 
     /// <summary>
@@ -152,50 +150,20 @@ public sealed class ProductReviewService
     /// </summary>
     /// <param name="request">The controller request.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateProductReviewByIdAsync(UpdateProductReviewRequest request)
+    public async Task<ActionResult> UpdateProductReviewByIdAsync(UpdateProductReviewRequest request)
     {
-        // Check if request contains valid data
-        if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))
-            return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
+        var result = await _db.ProductReviews
+            .Include(x => x.User)
+            .Include(x => x.Product)
+            .Where(x => x.Id == request.Id && x.User != null && x.User.Id == request.UserId && x.Product.Id == request.ProductId)
+            .UpdateAsync(x => new ProductReviewEntity()
+            {
+                Description = request.NewDescription,
+                Score = request.NewScore,
+            });
 
-        var dbProductReview = await _db.ProductReviews.FindAsync(request.Id);
-
-        if (dbProductReview == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No review with the Id = {request.Id} was found"));
-        }
-
-        // Checks the UserId
-        if (request.UserId == 0)
-            return new BadRequestObjectResult(new ErrorResponse($"The product review must be related to a user. 'UserId = {request.UserId}'"));
-
-        var dbUser = await _db.Users.FirstOrDefaultAsyncEF(x => x.Id == request.UserId);
-        if (dbUser == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No User with the Id = {request.UserId} was found"));
-        }
-
-        // Checks the ProductId
-        var dbProduct = await _db.Products.FirstOrDefaultAsyncEF(x => x.Id == request.ProductId);
-        if (dbProduct == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {request.ProductId} was found"));
-        }
-
-        dbProductReview = new ProductReviewEntity()
-        {
-            Id = request.Id,
-            User = dbUser,
-            Product = dbProduct,
-            Description = request.Description,
-            Score = request.Score
-
-        };
-
-        _db.ProductReviews.Update(dbProductReview);
-
-        await _db.SaveChangesAsync();
-
-        return new OkObjectResult(new UpdateResponse($"Successfull update product review with the Id = {request.Id}"));
+        return (result is 0)
+            ? new NotFoundResult()
+            : new OkResult();
     }
 }
