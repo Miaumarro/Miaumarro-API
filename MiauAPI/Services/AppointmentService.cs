@@ -99,10 +99,29 @@ public sealed class AppointmentService
     }
 
     /// <summary>
-    /// Deletes the appointment with the given Id.
+    /// Returns the appointment for the specified pet.
     /// </summary>
-    /// <param name="appointmentId">The Id of the appointment to be deleted.</param>
+    /// <param name="request">The controller's request.</param>
     /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<AppointmentObject, None>>> GetAppointmentByIdsAsync(GetAppointmentRequest request)
+    {
+        var dbAppointment = await _db.Appointments
+            .Include(x => x.Pet)
+            .Include(x => x.Pet.User)
+            .Where(x => x.Id == request.AppointmentId && x.Pet.Id == request.PetId)
+            .Select(x => new AppointmentObject(x.Id, x.Pet.User.Id, x.Pet.Id, x.Price, x.Type, x.ScheduledTime))
+            .FirstOrDefaultAsyncEF();
+
+        return (dbAppointment is null)
+            ? new NotFoundResult()
+            : new OkObjectResult(dbAppointment);
+    }
+    
+    /// <summary>
+     /// Deletes the appointment with the given Id.
+     /// </summary>
+     /// <param name="appointmentId">The Id of the appointment to be deleted.</param>
+     /// <returns>The result of the operation.</returns>
     public async Task<ActionResult> DeleteAppointmentAsync(int appointmentId)
     {
         return ((await _db.Appointments.DeleteAsync(p => p.Id == appointmentId)) is 0)

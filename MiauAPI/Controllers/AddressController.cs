@@ -44,6 +44,12 @@ public sealed class AddressController : ControllerBase
         return adressesPaged;
     }
 
+    [HttpGet("details")]
+    [ProducesResponseType(typeof(AddressObject), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OneOf<AddressObject, None>>> GetAppointmentAsync([FromQuery] GetAddressRequest request)
+        => await _service.GetAddressByIdsAsync(request);
+
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedAddressResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

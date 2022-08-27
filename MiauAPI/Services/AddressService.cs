@@ -116,10 +116,40 @@ public sealed class AddressService
     }
 
     /// <summary>
-    /// Deletes the address with the given Id.
+    /// Returns the address for the specified user.
     /// </summary>
-    /// <param name="addressId">The Id of the address to be deleted.</param>
+    /// <param name="request">The controller's request.</param>
     /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<AddressObject, None>>> GetAddressByIdsAsync(GetAddressRequest request)
+    {
+        var dbAddress = await _db.Addresses
+            .Where(x => x.User.Id == request.UserId && x.Id == request.AddressId)
+            .Select(x => new AddressObject(
+                    x.Id,
+                    x.User.Id,
+                    x.State,
+                    x.City,
+                    x.Neighborhood,
+                    x.Cep,
+                    x.Address,
+                    x.Number,
+                    x.Complement,
+                    x.Reference,
+                    x.Destinatary
+                )
+            )
+            .FirstOrDefaultAsyncEF();
+
+        return (dbAddress is null)
+            ? new NotFoundResult()
+            : new OkObjectResult(dbAddress);
+    }
+    
+    /// <summary>
+     /// Deletes the address with the given Id.
+     /// </summary>
+     /// <param name="addressId">The Id of the address to be deleted.</param>
+     /// <returns>The result of the operation.</returns>
     public async Task<ActionResult> DeleteAddressAsync(int addressId)
     {
         return ((await _db.Addresses.DeleteAsync(p => p.Id == addressId)) is 0)

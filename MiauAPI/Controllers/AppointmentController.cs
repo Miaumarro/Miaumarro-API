@@ -46,6 +46,12 @@ public sealed class AppointmentController : ControllerBase
         return appointmentsPaged;
     }
 
+    [HttpGet("details")]
+    [ProducesResponseType(typeof(AppointmentObject), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OneOf<AppointmentObject, None>>> GetAppointmentAsync([FromQuery] GetAppointmentRequest request)
+        => await _service.GetAppointmentByIdsAsync(request);
+
     [HttpPost("create")]
     [Authorize(Roles = nameof(UserPermissions.Customer))]
     [ProducesResponseType(typeof(CreatedAppointmentResponse), StatusCodes.Status201Created)]
