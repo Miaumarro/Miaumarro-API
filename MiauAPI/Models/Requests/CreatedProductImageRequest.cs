@@ -6,4 +6,3 @@ namespace MiauAPI.Models.Requests;
 /// <param name="ProductId">The id of pet's user.</param>
 /// <param name="Image">This Products's image file.</param>
 public sealed record CreatedProductImageRequest(int ProductId, byte[] Image);
-

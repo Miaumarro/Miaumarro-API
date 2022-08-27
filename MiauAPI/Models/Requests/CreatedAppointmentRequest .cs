@@ -10,4 +10,3 @@ namespace MiauAPI.Models.Requests;
 /// <param name="Type">The Type of the appointment.</param>
 /// <param name="ScheduledTime">The Scheduled Time of the appointment.</param>
 public sealed record CreatedAppointmentRequest(int PetId, decimal Price, AppointmentType Type, DateTime ScheduledTime);
-
