@@ -11,12 +11,4 @@ namespace MiauAPI.Models.QueryObjects;
 /// <param name="Price">The Price of the appointment.</param>
 /// <param name="Type">The Type of the appointment.</param>
 /// <param name="ScheduledTime">The Scheduled Time of the appointment.</param>
-public sealed record AppointmentObject
-{
-    public int Id { get; init; }
-    public int UserId { get; init; }
-    public int PetId { get; init; }
-    public decimal Price { get; set; }
-    public AppointmentType Type { get; set; }
-    public DateTime ScheduledTime { get; set; }
-} 
+public sealed record AppointmentObject(int Id, int UserId, int PetId, decimal Price, AppointmentType Type, DateTime ScheduledTime);

@@ -77,12 +77,7 @@ public sealed class ProductImageService
         var dbProductImages = await _db.ProductImages
             .Include(x => x.Product)
             .Where(x => x.Product.Id == productImageParameters.ProductId)
-            .Select(x => new ProductImageObject()
-            {
-                Id = x.Id,
-                ProductId = x.Product.Id,
-                ImagePath = x.FileUrl
-            })
+            .Select(x => new ProductImageObject(x.Id, x.Product.Id, x.FileUrl))
             .ToArrayAsyncEF();
 
         return (dbProductImages.Length is 0)

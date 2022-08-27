@@ -81,15 +81,7 @@ public sealed class AppointmentService
             .Where(x => x.Pet.User.Id == request.UserId && x.Pet.Id == request.PetId)
             .OrderBy(x => x.Id)
             .PageRange(request.PageNumber, request.PageSize)
-            .Select(x => new AppointmentObject()
-            {
-                Id = x.Id,
-                UserId = x.Pet.User.Id,
-                PetId = x.Pet.Id,
-                Price = x.Price,
-                Type = x.Type,
-                ScheduledTime = x.ScheduledTime
-            })
+            .Select(x => new AppointmentObject(x.Id, x.Pet.User.Id, x.Pet.Id, x.Price, x.Type, x.ScheduledTime))
             .ToArrayAsyncEF();
 
         if (dbAppointments.Length is 0)

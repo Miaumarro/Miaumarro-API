@@ -85,20 +85,20 @@ public sealed class AddressService
             .Where(x => x.User.Id == request.UserId)
             .OrderBy(x => x.Id)
             .PageRange(request.PageNumber, request.PageSize)
-            .Select(x => new AddressObject()
-            {
-                UserId = x.User.Id,
-                Id = x.Id,
-                Address = x.Address,
-                Number = x.Number,
-                Reference = x.Reference,
-                Complement = x.Complement,
-                Neighborhood = x.Neighborhood,
-                City = x.City,
-                State = x.State,
-                Destinatary = x.Destinatary,
-                Cep = x.Cep
-            })
+            .Select(x => new AddressObject(
+                    x.Id,
+                    x.User.Id,
+                    x.State,
+                    x.City,
+                    x.Neighborhood,
+                    x.Cep,
+                    x.Address,
+                    x.Number,
+                    x.Complement,
+                    x.Reference,
+                    x.Destinatary
+                )
+            )
             .ToArrayAsyncEF();
 
         if (dbAddresses.Length is 0)
