@@ -1,4 +1,5 @@
 using Kotz.Extensions;
+using MiauAPI.Common;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Validators.Abstractions;
@@ -116,7 +117,7 @@ public sealed class AuthenticationService
         // Generate the token
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
-            SigningCredentials = new(new SymmetricSecurityKey(_config.GetValue<byte[]>("Jwt:Key")), SecurityAlgorithms.HmacSha256Signature),
+            SigningCredentials = new(new SymmetricSecurityKey(_config.GetValue<byte[]>(ApiConstants.JwtAppSetting)), SecurityAlgorithms.HmacSha256Signature),
             Expires = expiresAt,
             Subject = new(claims)
         };

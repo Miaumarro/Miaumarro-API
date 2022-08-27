@@ -14,4 +14,9 @@ public static class ApiConstants
     /// Represents the main path of the API endpoints.
     /// </summary>
     public const string MainEndpoint = $"api/{Version}/[controller]";
+
+    /// <summary>
+    /// Represents the location of the security key in the "appsettings.json" file.
+    /// </summary>
+    public const string JwtAppSetting = "Jwt:Key";
 }

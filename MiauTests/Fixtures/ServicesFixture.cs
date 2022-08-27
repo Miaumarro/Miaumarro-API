@@ -1,4 +1,5 @@
 using LinqToDB.EntityFrameworkCore;
+using MiauAPI.Common;
 using MiauAPI.Extensions;
 using MiauDatabase;
 using MiauDatabase.Extensions;
@@ -38,7 +39,7 @@ public sealed class ServicesFixture : IDisposable
             .AddLogging(x => x.ClearProviders())                        // Supress service logging, if any is being used
             .AddMiauServices()                                          // Add Miau services
             .AddMiauDb("Data Source=file::memory:?cache=shared;", true) // Initialize an in-memory SQLite database
-            .AddMiauAuth(builder.Configuration.GetValue<byte[]>("Jwt:Key"), false)  // Add Miau authentication and authorization services
+            .AddMiauAuth(builder.Configuration.GetValue<byte[]>(ApiConstants.JwtAppSetting), false)  // Add Miau authentication and authorization services
             .BuildServiceProvider(true);
 
         ServiceProvider = _serviceProvider;

@@ -23,7 +23,7 @@ public class PurchaseController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponse<PurchaseObject[]>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<OneOf<PagedResponse<PurchaseObject[]>, None>>> GetAsync([FromQuery] PurchaseParameters request)
+    public async Task<ActionResult<OneOf<PagedResponse<PurchaseObject[]>, None>>> GetPurchasesAsync([FromQuery] PurchaseParameters request)
     {
         var actionResult = await _service.GetPurchasesAsync(request);
 
@@ -44,11 +44,11 @@ public class PurchaseController : ControllerBase
         return actionResult;
     }
 
-    //[HttpGet("details")]
-    //[ProducesResponseType(typeof(GetPurchaseByIdResponse), StatusCodes.Status200OK)]
-    //[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    //public async Task<ActionResult<OneOf<GetPurchasedProductByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)
-    //    => await _service.GetPurchasedProductByIdAsync(id);
+    [HttpGet("details")]
+    [ProducesResponseType(typeof(PurchaseObject), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OneOf<PurchaseObject, None>>> GetPurchaseAsync([FromQuery] GetPurchaseRequest request)
+        => await _service.GetPurchaseAsync(request);
 
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedPurchaseResponse), StatusCodes.Status200OK)]

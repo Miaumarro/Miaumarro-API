@@ -134,6 +134,18 @@ public sealed class ValidateTests
     }
 
     [Theory]
+    [InlineData(true, 1)]
+    [InlineData(true, 0.1)]
+    [InlineData(false, 0)]
+    [InlineData(false, -0.1)]
+    [InlineData(false, -1)]
+    internal void IsPositiveTest(bool expected, decimal value)
+    {
+        Assert.Equal(expected, Validate.IsPositive(value, nameof(value), out var errorMessage));
+        CheckNullability(expected, errorMessage);
+    }
+
+    [Theory]
     [InlineData(true, -1)]
     [InlineData(true, -0.1)]
     [InlineData(false, 0.1)]
@@ -152,18 +164,6 @@ public sealed class ValidateTests
     internal void IsFutureTest(bool expected, double secondsToAdd)
     {
         Assert.Equal(expected, Validate.IsFuture(DateTime.UtcNow.AddSeconds(secondsToAdd), "Future", out var errorMessage));
-        CheckNullability(expected, errorMessage);
-    }
-
-    [Theory]
-    [InlineData(true, 1)]
-    [InlineData(true, 0.1)]
-    [InlineData(false, 0)]
-    [InlineData(false, -0.1)]
-    [InlineData(false, -1)]
-    internal void IsPositiveTest(bool expected, decimal value)
-    {
-        Assert.Equal(expected, Validate.IsPositive(value, nameof(value), out var errorMessage));
         CheckNullability(expected, errorMessage);
     }
 

@@ -38,6 +38,7 @@ public sealed class PurchaseService
     /// <param name="location">The URL of the new resource or the content of the Location header.</param>
     /// <returns>The result of the operation.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="InvalidOperationException">Occurs when the specified user doesn't exist.</exception>
     public async Task<ActionResult<OneOf<CreatedPurchaseResponse, ErrorResponse>>> CreatePurchaseAsync(CreatedPurchaseRequest request, string location)
     {
         if (string.IsNullOrWhiteSpace(location))
@@ -120,6 +121,33 @@ public sealed class PurchaseService
         var nextAmount = remainingResultIds.Count(x => x > dbPurchases[^1].Id);
 
         return new OkObjectResult(PagedResponse.Create(request.PageNumber, request.PageSize, previousAmount, nextAmount, dbPurchases.Length, dbPurchases));
+    }
+
+    /// <summary>
+    /// Gets one purchase from the specified user.
+    /// </summary>
+    /// <param name="request">The controller's request.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult<OneOf<PurchaseObject, None>>> GetPurchaseAsync(GetPurchaseRequest request)
+    {
+        var result = await _db.Purchases
+            .Include(x => x.User)
+            .Include(x => x.Coupon)
+            .Include(x => x.PurchasedProduct)
+            .Where(x => x.User.Id == request.UserId && x.Id == request.PurchaseId)
+            .Select(x => new PurchaseObject(
+                x.Id,
+                    x.Status,
+                    x.DateAdded,
+                    x.PurchasedProduct.Select(x => new ProductObject(x.Product.Id, x.Product.Name, x.Product.Description, x.Product.Brand, x.Product.Price, x.Product.IsActive, x.Product.Amount, x.Product.Tags, x.Product.Discount)).ToArray(),
+                    (x.Coupon == null) ? null : new CouponObject(x.Coupon.Id, x.Coupon.Coupon, x.Coupon.IsActive, x.Coupon.Discount)
+                )
+            )
+            .FirstOrDefaultAsyncEF();
+
+        return (result is null)
+            ? new NotFoundResult()
+            : new OkObjectResult(result);
     }
 
     /// <summary>

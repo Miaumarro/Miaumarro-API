@@ -57,5 +57,4 @@ public sealed class WishlistController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteByIdAsync([FromQuery] DeleteWishlistRequest request)
         => await _service.DeleteWishlistAsync(request);
-
 }

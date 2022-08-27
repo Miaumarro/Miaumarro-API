@@ -1,5 +1,6 @@
 using LinqToDB.Data;
 using LinqToDB.EntityFrameworkCore;
+using MiauAPI.Common;
 using MiauAPI.Extensions;
 using MiauDatabase.Extensions;
 
@@ -22,7 +23,7 @@ public class Program
             .AddRouting()
             .AddMiauServices()
             .AddMiauDb()
-            .AddMiauAuth(builder.Configuration.GetValue<byte[]>("Jwt:Key"));
+            .AddMiauAuth(builder.Configuration.GetValue<byte[]>(ApiConstants.JwtAppSetting));
 
         var app = builder.Build();
 
