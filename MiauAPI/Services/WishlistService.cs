@@ -128,13 +128,18 @@ public sealed class WishlistService
     /// <returns>The result of the operation.</returns>
     public async Task<ActionResult> DeleteWishlistAsync(DeleteWishlistRequest request)
     {
-        var result = await _db.Wishlists
+        var wishlistId = await _db.Wishlists
             .Include(x => x.User)
             .Include(x => x.Product)
-            .DeleteAsync(x => x.User.Id == request.UserId && x.Product.Id == request.ProductId);
+            .Where(x => x.User.Id == request.UserId && x.Product.Id == request.ProductId)
+            .Select(x => x.Id)
+            .FirstOrDefaultAsyncEF();
 
-        return (result is 0)
-            ? new NotFoundResult()
-            : new OkResult();
+        if (wishlistId is 0)
+            return new NotFoundResult();
+
+        await _db.Wishlists.DeleteAsync(x => x.Id == wishlistId);
+
+        return new OkResult();
     }
 }
