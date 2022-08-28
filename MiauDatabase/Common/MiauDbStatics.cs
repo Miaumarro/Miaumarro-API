@@ -12,7 +12,7 @@ internal static class MiauDbStatics
     /// SQLite database connection string.
     /// </summary>
     /// <remarks>Points to the current directory of the application. Has the format "Data Source=Miau.db"</remarks>
-    private static readonly string _miauDbConnectionString = "Data Source=" + Path.Combine(Directory.GetParent(Assembly.GetExecutingAssembly().Location)?.FullName ?? string.Empty, "Miau.db");
+    private static readonly string _miauDbConnectionString = "Data Source=" + Path.Combine(AppContext.BaseDirectory, "Miau.db");
 
     /// <summary>
     /// Gets a database options builder, adds the default settings, and returns it.

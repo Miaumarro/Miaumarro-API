@@ -11,7 +11,7 @@ public sealed class FileService
     /// <summary>
     /// The absolute path of the API's Data folder.
     /// </summary>
-    private static readonly string _appDataPath = Path.Combine(Directory.GetParent(Assembly.GetExecutingAssembly().Location)?.FullName ?? string.Empty, "Data");
+    private static readonly string _appDataPath = Path.Combine(AppContext.BaseDirectory, "Data");
 
     /// <summary>
     /// Checks if a file exists in the API's Data folder.
