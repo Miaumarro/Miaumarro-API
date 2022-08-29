@@ -10,12 +10,4 @@ namespace MiauAPI.Models.QueryObjects;
 /// <param name="Email">The e-mail of the user.</param>
 /// <param name="Phone">The phone number of the user.</param>
 /// <param name="Password">The password entered by the user.</param>
-public sealed record UserObject
-{
-    public int Id { get; init; }
-    public string Cpf { get; init; } = null!;
-    public string Name { get; init; } = null!;
-    public string Surname { get; init; } = null!;
-    public string Email { get; init; } = null!;
-    public string? Phone { get; init; }
-}
+public sealed record UserObject(int Id, string Cpf, string Name, string Surname, string Email, string? Phone);

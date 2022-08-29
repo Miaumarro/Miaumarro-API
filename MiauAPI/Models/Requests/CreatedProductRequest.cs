@@ -14,4 +14,3 @@ namespace MiauAPI.Models.Requests;
 /// <param name="Brand">The product's brand.</param>
 /// <param name="Discount">The password entered by the user.</param>
 public sealed record CreatedProductRequest(string Name, string Description, decimal Price, bool IsActive, int Amount, ProductTag Tags, string? Brand, decimal Discount);
-

@@ -1,16 +1,18 @@
 using MiauAPI.Common;
+using MiauAPI.Extensions;
+using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
 using MiauAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
+using OneOf.Types;
 using System.Text.Json;
 
 namespace MiauAPI.Controllers;
 
-[ApiController]
-[Route(ApiConstants.MainEndpoint)]
+[ApiController, Route(ApiConstants.MainEndpoint)]
 public sealed class AddressController : ControllerBase
 {
     private readonly AddressService _service;
@@ -19,22 +21,21 @@ public sealed class AddressController : ControllerBase
         => _service = service;
 
     [HttpGet]
-    [ProducesResponseType(typeof(GetAddressResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<GetAddressResponse, ErrorResponse>>> GetAsync([FromQuery] AddressParameters addressParameters)
+    [ProducesResponseType(typeof(PagedResponse<AddressObject[]>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OneOf<PagedResponse<AddressObject[]>, None>>> GetAsync([FromQuery] AddressParameters addressParameters)
     {
-        var adressesPaged = await _service.GetAddressAsync(addressParameters);
+        var adressesPaged = await _service.GetAddressesAsync(addressParameters);
 
-        if (adressesPaged.Result is OkObjectResult response && response.Value is GetAddressResponse addressResponse)
+        if (adressesPaged.Result.TryUnwrap<PagedResponse>(out var response))
         {
             var metadata = new
             {
-                addressResponse.Addresses.TotalCount,
-                addressResponse.Addresses.PageSize,
-                addressResponse.Addresses.CurrentPage,
-                addressResponse.Addresses.TotalPages,
-                addressResponse.Addresses.HasNext,
-                addressResponse.Addresses.HasPrevious
+                response.PageNumber,
+                response.PageSize,
+                response.PreviousCount,
+                response.NextCount,
+                response.Amount
             };
 
             Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
@@ -43,27 +44,29 @@ public sealed class AddressController : ControllerBase
         return adressesPaged;
     }
 
-    [HttpGet("detail")]
-    [ProducesResponseType(typeof(GetAddressByIdResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<GetAddressByIdResponse, ErrorResponse>>> GetByIdAsync([FromQuery] int id)
-    => await _service.GetAddressByIdAsync(id);
+    [HttpGet("details")]
+    [ProducesResponseType(typeof(AddressObject), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OneOf<AddressObject, None>>> GetAppointmentAsync([FromQuery] GetAddressRequest request)
+        => await _service.GetAddressByIdsAsync(request);
 
     [HttpPost("create")]
     [ProducesResponseType(typeof(CreatedAddressResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<CreatedAddressResponse, ErrorResponse>>> RegisterAsync([FromBody] CreatedAddressRequest address)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OneOf<CreatedAddressResponse, ErrorResponse, None>>> RegisterAsync([FromBody] CreatedAddressRequest address)
         => await _service.CreateAddressAsync(address, base.Request.Path.Value!);
 
     [HttpDelete("delete")]
-    [ProducesResponseType(typeof(DeleteResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteByIdAsync([FromQuery] int id)
-        => await _service.DeleteAddressByIdAsync(id);
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> DeleteByIdAsync([FromQuery] int id)
+        => await _service.DeleteAddressAsync(id);
 
     [HttpPut("update")]
     [ProducesResponseType(typeof(UpdateResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateByIdAsync([FromBody] UpdateAddressRequest address)
-        => await _service.UpdateAddressByIdAsync(address);
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse, None>>> UpdateByIdAsync([FromBody] UpdateAddressRequest address)
+        => await _service.UpdateAddressAsync(address);
 }

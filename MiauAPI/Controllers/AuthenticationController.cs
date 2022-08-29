@@ -8,8 +8,7 @@ using OneOf;
 
 namespace MiauAPI.Controllers;
 
-[ApiController]
-[Route(ApiConstants.MainEndpoint)]
+[ApiController, Route(ApiConstants.MainEndpoint)]
 public sealed class AuthenticationController : ControllerBase
 {
     private readonly AuthenticationService _service;
@@ -21,6 +20,7 @@ public sealed class AuthenticationController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(UserAuthenticationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<OneOf<UserAuthenticationResponse, ErrorResponse>>> RegisterAsync([FromBody] UserAuthenticationRequest user)
         => await _service.LoginUserAsync(user);
 }

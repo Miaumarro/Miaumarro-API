@@ -13,27 +13,27 @@ public sealed class CreatedProductRequestValidator : IRequestValidator<CreatedPr
         errorMessages = Enumerable.Empty<string>();
 
         // Check Name
-        if (!Validate.IsNullOrWhiteSpace(request.Name, nameof(request.Name), out var nameError)
+        if (Validate.IsNullOrWhiteSpace(request.Name, nameof(request.Name), out var nameError)
             || !Validate.IsTextInRange(request.Name, 50, nameof(request.Name), out nameError))
         {
             errorMessages = errorMessages.Append(nameError);
         }
 
         // Check Description
-        if (!Validate.IsNullOrWhiteSpace(request.Description, nameof(request.Description), out var descriptionError)
+        if (Validate.IsNullOrWhiteSpace(request.Description, nameof(request.Description), out var descriptionError)
             || !Validate.IsTextInRange(request.Description, 500, nameof(request.Description), out descriptionError))
         {
             errorMessages = errorMessages.Append(descriptionError);
         }
 
         // Check Price
-        if (!Validate.IsPositive(request.Price, nameof(request.Price), out var priceError))
+        if (!Validate.IsPositiveOrNeutral(request.Price, nameof(request.Price), out var priceError))
         {
             errorMessages = errorMessages.Append(priceError);
         }
 
         // Check Amount
-        if (!Validate.IsPositive(request.Amount, nameof(request.Amount), out var amountError))
+        if (!Validate.IsPositiveOrNeutral(request.Amount, nameof(request.Amount), out var amountError))
         {
             errorMessages = errorMessages.Append(amountError);
         }
@@ -45,12 +45,11 @@ public sealed class CreatedProductRequestValidator : IRequestValidator<CreatedPr
         }
 
         // Check Brand
-        if (!Validate.IsTextInRange(request.Brand, 30, nameof(request.Brand), out var brandError))
+        if (request.Brand is not null && !Validate.IsTextInRange(request.Brand, 30, nameof(request.Brand), out var brandError))
         {
             errorMessages = errorMessages.Append(brandError);
         }
 
         return !errorMessages.Any();
-
     }
 }

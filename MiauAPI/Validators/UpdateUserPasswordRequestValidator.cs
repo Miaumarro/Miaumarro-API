@@ -12,11 +12,18 @@ public sealed class UpdateUserPasswordRequestValidator : IRequestValidator<Updat
     {
         errorMessages = Enumerable.Empty<string>();
 
-        // Check password
-        if (Validate.IsNull(request.Password, nameof(request.Password), out var passwordError)
-            || !Validate.IsTextInRange(request.Password, 100, nameof(request.Password), out passwordError))
+        // Check old password
+        if (Validate.IsNullOrWhiteSpace(request.OldPassword, nameof(request.OldPassword), out var oldPasswordError)
+            || !Validate.IsTextInRange(request.OldPassword, 100, nameof(request.OldPassword), out oldPasswordError))
         {
-            errorMessages = errorMessages.Append(passwordError);
+            errorMessages = errorMessages.Append(oldPasswordError);
+        }
+
+        // Check new password
+        if (Validate.IsNullOrWhiteSpace(request.NewPassword, nameof(request.NewPassword), out var newPasswordError)
+            || !Validate.IsTextInRange(request.NewPassword, 100, nameof(request.NewPassword), out newPasswordError))
+        {
+            errorMessages = errorMessages.Append(newPasswordError);
         }
 
         return !errorMessages.Any();

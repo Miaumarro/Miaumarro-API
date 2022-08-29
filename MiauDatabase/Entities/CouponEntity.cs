@@ -36,6 +36,8 @@ public sealed record CouponEntity : MiauDbEntity
     public decimal Discount
     {
         get => _discount;
-        init => _discount = (value is < 0 or > 1) ? throw new ArgumentOutOfRangeException(nameof(value), "Discount must be between 0 and 1.") : value;
+        init => _discount = (value is < 0 or > 1)
+            ? throw new ArgumentOutOfRangeException(nameof(value), "Discount must be between 0 and 1.")
+            : value;
     }
 }

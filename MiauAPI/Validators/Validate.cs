@@ -28,7 +28,7 @@ public static class Validate
     /// <returns><see langword="true"/> if <paramref name="text"/> is <see langword="null"/> or within the specified range, <see langword="false"/> otherwise.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="maxLength"/> is less than 1.</exception>
     public static bool IsTextInRange(string? text, int maxLength, string paramName, [MaybeNullWhen(true)] out string errorMessage)
-            => IsTextInRange(text, 1, maxLength, paramName, out errorMessage);
+        => IsTextInRange(text, 1, maxLength, paramName, out errorMessage);
 
     /// <summary>
     /// Checks if <paramref name="text"/>'s length is between <paramref name="minLength"/> and <paramref name="maxLength"/>.
@@ -92,7 +92,7 @@ public static class Validate
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="true"/>, <see langword="null"/> otherwise.</param>
     /// <typeparam name="T">The type of the object.</typeparam>
     /// <returns><see langword="true"/> if <paramref name="value"/> is <see langword="null"/>, <see langword="false"/> otherwise.</returns>
-    public static bool IsNull<T>(T value, string paramName, [MaybeNullWhen(false)] out string errorMessage)
+    public static bool IsNull<T>(T? value, string paramName, [MaybeNullWhen(false)] out string errorMessage)
     {
         errorMessage = (value is null)
             ? $"{paramName} cannot be null."
@@ -100,7 +100,6 @@ public static class Validate
 
         return value is null;
     }
-
 
     /// <summary>
     /// Checks if <paramref name="value"/> is <see langword="null"/> or composed only by white spaces.
@@ -110,18 +109,14 @@ public static class Validate
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="true"/>, <see langword="null"/> otherwise.</param>
     /// <typeparam name="T">The type of the object.</typeparam>
     /// <returns><see langword="true"/> if <paramref name="value"/> is <see langword="null"/>, <see langword="false"/> otherwise.</returns>
-    public static bool IsNullOrWhiteSpace(string value, string paramName, [MaybeNullWhen(true)] out string errorMessage)
+    public static bool IsNullOrWhiteSpace(string? value, string paramName, [MaybeNullWhen(false)] out string errorMessage)
     {
+        errorMessage = (string.IsNullOrWhiteSpace(value))
+            ? $"{paramName} cannot be null or composed only of white space."
+            : null;
 
-        if(!string.IsNullOrWhiteSpace(value))
-        {
-            errorMessage = null;
-            return true;
-        }
-        errorMessage = $"{paramName} cannot be null or composed only by white spaces.";
-        return false;
+        return errorMessage is not null;
     }
-
 
     /// <summary>
     /// Checks if <paramref name="text"/> only contains digits.
@@ -143,18 +138,18 @@ public static class Validate
     }
 
     /// <summary>
-    /// Checks if <paramref name="date"/> is valid.
+    /// Checks if <paramref name="date"/> is in the past.
     /// </summary>
     /// <param name="date">The date to be checked.</param>
     /// <param name="paramName">The name of the string parameter.</param>
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
-    /// <returns><see langword="true"/> if <paramref name="text"/> the date is valid, <see langword="false"/> otherwise.</returns>
-    /// <exception cref="ArgumentNullException">Occurs when <paramref name="text"/> is <see langword="null"/>.</exception>
-    public static bool IsDateValid(DateTime date, string paramName, [MaybeNullWhen(true)] out string errorMessage)
+    /// <returns><see langword="true"/> if <paramref name="text"/> the date is in the future, <see langword="false"/> otherwise.</returns>
+    public static bool IsPast(DateTime date, string paramName, [MaybeNullWhen(true)] out string errorMessage)
     {
         errorMessage = (date >= DateTime.UtcNow)
            ? $"{paramName} must be a valid date."
            : null;
+
         return errorMessage is null;
     }
 
@@ -165,13 +160,34 @@ public static class Validate
     /// <param name="paramName">The name of the string parameter.</param>
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
     /// <returns><see langword="true"/> if <paramref name="text"/> the date is valid, <see langword="false"/> otherwise.</returns>
-    /// <exception cref="ArgumentNullException">Occurs when <paramref name="text"/> is <see langword="null"/>.</exception>
-    public static bool IsFutureDate(DateTime date, string paramName, [MaybeNullWhen(true)] out string errorMessage)
+    public static bool IsFuture(DateTime date, string paramName, [MaybeNullWhen(true)] out string errorMessage)
     {
         errorMessage = (date <= DateTime.UtcNow)
            ? $"{paramName} must be a future date."
            : null;
+
         return errorMessage is null;
+    }
+
+    /// <summary>
+    /// Checks if <paramref name="value"/> is a positive or neutral number.
+    /// </summary>
+    /// <param name="value">The number to be checked.</param>
+    /// <param name="paramName">The name of the parameter.</param>
+    /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
+    /// <returns><see langword="true"/> if <paramref name="value"/> is a positive or neutral number, <see langword="false"/> otherwise.</returns>
+    public static bool IsPositiveOrNeutral<T>(T value, string paramName, [MaybeNullWhen(true)] out string errorMessage) where T : IComparable<T>
+    {
+        var comparisonResult = Comparer<T>.Default.Compare(value, default);
+
+        if (comparisonResult >= 0)
+        {
+            errorMessage = null;
+            return true;
+        }
+
+        errorMessage = $"'{paramName}' must be a positive or neutral number.";
+        return false;
     }
 
     /// <summary>
@@ -181,13 +197,16 @@ public static class Validate
     /// <param name="paramName">The name of the parameter.</param>
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
     /// <returns><see langword="true"/> if <paramref name="value"/> is a positive number, <see langword="false"/> otherwise.</returns>
-    public static bool IsPositive(decimal value, string paramName, [MaybeNullWhen(true)] out string errorMessage)
+    public static bool IsPositive<T>(T value, string paramName, [MaybeNullWhen(true)] out string errorMessage) where T : IComparable<T>
     {
-        if (value >= 0)
+        var comparisonResult = Comparer<T>.Default.Compare(value, default);
+
+        if (comparisonResult > 0)
         {
             errorMessage = null;
             return true;
         }
+
         errorMessage = $"'{paramName}' must be a positive number.";
         return false;
     }
@@ -200,37 +219,12 @@ public static class Validate
     /// <param name="maxValue">The maximum value of the range.</param>
     /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
     /// <returns><see langword="true"/> if <paramref name="value"/> is within the specified range, <see langword="false"/> otherwise.</returns>
-    public static bool IsWithinRange(decimal value, decimal minValue, decimal maxValue, string paranName, [MaybeNullWhen(true)] out string errorMessage)
+    public static bool IsWithinRange(decimal value, decimal minValue, decimal maxValue, string paramName, [MaybeNullWhen(true)] out string errorMessage)
     {
-
         errorMessage = (value < minValue || value > maxValue)
-            ? $"{paranName} must be between {minValue} and {maxValue}. Value: {value}."
+            ? $"{paramName} must be between {minValue} and {maxValue}. Value: {value}."
             : null;
 
         return errorMessage is null;
-    }
-
-    /// <summary>
-    /// Checks if <paramref name="minValue"/> and <paramref name="maxValue"/> compose a valid range for a query (<paramref name="maxValue"/> >= <paramref name="minValue"/> ).
-    /// </summary>
-    /// <param name="minValue"> The min value to be checked.</param>
-    /// <param name="maxValue"> The max value to be checked.</param>
-    /// <param name="paranNameMin">The name of the min parameter.</param>
-    /// <param name="paranNameMax">The name of the min parameter.</param>
-    /// <param name="errorMessage">The resulting error message if the method returns <see langword="false"/>, <see langword="null"/> otherwise.</param>
-    /// <typeparam name="T">The type of the object.</typeparam>
-    /// <returns><see langword="true"/> if <paramref name="maxValue"/> is greather or equals to <paramref name="minValue"/>, <see langword="false"/> otherwise.</returns>
-    public static bool IsValidRange<T>(T minValue, T maxValue, string paranNameMin, string paranNameMax, [MaybeNullWhen(true)] out string errorMessage)  where T : IComparable<T>
-    {
-
-        var comparisonResult = Comparer<T>.Default.Compare(maxValue, minValue);
-
-        if (comparisonResult >=0)
-        {
-            errorMessage = null;
-            return true;
-        }
-        errorMessage = $" {paranNameMax} must be greater than {paranNameMin}. {paranNameMin}: {minValue}, {paranNameMax}: {maxValue}";
-        return false;
     }
 }

@@ -3,16 +3,22 @@ namespace MiauAPI.Models.QueryParameters;
 /// <summary>
 /// Defines how the resulted query will be visualized.
 /// </summary>
-/// <param name="PageNumber">The page to be visualized.</param>
-/// <param name="PageSize">The amount of results to be shown in a page.</param>
-public abstract class QueryStringParameters
+public abstract record QueryStringParameters
 {
-    private const int _maxPageSize = 50;
-    private int _pageSize = 20;
-    public int PageNumber { get; set; } = 1;
-    public int PageSize 
+    // Default page size to 20
+    private readonly int _pageSize = 20;
+
+    /// <summary>
+    /// The page to be visualized.
+    /// </summary>
+    public int PageNumber { get; init; }
+
+    /// <summary>
+    /// The amount of results to be shown in a page.
+    /// </summary>
+    public int PageSize
     {
         get => _pageSize;
-        set => _pageSize = (value > _maxPageSize) ? _maxPageSize : value;
+        init => _pageSize = Math.Min(value, 100);   // Cap page size to 100
     }
 }

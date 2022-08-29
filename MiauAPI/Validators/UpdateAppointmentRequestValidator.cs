@@ -12,13 +12,25 @@ public sealed class UpdateAppointmentRequestValidator : IRequestValidator<Update
     {
         errorMessages = Enumerable.Empty<string>();
 
+        // Check ids
+        if (!Validate.IsPositive(request.Id, nameof(request.Id), out var idError)
+            || !Validate.IsPositive(request.PetId, nameof(request.PetId), out idError))
+        {
+            errorMessages = errorMessages.Append(idError);
+        }
+
         // Check Price
-        if (!Validate.IsPositive(request.Price, nameof(request.Price), out var priceError))
+        if (!Validate.IsPositiveOrNeutral(request.Price, nameof(request.Price), out var priceError))
         {
             errorMessages = errorMessages.Append(priceError);
         }
 
-        return !errorMessages.Any();
+        // Check ScheduledTime
+        if (!Validate.IsFuture(request.ScheduledTime, nameof(request.ScheduledTime), out var scheduledTimeError))
+        {
+            errorMessages = errorMessages.Append(scheduledTimeError);
+        }
 
+        return !errorMessages.Any();
     }
 }

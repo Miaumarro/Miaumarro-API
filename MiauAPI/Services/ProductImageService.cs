@@ -1,13 +1,16 @@
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
-using MiauAPI.Pagination;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
 using LinqToDB;
 using MiauAPI.Models.QueryObjects;
+using MiauAPI.Extensions;
+using Microsoft.EntityFrameworkCore;
+using LinqToDB.EntityFrameworkCore;
+using OneOf.Types;
 
 namespace MiauAPI.Services;
 
@@ -16,11 +19,14 @@ namespace MiauAPI.Services;
 /// </summary>
 public sealed class ProductImageService
 {
+    private const string _imageDirName = "product_images";
     private readonly MiauDbContext _db;
+    private readonly FileService _fileService;
 
-    public ProductImageService(MiauDbContext db)
+    public ProductImageService(MiauDbContext db, FileService fileService)
     {
         _db = db;
+        _fileService = fileService;
     }
 
     /// <summary>
@@ -30,36 +36,32 @@ public sealed class ProductImageService
     /// <param name="location">The URL of the new resource or the content of the Location header.</param>
     /// <returns>The result of the operation.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
-    public async Task<ActionResult<OneOf<CreatedProductImageResponse, ErrorResponse>>> CreatedProductImageAsync(CreatedProductImageRequest request, string location)
+    public async Task<ActionResult<OneOf<CreatedProductImageResponse, None>>> CreatedProductImageAsync(CreatedProductImageRequest request, string location)
     {
         if (string.IsNullOrWhiteSpace(location))
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));
 
         // Checks the ProductId
-        var dbProduct = await _db.Products.FirstOrDefaultAsync(x => x.Id == request.ProductId);
-        if (dbProduct == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No product with the Id = {request.ProductId} was found"));
-        }
+        var dbProduct = await _db.Products
+            .AsTracking()
+            .Where(x => x.Id == request.ProductId)
+            .Select(x => new ProductEntity() { Id = request.ProductId })
+            .FirstOrDefaultAsyncEF();
+
+        if (dbProduct is null)
+            return new NotFoundResult();
 
         //Creates the path for the Product Image
-        var path = $"Data/{request.ProductId}/images";
-        if ((!Directory.Exists(path)))
-        {
-            Directory.CreateDirectory(path);
-        }
-        var filename = request.ImageFile.FileName;
-        using var fileStream = new FileStream(Path.Combine(path, filename), FileMode.Create);
-        await request.ImageFile.CopyToAsync(fileStream);
+        var imagePath = await _fileService.SaveFileAsync(request.Image, Path.Combine(_imageDirName, request.ProductId.ToString()), request.ProductId.ToString());
 
         // Create the database product image
         var dbProductImage = new ProductImageEntity()
         {
-            Product = dbProduct!,
-            FileUrl = $"Data/{request.ProductId}/images/" + filename
+            Product = dbProduct,
+            FileUrl = imagePath
         };
 
-        _db.ProductImages.Update(dbProductImage);
+        _db.ProductImages.Add(dbProductImage);
         await _db.SaveChangesAsync();
 
         return new CreatedResult(location, new CreatedProductImageResponse(dbProductImage.Id));
@@ -69,42 +71,17 @@ public sealed class ProductImageService
     /// Returns a list of product images.
     /// </summary>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<GetProductImageResponse, ErrorResponse>>> GetProductImageAsync(ProductImageParameters productImageParameters)
+    public async Task<ActionResult<OneOf<GetProductImageResponse, None>>> GetProductImagesAsync(ProductImageParameters productImageParameters)
     {
+        var dbProductImages = await _db.ProductImages
+            .Include(x => x.Product)
+            .Where(x => x.Product.Id == productImageParameters.ProductId)
+            .Select(x => new ProductImageObject(x.Id, x.Product.Id, x.FileUrl))
+            .ToArrayAsyncEF();
 
-        var errorMessages = Enumerable.Empty<string>();
-        var dbProductImages = _db.ProductImages.Select(p => new ProductImageObject
-        {
-            Id = p.Id,
-            ProductId = p.Product.Id,
-            ImagePath = p.FileUrl
-        });
-
-        if (productImageParameters.ProductId != 0)
-        {
-            dbProductImages = dbProductImages.Where(p => p.ProductId == productImageParameters.ProductId);
-        }
-
-        if (productImageParameters.Id != 0)
-        {
-            dbProductImages = dbProductImages.Where(p => p.Id == productImageParameters.Id);
-        }
-
-        var dbProductImagesList = await dbProductImages
-                            .ToListAsync();
-
-        if (dbProductImagesList.Count == 0)
-        {
-            return new NotFoundObjectResult("No product images with the given paramenters were found.");
-        }
-
-        var dbProductImagesPaged = PagedList<ProductImageObject>.ToPagedList(
-                        dbProductImagesList,
-                        productImageParameters.PageNumber,
-                        productImageParameters.PageSize);
-
-        return new OkObjectResult(new GetProductImageResponse(dbProductImagesPaged));
-
+        return (dbProductImages.Length is 0)
+            ? new NotFoundResult()
+            : new OkObjectResult(new GetProductImageResponse(dbProductImages));
     }
 
     /// <summary>
@@ -112,11 +89,10 @@ public sealed class ProductImageService
     /// </summary>
     /// <param name="productImageId">The id of the product image to be deleted.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteProductImageByIdAsync(int productImageId)
+    public async Task<ActionResult> DeleteProductImageByIdAsync(int productImageId)
     {
         return ((await _db.ProductImages.DeleteAsync(p => p.Id == productImageId)) is 0)
-            ? new NotFoundObjectResult(new ErrorResponse($"No product image with the Id = {productImageId} was found"))
-            : new OkObjectResult(new DeleteResponse($"Successful delete product image with the Id = {productImageId}"));
+            ? new NotFoundResult()
+            : new OkResult();
     }
-
 }

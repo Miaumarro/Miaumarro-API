@@ -18,7 +18,7 @@ public sealed class MiauDbContext : DbContext
     public DbSet<PurchasedProductEntity> PurchasedProducts { get; init; } = null!;
     public DbSet<PurchaseEntity> Purchases { get; init; } = null!;
     public DbSet<UserEntity> Users { get; init; } = null!;
-    public DbSet<WishlistEntity> Wishlist { get; init; } = null!;
+    public DbSet<WishlistEntity> Wishlists { get; init; } = null!;
 
     /// <summary>
     /// Initializes a <see cref="MiauDbContext"/>.
@@ -27,4 +27,7 @@ public sealed class MiauDbContext : DbContext
     public MiauDbContext(DbContextOptions<MiauDbContext> options) : base(options)
     {
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+        => modelBuilder.UseCollation("NOCASE"); // Set database-wide collation to ignore ASCII case-sensitivity
 }

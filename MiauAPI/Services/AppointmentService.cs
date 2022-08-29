@@ -1,17 +1,17 @@
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
-using MiauAPI.Pagination;
 using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
-using MiauAPI.Validators;
 using LinqToDB;
-using MiauDatabase.Enums;
-using MiauAPI.Enums;
 using MiauAPI.Models.QueryObjects;
+using MiauAPI.Extensions;
+using Microsoft.EntityFrameworkCore;
+using LinqToDB.EntityFrameworkCore;
+using OneOf.Types;
 
 namespace MiauAPI.Services;
 
@@ -47,12 +47,12 @@ public sealed class AppointmentService
         if (!_validator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        // Checks the PetId
-        var dbPet = await _db.Pets.FirstOrDefaultAsync(x => x.Id == request.PetId);
-        if (dbPet == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No pet with the Id = {request.PetId} was found"));
-        }
+        var dbPet = await _db.Pets
+            .AsTracking()
+            .FirstOrDefaultAsyncEF(x => x.Id == request.PetId);
+
+        if (dbPet is null)
+            return new NotFoundObjectResult(new ErrorResponse($"No pet with Id {request.PetId} was found"));
 
         // Create the database appointment
         var dbAppointment = new AppointmentEntity()
@@ -63,7 +63,7 @@ public sealed class AppointmentService
             ScheduledTime = request.ScheduledTime
         };
 
-        _db.Appointments.Update(dbAppointment);
+        _db.Appointments.Add(dbAppointment);
         await _db.SaveChangesAsync();
 
         return new CreatedResult(location, new CreatedAppointmentResponse(dbAppointment.Id));
@@ -73,79 +73,60 @@ public sealed class AppointmentService
     /// Returns a list of appointments.
     /// </summary>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<GetAppointmentResponse, ErrorResponse>>> GetAppointmentAsync(AppointmentParameters appointmentParameters)
+    public async Task<ActionResult<OneOf<PagedResponse<AppointmentObject[]>, None>>> GetAppointmentsAsync(AppointmentParameters request)
     {
+        var dbAppointments = await _db.Appointments
+            .Include(x => x.Pet)
+            .Include(x => x.Pet.User)
+            .Where(x => x.Pet.User.Id == request.UserId && x.Pet.Id == request.PetId)
+            .OrderBy(x => x.Id)
+            .PageRange(request.PageNumber, request.PageSize)
+            .Select(x => new AppointmentObject(x.Id, x.Pet.User.Id, x.Pet.Id, x.Price, x.Type, x.ScheduledTime))
+            .ToArrayAsyncEF();
 
-        var dbAppointments = _db.Appointments.Select(p => new AppointmentObject
-        {
-            Id = p.Id,
-            UserId = p.Pet.User.Id,
-            PetId = p.Pet.Id,
-            Price = p.Price,
-            Type = p.Type,
-            ScheduledTime = p.ScheduledTime
-        });
+        if (dbAppointments.Length is 0)
+            return new NotFoundResult();
 
-        if (appointmentParameters.UserId != 0)
-        {
-            dbAppointments = dbAppointments.Where(p => p.UserId == appointmentParameters.UserId);
-        }
+        var remainingResultIds = await _db.Appointments
+            .Where(x => !dbAppointments.Select(y => y.Id).Contains(x.Id) && x.Pet.User.Id == request.UserId && x.Pet.Id == request.PetId)
+            .Select(x => x.Id)
+            .ToArrayAsyncEF();
 
-        if (appointmentParameters.PetId != 0)
-        {
-            dbAppointments = dbAppointments.Where(p => p.PetId == appointmentParameters.PetId);
-        }
+        var previousAmount = remainingResultIds.Count(x => x < dbAppointments[0].Id);
+        var nextAmount = remainingResultIds.Count(x => x > dbAppointments[^1].Id);
 
-        var dbAppointmentsList = await dbAppointments.ToListAsync();
-
-        if (dbAppointmentsList.Count == 0)
-        {
-            return new NotFoundObjectResult("No appointments with the given paramenters were found.");
-        }
-
-        var dbAppointmentsPaged = PagedList<AppointmentObject>.ToPagedList(
-                        dbAppointmentsList,
-                        appointmentParameters.PageNumber,
-                        appointmentParameters.PageSize);
-
-        return new OkObjectResult(new GetAppointmentResponse(dbAppointmentsPaged));
+        return new OkObjectResult(PagedResponse.Create(request.PageNumber, request.PageSize, previousAmount, nextAmount, dbAppointments.Length, dbAppointments));
     }
 
     /// <summary>
-    /// Return the appointment with the given Id.
+    /// Returns the appointment for the specified pet.
     /// </summary>
-    /// <param name="appointmentId">The Id of the appointment to be searched.</param>
+    /// <param name="request">The controller's request.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<GetAppointmentByIdResponse, ErrorResponse>>> GetAppointmentByIdAsync(int appointmentId)
+    public async Task<ActionResult<OneOf<AppointmentObject, None>>> GetAppointmentByIdsAsync(GetAppointmentRequest request)
     {
+        var dbAppointment = await _db.Appointments
+            .Include(x => x.Pet)
+            .Include(x => x.Pet.User)
+            .Where(x => x.Id == request.AppointmentId && x.Pet.Id == request.PetId)
+            .Select(x => new AppointmentObject(x.Id, x.Pet.User.Id, x.Pet.Id, x.Price, x.Type, x.ScheduledTime))
+            .FirstOrDefaultAsyncEF();
 
-        var dbAppointment = await _db.Appointments.Where(p => p.Id == appointmentId)
-                                            .Select(p => new AppointmentObject
-                                            {
-                                                Id = p.Id,
-                                                UserId = p.Pet.User.Id,
-                                                PetId = p.Pet.Id,
-                                                Price = p.Price,
-                                                Type = p.Type,
-                                                ScheduledTime = p.ScheduledTime
-                                            })
-                                            .FirstOrDefaultAsync();
-
-        return dbAppointment == null
-                ? new NotFoundObjectResult(new ErrorResponse($"No appointment with the Id = {appointmentId} was found"))
-                : new OkObjectResult(new GetAppointmentByIdResponse(dbAppointment));
+        return (dbAppointment is null)
+            ? new NotFoundResult()
+            : new OkObjectResult(dbAppointment);
     }
-
+    
     /// <summary>
-    /// Deletes the appointment with the given Id.
-    /// </summary>
-    /// <param name="appointmentId">The Id of the appointment to be deleted.</param>
-    /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteAppointmentByIdAsync(int appointmentId)
+     /// Deletes the appointment with the given Id.
+     /// </summary>
+     /// <param name="appointmentId">The Id of the appointment to be deleted.</param>
+     /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult> DeleteAppointmentAsync(int appointmentId)
     {
         return ((await _db.Appointments.DeleteAsync(p => p.Id == appointmentId)) is 0)
-            ? new NotFoundObjectResult(new ErrorResponse($"No appointment with the Id = {appointmentId} was found"))
-            : new OkObjectResult(new DeleteResponse($"Successful delete appointment with the Id = {appointmentId}"));  
+            ? new NotFoundResult()
+            : new OkResult();
     }
 
     /// <summary>
@@ -153,40 +134,30 @@ public sealed class AppointmentService
     /// </summary>
     /// <param name="request">The controller request.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateAppointmentByIdAsync(UpdateAppointmentRequest request)
+    public async Task<ActionResult<OneOf<None, ErrorResponse>>> UpdateAppointmentByIdAsync(UpdateAppointmentRequest request)
     {
         // Check if request contains valid data
         if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        var dbAppointment = await _db.Appointments.FindAsync(request.Id);
+        var appointmentExists = await _db.Appointments
+            .Include(x => x.Pet.User)
+            .AnyAsyncEF(x => x.Id == request.Id && x.Pet.Id == request.PetId);
 
-        if (dbAppointment == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No appointment with the Id = {request.Id} was found"));
-        }
+        if (!appointmentExists)
+            return new NotFoundObjectResult(new ErrorResponse($"No appointment with the Id {request.Id} for the pet of Id {request.PetId} was found"));
 
-        // Checks the PetId
-        var dbPet = await _db.Pets.FirstOrDefaultAsync(x => x.Id == request.PetId);
-        if (dbPet == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No pet with the Id = {request.PetId} was found"));
-        }
-
-        dbAppointment = new AppointmentEntity()
+        var dbAppointment = new AppointmentEntity()
         {
             Id = request.Id,
-            Pet = dbPet,
             Price = request.Price,
             Type = request.Type,
             ScheduledTime = request.ScheduledTime
         };
 
         _db.Appointments.Update(dbAppointment);
-
         await _db.SaveChangesAsync();
 
-        return new OkObjectResult(new UpdateResponse($"Successfull update appointment with the Id = {request.Id}"));
-
+        return new OkResult();
     }
 }

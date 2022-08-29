@@ -12,28 +12,35 @@ public sealed class UpdateAddressRequestValidator : IRequestValidator<UpdateAddr
     {
         errorMessages = Enumerable.Empty<string>();
 
+        // Check Ids
+        if (!Validate.IsPositive(request.Id, nameof(request.Id), out var idError)
+            || !Validate.IsPositive(request.UserId, nameof(request.UserId), out idError))
+        {
+            errorMessages = errorMessages.Append(idError);
+        }
+
         // Check address
-        if (Validate.IsNull(request.Address, nameof(request.Address), out var addressError)
+        if (Validate.IsNullOrWhiteSpace(request.Address, nameof(request.Address), out var addressError)
             || !Validate.IsTextInRange(request.Address, 60, nameof(request.Address), out addressError))
         {
             errorMessages = errorMessages.Append(addressError);
         }
 
         // Check number
-        if (Validate.IsNull(request.Number, nameof(request.Number), out var numberError))
+        if (!Validate.IsPositiveOrNeutral(request.AddressNumber, nameof(request.AddressNumber), out var numberError))
         {
             errorMessages = errorMessages.Append(numberError);
         }
 
         // Check reference
-        if (request.Reference != null &&
+        if (request.Reference is not null &&
             !Validate.IsTextInRange(request.Reference, 100, nameof(request.Reference), out var referenceError))
         {
             errorMessages = errorMessages.Append(referenceError);
         }
 
         // Check complement
-        if (request.Complement != null &&
+        if (request.Complement is not null &&
             !Validate.IsTextInRange(request.Complement, 15, nameof(request.Complement), out var complementError))
         {
             errorMessages = errorMessages.Append(complementError);
@@ -68,8 +75,9 @@ public sealed class UpdateAddressRequestValidator : IRequestValidator<UpdateAddr
         }
 
         // Check CEP
-        if (Validate.IsNull(request.Cep, nameof(request.Cep), out var cepError)
-            || !Validate.IsTextInRange(request.Cep, 8, 8, nameof(request.Cep), out cepError))
+        if (Validate.IsNullOrWhiteSpace(request.Cep, nameof(request.Cep), out var cepError)
+            || !Validate.IsTextInRange(request.Cep, 8, 8, nameof(request.Cep), out cepError)
+            || !Validate.HasOnlyDigits(request.Cep, nameof(request.Cep), out cepError))
         {
             errorMessages = errorMessages.Append(cepError);
         }

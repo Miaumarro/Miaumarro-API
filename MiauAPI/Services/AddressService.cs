@@ -1,14 +1,17 @@
 using LinqToDB;
+using LinqToDB.EntityFrameworkCore;
+using MiauAPI.Extensions;
 using MiauAPI.Models.QueryObjects;
 using MiauAPI.Models.QueryParameters;
 using MiauAPI.Models.Requests;
 using MiauAPI.Models.Responses;
-using MiauAPI.Pagination;
 using MiauAPI.Validators.Abstractions;
 using MiauDatabase;
 using MiauDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OneOf;
+using OneOf.Types;
 
 namespace MiauAPI.Services;
 
@@ -18,14 +21,14 @@ namespace MiauAPI.Services;
 public sealed class AddressService
 {
     private readonly MiauDbContext _db;
-    private readonly IRequestValidator<CreatedAddressRequest> _validator;
-    private readonly IRequestValidator<UpdateAddressRequest> _validatorUpdate;
+    private readonly IRequestValidator<CreatedAddressRequest> _createValidator;
+    private readonly IRequestValidator<UpdateAddressRequest> _updateValidator;
 
     public AddressService(MiauDbContext db, IRequestValidator<CreatedAddressRequest> validator, IRequestValidator<UpdateAddressRequest> validatorUpdate)
     {
         _db = db;
-        _validator = validator;
-        _validatorUpdate = validatorUpdate;
+        _createValidator = validator;
+        _updateValidator = validatorUpdate;
     }
 
     /// <summary>
@@ -35,30 +38,28 @@ public sealed class AddressService
     /// <param name="location">The URL of the new resource or the content of the Location header.</param>
     /// <returns>The result of the operation.</returns>
     /// <exception cref="ArgumentException">Occurs when <paramref name="location"/> is <see langword="null"/> or empty.</exception>
-    public async Task<ActionResult<OneOf<CreatedAddressResponse, ErrorResponse>>> CreateAddressAsync(CreatedAddressRequest request, string location)
+    public async Task<ActionResult<OneOf<CreatedAddressResponse, ErrorResponse, None>>> CreateAddressAsync(CreatedAddressRequest request, string location)
     {
         if (string.IsNullOrWhiteSpace(location))
             throw new ArgumentException("Location cannot be null or empty.", nameof(location));
 
         // Check if request contains valid data
-        if (!_validator.IsRequestValid(request, out var errorMessages))
+        if (!_createValidator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        // Checks the UserId
-        if (request.UserId == 0)
-            return new BadRequestObjectResult(new ErrorResponse($"The address must be related to a user. 'UserId = {request.UserId}'"));
-        var dbUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
-        if (dbUser == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No User with the Id = {request.UserId} was found"));
-        }
+        var dbUser = await _db.Users
+            .AsTracking()
+            .FirstOrDefaultAsyncEF(x => x.Id == request.UserId);
+
+        if (dbUser is null)
+            return new NotFoundResult();
 
         // Create the database address
         var dbAddress = new AddressEntity()
         {
             User = dbUser,
             Address = request.Address,
-            Number = request.Number,
+            Number = request.AddressNumber,
             Reference = request.Reference,
             Complement = request.Complement,
             Neighborhood = request.Neighborhood,
@@ -68,7 +69,7 @@ public sealed class AddressService
             Cep = request.Cep
         };
 
-        _db.Addresses.Update(dbAddress);
+        _db.Addresses.Add(dbAddress);
         await _db.SaveChangesAsync();
 
         return new CreatedResult(location, new CreatedAddressResponse(dbAddress.Id));
@@ -78,84 +79,82 @@ public sealed class AddressService
     /// Returns a list of addresses.
     /// </summary>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<GetAddressResponse, ErrorResponse>>> GetAddressAsync(AddressParameters addressParameters)
+    public async Task<ActionResult<OneOf<PagedResponse<AddressObject[]>, None>>> GetAddressesAsync(AddressParameters request)
     {
+        var dbAddresses = await _db.Addresses
+            .Where(x => x.User.Id == request.UserId)
+            .OrderBy(x => x.Id)
+            .PageRange(request.PageNumber, request.PageSize)
+            .Select(x => new AddressObject(
+                    x.Id,
+                    x.User.Id,
+                    x.State,
+                    x.City,
+                    x.Neighborhood,
+                    x.Cep,
+                    x.Address,
+                    x.Number,
+                    x.Complement,
+                    x.Reference,
+                    x.Destinatary
+                )
+            )
+            .ToArrayAsyncEF();
 
-        var dbAddresses = _db.Addresses.Select(p => new AddressObject
-        {
-            UserId = p.User.Id,
-            Id = p.Id,
-            Address = p.Address,
-            Number = p.Number,
-            Reference = p.Reference,
-            Complement = p.Complement,
-            Neighborhood = p.Neighborhood,
-            City = p.City,
-            State = p.State,
-            Destinatary = p.Destinatary,
-            Cep = p.Cep
-        });
+        if (dbAddresses.Length is 0)
+            return new NotFoundResult();
 
-        if (addressParameters.UserId != 0)
-        {
-            dbAddresses = dbAddresses.Where(p => p.UserId == addressParameters.UserId);
-        }
+        var remainingResultIds = await _db.Addresses
+            .Where(x => !dbAddresses.Select(y => y.Id).Contains(x.Id) && x.User.Id == request.UserId)
+            .Select(x => x.Id)
+            .ToArrayAsyncEF();
 
-        var dbAddressesList = await dbAddresses.ToListAsync();
+        var previousAmount = remainingResultIds.Count(x => x < dbAddresses[0].Id);
+        var nextAmount = remainingResultIds.Count(x => x > dbAddresses[^1].Id);
 
-        if (dbAddressesList.Count == 0)
-        {
-            return new NotFoundObjectResult("No addresses with the given paramenters were found.");
-        }
-
-        var dbAddressesPaged = PagedList<AddressObject>.ToPagedList(
-                        dbAddressesList,
-                        addressParameters.PageNumber,
-                        addressParameters.PageSize);
-
-        return new OkObjectResult(new GetAddressResponse(dbAddressesPaged));
+        return new OkObjectResult(PagedResponse.Create(request.PageNumber, request.PageSize, previousAmount, nextAmount, dbAddresses.Length, dbAddresses));
     }
 
     /// <summary>
-    /// Return the address with the given Id.
+    /// Returns the address for the specified user.
     /// </summary>
-    /// <param name="addressId">The Id of the address to be searched.</param>
+    /// <param name="request">The controller's request.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<GetAddressByIdResponse, ErrorResponse>>> GetAddressByIdAsync(int addressId)
+    public async Task<ActionResult<OneOf<AddressObject, None>>> GetAddressByIdsAsync(GetAddressRequest request)
     {
+        var dbAddress = await _db.Addresses
+            .Where(x => x.User.Id == request.UserId && x.Id == request.AddressId)
+            .Select(x => new AddressObject(
+                    x.Id,
+                    x.User.Id,
+                    x.State,
+                    x.City,
+                    x.Neighborhood,
+                    x.Cep,
+                    x.Address,
+                    x.Number,
+                    x.Complement,
+                    x.Reference,
+                    x.Destinatary
+                )
+            )
+            .FirstOrDefaultAsyncEF();
 
-        var dbAddress = await _db.Addresses.Where(p => p.Id == addressId)
-                                            .Select(p => new AddressObject
-                                            {
-                                                Id = p.Id,
-                                                UserId = p.User.Id,
-                                                Address = p.Address,
-                                                Number = p.Number,
-                                                Reference = p.Reference,
-                                                Complement = p.Complement,
-                                                Neighborhood = p.Neighborhood,
-                                                City = p.City,
-                                                State = p.State,
-                                                Destinatary = p.Destinatary,
-                                                Cep = p.Cep
-                                            })
-                                            .FirstOrDefaultAsync();
-
-        return dbAddress == null
-                ? new NotFoundObjectResult(new ErrorResponse($"No address with the Id = {addressId} was found"))
-                : new OkObjectResult(new GetAddressByIdResponse(dbAddress));
+        return (dbAddress is null)
+            ? new NotFoundResult()
+            : new OkObjectResult(dbAddress);
     }
-
+    
     /// <summary>
-    /// Deletes the address with the given Id.
-    /// </summary>
-    /// <param name="addressId">The Id of the address to be deleted.</param>
-    /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<DeleteResponse, ErrorResponse>>> DeleteAddressByIdAsync(int addressId)
+     /// Deletes the address with the given Id.
+     /// </summary>
+     /// <param name="addressId">The Id of the address to be deleted.</param>
+     /// <returns>The result of the operation.</returns>
+    public async Task<ActionResult> DeleteAddressAsync(int addressId)
     {
         return ((await _db.Addresses.DeleteAsync(p => p.Id == addressId)) is 0)
-            ? new NotFoundObjectResult(new ErrorResponse($"No address with the Id = {addressId} was found"))
-            : new OkObjectResult(new DeleteResponse($"Successful delete address with the Id = {addressId}"));
+            ? new NotFoundResult()
+            : new OkResult();
     }
 
     /// <summary>
@@ -163,49 +162,35 @@ public sealed class AddressService
     /// </summary>
     /// <param name="request">The controller request.</param>
     /// <returns>The result of the operation.</returns>
-    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse>>> UpdateAddressByIdAsync(UpdateAddressRequest request)
+    public async Task<ActionResult<OneOf<UpdateResponse, ErrorResponse, None>>> UpdateAddressAsync(UpdateAddressRequest request)
     {
         // Check if request contains valid data
-        if (!_validatorUpdate.IsRequestValid(request, out var errorMessages))
+        if (!_updateValidator.IsRequestValid(request, out var errorMessages))
             return new BadRequestObjectResult(new ErrorResponse(errorMessages.ToArray()));
 
-        var dbAddress = await _db.Addresses.FindAsync(request.Id);
+        var addressExists = await _db.Addresses
+            .Include(x => x.User)
+            .AnyAsyncEF(x => x.Id == request.Id && x.User.Id == request.UserId);
 
-        if (dbAddress == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No address with the Id = {request.Id} was found"));
-        }
+        if (!addressExists)
+            return new NotFoundResult();
 
-        // Checks the UserId
-        if (request.UserId == 0)
-            return new BadRequestObjectResult(new ErrorResponse($"The address must be related to a user. 'UserId = {request.UserId}'"));
-        var dbUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
-        if (dbUser == null)
-        {
-            return new NotFoundObjectResult(new ErrorResponse($"No user with the Id = {request.UserId} was found"));
-        }
+        await _db.Addresses
+            .Where(x => x.Id == request.Id)
+            .UpdateAsync(x => new AddressEntity()
+            {
+                Id = request.Id,
+                Address = request.Address,
+                Number = request.AddressNumber,
+                Reference = request.Reference,
+                Complement = request.Complement,
+                Neighborhood = request.Neighborhood,
+                City = request.City,
+                State = request.State,
+                Destinatary = request.Destinatary,
+                Cep = request.Cep
+            });
 
-        dbAddress = new AddressEntity()
-        {
-            Id = request.Id,
-            User = dbUser,
-            Address = request.Address,
-            Number = request.Number,
-            Reference = request.Reference,
-            Complement = request.Complement,
-            Neighborhood = request.Neighborhood,
-            City = request.City,
-            State = request.State,
-            Destinatary = request.Destinatary,
-            Cep = request.Cep
-        };
-
-        _db.Addresses.Update(dbAddress);
-
-        await _db.SaveChangesAsync();
-
-        return new OkObjectResult(new UpdateResponse($"Successful update address with the Id = {request.Id}"));
-
+        return new OkResult();
     }
-
 }

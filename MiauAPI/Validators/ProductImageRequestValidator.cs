@@ -13,12 +13,11 @@ public sealed class ProductImageRequestValidator : IRequestValidator<CreatedProd
         errorMessages = Enumerable.Empty<string>();
 
         //Check Product
-        if (Validate.IsNull(request.ProductId, nameof(request.ProductId), out var productError))
+        if (!Validate.IsPositive(request.ProductId, nameof(request.ProductId), out var productError))
         {
             errorMessages = errorMessages.Append(productError);
         }
 
         return !errorMessages.Any();
-
     }
 }

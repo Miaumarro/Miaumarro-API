@@ -1,0 +1,27 @@
+using MiauAPI.Models.Requests;
+using MiauAPI.Validators.Abstractions;
+using MiauDatabase.Enums;
+
+namespace MiauTests.ValidatorTests;
+
+public sealed class IRequestValidatorCreatedAppointmentRequestTest : BaseApiServiceTest
+{
+    private readonly IRequestValidator<CreatedAppointmentRequest> _validator;
+
+    public IRequestValidatorCreatedAppointmentRequestTest(ServicesFixture fixture) : base(fixture)
+        => _validator = base.Scope.ServiceProvider.GetRequiredService<IRequestValidator<CreatedAppointmentRequest>>();
+
+    [Theory]
+    [InlineData(true, 0, 1, 0.1, AppointmentType.Bath, 0.1)]
+    [InlineData(true, 0, 1, 0, AppointmentType.Grooming, 0.1)]
+    [InlineData(false, 1, 1, 0.1, AppointmentType.Bath, 0)]
+    [InlineData(false, 2, 1, -0.1, AppointmentType.Bath, 0)]
+    [InlineData(false, 3, 0, -0.1, AppointmentType.Bath, 0)]
+    internal void IsRequestValidTest(bool expected, int expectedAmount, int petId, decimal price, AppointmentType appType, double minutesIntoTheFuture)
+    {
+        var request = new CreatedAppointmentRequest(petId, price, appType, DateTime.UtcNow.AddMinutes(minutesIntoTheFuture));
+
+        Assert.Equal(expected, _validator.IsRequestValid(request, out var errorMessages));
+        Assert.Equal(expectedAmount, errorMessages.Count());
+    }
+}

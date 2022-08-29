@@ -1,5 +1,4 @@
 using MiauAPI.Models.QueryObjects;
-using MiauAPI.Pagination;
 
 namespace MiauAPI.Models.Responses;
 
@@ -7,4 +6,4 @@ namespace MiauAPI.Models.Responses;
 /// Represents the response given when a product query is successfully executed.
 /// </summary>
 /// <param name="Products">The resulted list of products.</param>
-public sealed record GetProductImageResponse(PagedList<ProductImageObject> ProductImages);
+public sealed record GetProductImageResponse(params ProductImageObject[] ProductImages);
